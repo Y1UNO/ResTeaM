@@ -164,3 +164,45 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Construire l'exe : `npm run build:exe` (ferme l'ancienne version ouverte, compile, met à jour le raccourci `ResTeaM` du Bureau) → `src-tauri/target/release/ResTeaM.exe`. Installateur NSIS : `npm run build:installer`.
 - Kit resynchronisé : `kit/pages-autonomes/` (maquettes ouvrables sans canevas, servies par la config `maquettes` de `.claude/launch.json`) et `kit/captures/` (rendus attendus). Comparaison mesurée : barre et fond identiques à la page 01. Seul écart voulu : le logo « Lune à engrenages » à la place du carré « R » des maquettes.
 - À faire en 2a : grand logo animé sur l'écran de connexion / chargement (`<Logo size={…} />`). Pas d'option « Animer le logo » (refusée par Tom).
+
+## 7. Plan détaillé — étape 2a (connexion, clé API, client Web API, cache)
+
+Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.
+
+### Côté Rust (`src-tauri/src/`)
+
+1. **Dépendances** : `reqwest` (rustls, json), `rusqlite` (bundled), `keyring` (Gestionnaire d'identifiants Windows), `url`, `thiserror`, `rand`. Le petit serveur local est fait à la main avec `std::net::TcpListener`.
+2. **`steam/auth.rs`, OpenID** :
+   - ouvre un serveur sur `127.0.0.1:<port libre>` ;
+   - ouvre le navigateur système sur `https://steamcommunity.com/openid/login` (`checkid_setup`, `return_to=http://127.0.0.1:<port>/retour?etat=<aléa>`) ;
+   - à l'arrivée sur `/retour`, vérifie dans l'ordre : l'`etat`, le `return_to`, puis `check_authentication` auprès de Steam (`is_valid:true`) ;
+   - extrait le SteamID64 avec un motif strict `^https://steamcommunity\.com/openid/id/(\d{17})$` ;
+   - affiche dans le navigateur une page « Connexion réussie, tu peux fermer cet onglet » dans la DA ;
+   - abandonne au bout de 5 minutes, ou sur Annuler.
+3. **`secrets.rs`** : la clé API vit dans le Gestionnaire d'identifiants Windows (service `ResTeaM`). Commandes `cle_enregistrer` (format 32 caractères hexadécimaux, puis appel test), `cle_etat` et `cle_supprimer`. **La clé ne repart jamais vers le React.**
+4. **`steam/webapi.rs`** : client Web API qui ajoute la clé côté Rust. Erreurs typées : clé absente, clé refusée (403), trop de requêtes (429), réseau. En 2a, seul `GetPlayerSummaries` est branché.
+5. **`cache.rs`** : SQLite `cache.sqlite` dans le dossier de données de l'app (clé, JSON, date d'expiration, date de récupération). En cas d'erreur réseau, on renvoie la dernière valeur avec un drapeau `horsLigne`.
+6. **Session** : le SteamID (non secret) est gardé dans `session.json`, pour rester connecté au redémarrage. Commandes `session_lire` et `deconnexion` (efface la session et le cache ; la clé est gardée, sauf demande explicite).
+
+### Côté React (`src/`)
+
+1. **TanStack Query** (données Steam) et **Zustand** (session), avec les appels `invoke()` typés dans `src/api/`.
+2. **Écran Connexion** (à dessiner dans la DA, sans barre de gauche) : fumée, **grand logo animé** (~160 px), titre, une phrase, un seul bouton **Se connecter avec Steam**. États prévus : attente du navigateur (avec Annuler), erreur, succès.
+3. **Clé API** : un écran d'accueil juste après la première connexion, s'il n'y a pas encore de clé. Il contient :
+   - le lien « Obtenir ma clé », qui ouvre `steamcommunity.com/dev/apikey` dans le navigateur ;
+   - un champ masqué ;
+   - Enregistrer, avec un test immédiat de la clé.
+4. **Page Paramètres** : remplacer la clé, la supprimer, se déconnecter.
+5. **Barre** : vrai avatar (`avatarfull`, autorisé par la CSP via `*.steamstatic.com`) et pseudo dans l'infobulle.
+6. Garde de route : sans session → Connexion ; sans clé → écran Clé API.
+
+### Vérification dans l'exe
+
+- Connexion réussie, puis pseudo et avatar visibles en bas de la barre.
+- Fermer et rouvrir l'app : on reste connecté.
+- Clé fausse : message clair, rien ne plante.
+- Couper Internet : l'avatar en cache s'affiche, avec un drapeau « hors ligne ».
+
+### À décider avant de commencer
+
+- **Accès aux Paramètres** : icône engrenage dans le groupe du bas de la barre, ou menu au clic sur l'avatar.

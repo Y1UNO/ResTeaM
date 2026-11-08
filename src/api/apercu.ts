@@ -17,8 +17,7 @@ const erreur = (code: ErreurApp["code"], message: string): ErreurApp => ({ code,
 
 export async function apercu<T>(commande: string, args?: Record<string, unknown>): Promise<T> {
   await attendre(250);
-  // Redémarrage de Steam simulé.
-  if (commande === "installer_jeu") await attendre(2500);
+  avancerFile();
   switch (commande) {
     case "session_lire":
       return (etat.steamId ? { steamId: etat.steamId } : null) as T;
@@ -94,6 +93,44 @@ const JEUX = [
   { appId: 730, nom: "Counter-Strike 2", minutes: 31500, deux: 0, favori: false },
 ];
 const INSTALLES = [1145350, 391540, 1903340, 2868840];
+const CDN_APERCU = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps";
+const SS = `${CDN_APERCU}/1145350`;
+
+/**
+ * File Steam simulée : `&enjeu=1` fait « tourner » Counter-Strike 2 pendant 25 s
+ * après le chargement ; Steam « redémarre » ensuite pendant 3 s.
+ */
+const CHARGE = Date.now();
+const EN_JEU = typeof location !== "undefined" && location.search.includes("enjeu=1");
+const FILE = { installations: [] as number[], desinstallations: [] as number[], redemarrage: 0 };
+const jeuEnCours = () => (EN_JEU && Date.now() - CHARGE < 25_000 ? 730 : null);
+function avancerFile() {
+  const vide = !FILE.installations.length && !FILE.desinstallations.length;
+  if (vide || jeuEnCours()) return;
+  if (!FILE.redemarrage) {
+    FILE.redemarrage = Date.now();
+    return;
+  }
+  if (Date.now() - FILE.redemarrage < 3000) return;
+  for (const id of FILE.installations) INSTALLATIONS.set(id, Date.now() - 4000);
+  for (const id of FILE.desinstallations) {
+    INSTALLATIONS.delete(id);
+    const i = INSTALLES.indexOf(id);
+    if (i >= 0) INSTALLES.splice(i, 1);
+  }
+  FILE.installations = [];
+  FILE.desinstallations = [];
+  FILE.redemarrage = 0;
+}
+function fileSteam() {
+  const vide = !FILE.installations.length && !FILE.desinstallations.length;
+  return {
+    phase: vide ? "repos" : jeuEnCours() ? "attenteJeu" : "redemarrage",
+    jeuEnCours: vide ? null : jeuEnCours(),
+    installations: [...FILE.installations],
+    desinstallations: [...FILE.desinstallations],
+  };
+}
 /** Installations simulées : appId → heure du clic sur « Installer ». */
 const INSTALLATIONS = new Map<number, number>();
 const TAILLE_SIMULEE = 30_000_000_000;
@@ -253,12 +290,29 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
           { bibliotheque: String.raw`C:\Program Files (x86)\Steam`, lecteur: "C:", nom: "", libre: 9_000_000_000, total: 499_000_000_000 },
           { bibliotheque: String.raw`E:\SteamLibrary`, lecteur: "E:", nom: "Data", libre: 593_000_000_000, total: 821_000_000_000 },
         ],
-        jeuEnCours: null,
+        jeuEnCours: jeuEnCours(),
         dejaInstalle: false,
       };
-    case "installer_jeu":
-      INSTALLATIONS.set(Number(args?.appId), Date.now());
-      return null;
+    case "installer_jeu": {
+      const id = Number(args?.appId);
+      FILE.desinstallations = FILE.desinstallations.filter((x) => x !== id);
+      if (!FILE.installations.includes(id)) FILE.installations.push(id);
+      return fileSteam();
+    }
+    case "desinstaller_jeu": {
+      const id = Number(args?.appId);
+      FILE.installations = FILE.installations.filter((x) => x !== id);
+      if (!FILE.desinstallations.includes(id)) FILE.desinstallations.push(id);
+      return fileSteam();
+    }
+    case "annuler_file_steam": {
+      const id = Number(args?.appId);
+      FILE.installations = FILE.installations.filter((x) => x !== id);
+      FILE.desinstallations = FILE.desinstallations.filter((x) => x !== id);
+      return fileSteam();
+    }
+    case "file_steam":
+      return fileSteam();
     case "stats_systeme": {
       // Compteurs cumulés, comme ceux de Windows.
       const t = Date.now();
@@ -277,6 +331,115 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         ],
       };
     }
+    case "fiche_jeu": {
+      const id = Number(args?.appId);
+      const j = JEUX.find((x) => x.appId === id);
+      const ss = (h: string) => ({
+        video: false,
+        nom: "",
+        miniature: `${SS}/ss_${h}.600x338.jpg?t=1779901265`,
+        url: `${SS}/ss_${h}.1920x1080.jpg?t=1779901265`,
+      });
+      const hades = id === 1145350;
+      return enveloppe({
+        appId: id,
+        nom: j?.nom ?? "Retro Rewind",
+        gratuit: id === 730,
+        resume:
+          "Frayez-vous un chemin vers et au-delà des Enfers et affrontez le Titan du Temps dans ce deuxième volet ensorcelant du dungeon crawler de type rogue-like.",
+        aPropos: [
+          "Hades II est la suite du rogue-like de Supergiant Games, avec de nouveaux pouvoirs, de nouvelles armes et un monde mythologique encore plus vaste.",
+          "Maîtrisez la magie de la sorcellerie, retrouvez des dieux de l'Olympe et affrontez le Titan du Temps.",
+        ],
+        genres: ["Action", "Indépendant", "RPG"],
+        developpeurs: ["Supergiant Games"],
+        editeurs: ["Supergiant Games"],
+        sortie: "25 sept. 2025",
+        aVenir: false,
+        langues: ["Anglais", "Français", "Italien", "Allemand", "Espagnol - Espagne", "Japonais"],
+        prix: id === 730 ? null : { initial: 2899, final_: 1957, reduction: 32, texteInitial: "28,99 €", texteFinal: "19,57 €" },
+        demo: !hades,
+        medias: hades
+          ? [
+              {
+                video: true,
+                nom: "Hades II · bande-annonce",
+                miniature:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257204779/2f6767807df172946f5d638093dcc1c933eb24bb/movie_600x337.jpg?t=1758942439",
+                url: "https://video.akamai.steamstatic.com/store_trailers/1145350/1067641820/dfba9c6a8b09f5bd9b323d6e699ac685065b93d3/1758924611/hls_264_master.m3u8?t=1758942439",
+              },
+              ss("ef0f63061d0a0a9a7e46f3b84f125d25330e8f19"),
+              ss("c88996aa0af82894a8e50ebb951a503ebce3ab24"),
+              ss("b88cb7b48a86f07a7288bf37141f6558279f9bfc"),
+              ss("c8d2b18451a2cc4d5b4fdd78ed84a5e64e051eac"),
+            ]
+          : [
+              {
+                video: false,
+                nom: "",
+                miniature: `${CDN_APERCU}/${id}/header.jpg`,
+                url: `${CDN_APERCU}/${id}/library_hero.jpg`,
+              },
+            ],
+        configMinimale: [
+          { cle: "", valeur: "Système d'exploitation et processeur 64 bits nécessaires" },
+          { cle: "Système d'exploitation", valeur: "Windows 10 64-bit" },
+          { cle: "Processeur", valeur: "Dual Core 2.4 GHz" },
+          { cle: "Mémoire vive", valeur: "8 GB de mémoire" },
+          { cle: "Graphiques", valeur: "GeForce GTX 950, Radeon R7 360, or Intel HD Graphics 630" },
+          { cle: "Espace disque", valeur: "11 GB d'espace disque disponible" },
+        ],
+        configRecommandee: [
+          { cle: "Système d'exploitation", valeur: "Windows 10 64-bit" },
+          { cle: "Processeur", valeur: "Quad Core 3.0 GHz" },
+          { cle: "Mémoire vive", valeur: "16 GB de mémoire" },
+          { cle: "Graphiques", valeur: "GeForce GTX 1060 6GB, Radeon RX 590" },
+          { cle: "Espace disque", valeur: "11 GB d'espace disque disponible" },
+        ],
+        metacritic: hades ? 94 : null,
+      });
+    }
+    case "avis_jeu":
+      return enveloppe({
+        global: { libelle: "Extrêmement positives", pourcentage: 95, nombre: 115_690 },
+        francais: { libelle: "Extrêmement positives", pourcentage: 98, nombre: 4628 },
+      });
+    case "vitrine_magasin": {
+      const o = (appId: number, nom: string, reduction: number, initial: number) => ({
+        appId,
+        nom,
+        reduction,
+        prixInitial: initial,
+        prixFinal: Math.round((initial * (100 - reduction)) / 100),
+        devise: "EUR",
+        image: `${CDN_APERCU}/${appId}/capsule_616x353.jpg`,
+        finOffre: maintenant() + 86400 * 2,
+      });
+      return enveloppe({
+        offres: [
+          o(1145350, "Hades II", 20, 2899),
+          o(990080, "Hogwarts Legacy", 75, 5999),
+          o(1903340, "Clair Obscur: Expedition 33", 25, 4999),
+          o(413150, "Stardew Valley", 50, 1399),
+          o(1091500, "Cyberpunk 2077", 65, 5999),
+          o(1245620, "ELDEN RING", 40, 5999),
+          o(367520, "Hollow Knight", 50, 1499),
+          o(2379780, "Balatro", 25, 1499),
+        ],
+        meilleuresVentes: [o(730, "Counter-Strike 2", 0, 0), o(2868840, "Slay the Spire 2", 0, 2499)],
+        nouveautes: [o(2868840, "Slay the Spire 2", 10, 2499)],
+      });
+    }
+    case "config_pc":
+      return {
+        systeme: "Windows 11 Home",
+        memoire: 34_221_314_048,
+        processeur: "AMD Ryzen 5 5600G with Radeon Graphics",
+        coeurs: 12,
+        carteGraphique: "NVIDIA GeForce RTX 5070",
+        memoireGraphique: 12_820_938_752,
+        espaceLibreMax: 582_099_709_952,
+      };
     case "patch_notes":
       return enveloppe({
         id: "1",

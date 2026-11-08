@@ -100,12 +100,12 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 22px 18px;
-  animation: biblio-pop 0.45s var(--ease-out-soft) both;
+  animation: biblio-pop 0.35s var(--ease-out-soft) both;
 }
 @keyframes biblio-pop {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.97);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -119,12 +119,16 @@
   display: flex;
   flex-direction: column;
 }
+/* Fluidité : les tuiles hors de l'écran ne sont ni mises en page ni peintes,
+   et aucune n'a de flou d'arrière-plan (recalculé à chaque image de la fumée). */
 .tuile {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform var(--dur-fast) ease;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 170px auto 300px;
+  transition: transform var(--dur-fast) var(--ease);
 }
 .tuile:hover {
   transform: translateY(-5px);
@@ -138,22 +142,34 @@
   background: #18181b;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
   overflow: hidden;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color var(--dur-fast) ease,
-    box-shadow var(--dur-fast) ease;
+  transition: border-color var(--dur-fast) ease;
+}
+/* Ombre du survol sur un calque à part : seule son opacité change. */
+.tuile__cadre::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 22px 44px rgba(0, 0, 0, 0.75),
+    0 0 22px rgba(238, 242, 255, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) ease;
+}
+.tuile:hover .tuile__cadre::before {
+  opacity: 1;
 }
 .tuile:hover .tuile__art,
 .tuile__art:focus-visible {
   border-color: var(--accent);
-  box-shadow:
-    0 22px 44px rgba(0, 0, 0, 0.75),
-    0 0 22px rgba(238, 242, 255, 0.14);
 }
 .tuile__art img {
   position: absolute;
@@ -186,8 +202,7 @@
   padding: 0 6px;
   border-radius: var(--radius-pill);
   border: 1.5px solid rgba(238, 242, 255, 0.7);
-  background: rgba(9, 9, 10, 0.6);
-  backdrop-filter: blur(var(--blur-sm));
+  background: rgba(9, 9, 10, 0.72);
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;
@@ -221,8 +236,7 @@
   height: 38px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(238, 242, 255, 0.2);
-  background: rgba(9, 9, 10, 0.75);
-  backdrop-filter: blur(var(--blur-sm));
+  background: rgba(9, 9, 10, 0.86);
   color: var(--text-1);
   font-size: 13px;
   font-weight: 700;

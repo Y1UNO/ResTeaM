@@ -23,11 +23,21 @@ pub fn run() {
             fs::create_dir_all(&dossier)?;
             let cache = Cache::ouvrir(&dossier.join("cache.sqlite")).map_err(|e| e.to_string())?;
             let steam = ClientSteam::nouveau().map_err(|e| e.to_string())?;
-            app.manage(EtatApp { cache, steam, annulation: Mutex::new(None) });
+            app.manage(EtatApp { cache, steam, annulation: Mutex::new(None), redemarrage: Default::default() });
+            // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
+            let handle = app.handle().clone();
+            app.state::<EtatApp>().redemarrage.reprendre(&handle);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commandes::session_lire,
+            commandes::desinstaller_jeu,
+            commandes::fiche_jeu,
+            commandes::avis_jeu,
+            commandes::vitrine_magasin,
+            commandes::config_pc,
+            commandes::file_steam,
+            commandes::annuler_file_steam,
             commandes::connexion_steam,
             commandes::connexion_annuler,
             commandes::deconnexion,

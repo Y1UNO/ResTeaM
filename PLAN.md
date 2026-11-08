@@ -146,7 +146,8 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 | Fenêtre | **Sans cadre Windows** (comme Steam) : bande invisible en haut pour déplacer la fenêtre, boutons Réduire / Agrandir / Fermer dessinés dans la DA (`src/app/TitleBar.tsx`) |
 | Accès aux Paramètres | **Clic sur le logo → menu → Paramètres** (`src/app/LogoMenu.tsx`). « Se déconnecter » s'ajoutera dans ce menu en 2a |
 | Fond des jeux (hero) | **Affiche nette, resserrée à droite** (visuel `library_hero_2x`, 3840 px), jamais sous la barre de gauche. Bords gauche et bas fondus dans une **brume** douce. Derrière : des **lueurs aux couleurs de l'affiche** (3 teintes extraites de l'image), qui passent sous la barre et continuent sous le ruban. Écart voulu par rapport à DA.md (« image floutée », « fumée jamais colorée ») |
-| Installation | **Fenêtre de ResTeaM, sans celle de Steam** (accord de Tom) : choix du disque avec l'espace libre réel, raccourcis Bureau et menu Démarrer. Ensuite, l'app écrit `appmanifest_<id>.acf` (StateFlags 1026) dans la bibliothèque choisie et redémarre Steam en arrière-plan (`-shutdown`, puis `-silent`). Steam télécharge seul. Refusé si un jeu tourne (`RunningAppID`), si le jeu est déjà installé, si le dossier n'est pas une bibliothèque Steam ou si le jeu n'est pas sur le compte |
+| Installation | **Fenêtre de ResTeaM, sans celle de Steam** (accord de Tom) : choix du disque avec l'espace libre réel, raccourcis Bureau et menu Démarrer. Ensuite, l'app écrit `appmanifest_<id>.acf` (StateFlags 1026) dans la bibliothèque choisie et redémarre Steam en arrière-plan (`-shutdown`, puis `-silent`). Steam télécharge seul. **Si un jeu tourne, l'installation attend sa fermeture** (9 nov., choix de Tom), puis Steam redémarre caché. Refusé si le jeu est déjà installé, si le dossier n'est pas une bibliothèque Steam ou si le jeu n'est pas sur le compte |
+| Désinstallation | **ResTeaM supprime lui-même** (9 nov., choix de Tom), après une confirmation dans la DA : Steam est fermé, puis l'app supprime le dossier du jeu (vérifié dans `steamapps\common`), le manifeste, le téléchargement partiel, le cache de shaders, le Workshop et les raccourcis `.url`. Steam est ensuite relancé caché. Attend la fin du jeu en cours |
 | Clé API | Tom la saisit lui-même dans l'app (Paramètres). Elle n'est jamais écrite dans le code, le dépôt, la mémoire ou une conversation |
 
 ### Encore ouvert
@@ -299,6 +300,46 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - `mesures.ts` : débits du PC et estimation par le réseau si Steam ne réécrit pas l'avancement (le % est alors précédé de ≈).
 - L'accueil et la bibliothèque ouvrent ce centre ; `FenetreInstallation.tsx` et `SuiviInstallation.tsx` sont supprimés.
 - **Écart avec le design** : pas de bouton Pause. Steam ne peut pas être mis en pause depuis une autre app ; il est remplacé par « Ouvrir dans Steam ».
+
+### Étape 5 — Magasin, fiche jeu, désinstallation, file Steam, bibliothèque fluide (9 novembre 2026)
+
+- **Bibliothèque plus fluide** (demande de Tom) :
+  - tuiles en jaquette 600×900 (`jaquettePetite`) au lieu de 1200×1800 ;
+  - plus de flou d'arrière-plan sur les tuiles ;
+  - `content-visibility` : les tuiles hors de l'écran ne sont pas dessinées ;
+  - tuiles mémorisées : seules celles dont l'état change se redessinent ;
+  - images chargées par paquets de 100 en parallèle (avant : 200 jeux au plus) ;
+  - fumée : le flou est porté par chaque nappe, il n'est plus recalculé à chaque image.
+- **File Steam** (`src-tauri/src/steam/redemarrage.rs`) :
+  - les installations et les désinstallations attendent la fin du jeu en cours (`RunningAppID`) ;
+  - Steam est ensuite fermé, les fichiers supprimés, puis Steam relancé en `-silent` ;
+  - si la grande fenêtre « Steam » s'ouvre quand même, elle est renvoyée dans la zone de notification (comme un clic sur ×), pendant 40 s. La fenêtre de connexion n'est jamais visée ;
+  - la file est gardée dans le cache et reprend au prochain lancement de ResTeaM ;
+  - commandes `file_steam`, `desinstaller_jeu`, `annuler_file_steam`.
+- **Fenêtre d'installation** : état « En attente · partira dès que tu quittes <jeu> », avec un bouton « Annuler l'installation ». Correction d'une course : le statut restait sur « Steam démarre » quand le Rust répondait avant la fin de l'animation.
+- **Fiche d'un jeu** (`src/pages/fiche/`, maquette 02) :
+  - tags, titre, évaluations, date, démo ;
+  - un seul bloc d'action :
+    - jeu à toi : temps, rang, Jouer / Installer / Voir le téléchargement et la corbeille Désinstaller ;
+    - jeu à acheter : prix, réduction, Acheter (popup de sécurité qui ouvre Steam), étoile qui ouvre Steam ;
+  - bande-annonce (HLS lu par `hls.js`, chargé à la demande, sans worker) et 4 captures, avec fondu ;
+  - sections dépliables, une seule ouverte :
+    - À propos ;
+    - Configuration requise comparée à ton PC : Windows, mémoire et disque comparés pour de vrai ; processeur et carte graphique à titre indicatif ;
+    - Avis (toutes langues et en français) ;
+    - Actus et patch notes ;
+  - encadré : développeur, éditeur, sortie, langues, Metacritic, lien vers Steam.
+- **Magasin** (`src/pages/Magasin.tsx`, onglet Magasin de la maquette 01) :
+  - la vedette affiche le prix, la réduction et la fin de l'offre ;
+  - « Acheter sur Steam » ouvre le popup, « Fiche du jeu » mène à la fiche ;
+  - le ruban a trois onglets : Offres, Meilleures ventes, Nouveautés.
+- **Rust** :
+  - `magasin.rs` : `appdetails`, les avis via `GetItems` (la route `appreviews` redirige maintenant vers l'accueil du magasin) et `featuredcategories` ;
+  - `pc.rs` : Windows, mémoire, processeur, carte graphique et sa mémoire (registre), espace libre ;
+  - cache de 6 h pour les fiches et les avis, de 30 min pour la vitrine.
+- **CSP** : `media-src` et `connect-src` ouverts à `video.akamai/fastly.steamstatic.com` pour les bandes-annonces.
+- **Pas fait** : « N amis possèdent ce jeu » (un appel par ami, à voir à l'étape 8) et l'état réel de la liste de souhaits (étape 7).
+- **Tests** : 34 tests Rust, dont la suppression dans une fausse bibliothèque et les garde-fous sur les noms de dossier. Vérifié dans l'aperçu : fiche, comparaison, désinstallation, magasin, installation en attente d'un jeu. **À vérifier dans l'exe** : vraie désinstallation, vraie installation pendant un jeu, masquage de la fenêtre Steam.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

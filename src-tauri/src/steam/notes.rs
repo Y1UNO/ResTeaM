@@ -123,7 +123,7 @@ fn nettoyer_espaces(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
-fn decoder_entites(s: &str) -> String {
+pub(crate) fn decoder_entites(s: &str) -> String {
     let mut sortie = String::with_capacity(s.len());
     let mut reste = s;
     while let Some(i) = reste.find('&') {

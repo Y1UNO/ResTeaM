@@ -1,0 +1,24 @@
+/* Magasin : même écran que l'accueil (maquette 01, onglet Magasin). */
+.rib__badge--promo {
+  background: var(--accent);
+  color: var(--on-accent);
+  backdrop-filter: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+.rib__prix {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 9px 12px 10px;
+  font-size: 13px;
+}
+.rib__prix s {
+  color: var(--text-4);
+  font-size: 11.5px;
+}
+.rib__prix strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+}

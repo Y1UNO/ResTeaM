@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/commandes";
-import { useJeuxInstalles, useStatsSysteme } from "../api/requetes";
+import { useFileSteam, useJeuxInstalles, useNomJeu, useStatsSysteme } from "../api/requetes";
 import { estErreurApp, type Disque, type Installation } from "../api/types";
 import { usePalette } from "../lib/couleurs";
 import { taille } from "../lib/format";
@@ -43,8 +43,31 @@ function nomDisque(d: Disque): string {
  */
 export function CentreInstallation() {
   const jeu = useInstallation((s) => s.jeu);
-  if (!jeu) return null;
-  return <Centre key={jeu.appId} />;
+  return (
+    <>
+      <VeilleFileSteam />
+      {jeu && <Centre key={jeu.appId} />}
+    </>
+  );
+}
+
+/**
+ * Quand Steam a redémarré (file vidée), les jeux installés et la bibliothèque
+ * sont relus : une désinstallation disparaît, une installation commence.
+ */
+function VeilleFileSteam() {
+  const client = useQueryClient();
+  const file = useFileSteam().data;
+  const n = file ? file.installations.length + file.desinstallations.length : 0;
+  const avant = useRef(n);
+  useEffect(() => {
+    if (n < avant.current) {
+      void client.invalidateQueries({ queryKey: ["installes"] });
+      void client.invalidateQueries({ queryKey: ["bibliotheque"] });
+    }
+    avant.current = n;
+  }, [n, client]);
+  return null;
 }
 
 function Centre() {
@@ -161,6 +184,7 @@ function FenetreChoix({
   const jeu = useInstallation((s) => s.jeu)!;
   const demarre = useInstallation((s) => s.demarre);
   const erreur = useInstallation((s) => s.erreur);
+  const client = useQueryClient();
   const options = useQuery({
     queryKey: ["options-installation", jeu.appId],
     queryFn: () => api.optionsInstallation(jeu.appId, jeu.nom),
@@ -180,7 +204,8 @@ function FenetreChoix({
   }, [o, choix, besoin]);
 
   const disque = useMemo(() => o?.disques.find((d) => d.bibliotheque === choix), [o, choix]);
-  const bloque = !o || !disque || disque.libre < besoin || !!o.jeuEnCours || o.dejaInstalle;
+  const bloque = !o || !disque || disque.libre < besoin || o.dejaInstalle;
+  const nomEnCours = useNomJeu(o?.jeuEnCours);
 
   const installer = () => {
     if (!o || !disque || bloque) return;
@@ -189,7 +214,10 @@ function FenetreChoix({
     onLancer(disque.lecteur, o.tailleEstimee);
     api
       .installerJeu({ appId: jeu.appId, nom, bibliotheque: disque.bibliotheque, raccourciBureau: bureau, raccourciMenu: menu })
-      .then(demarre)
+      .then((f) => {
+        client.setQueryData(["file-steam"], f);
+        demarre();
+      })
       .catch((e) => {
         // Échec : retour au choix, avec le message dans la fenêtre.
         useInstallation.getState().ouvrirChoix(jeu, estErreurApp(e) ? e.message : String(e));
@@ -278,7 +306,12 @@ function FenetreChoix({
           <Case libelle="Menu Démarrer" coche={menu} onChange={setMenu} />
         </div>
 
-        {o?.jeuEnCours && <p className="message">Un jeu est lancé : ferme-le d’abord, Steam doit redémarrer quelques secondes.</p>}
+        {o?.jeuEnCours && (
+          <p className="inst__info">
+            <span className="inst__point" />
+            {nomEnCours ?? "Un jeu"} est lancé : le téléchargement partira tout seul dès que tu le quittes.
+          </p>
+        )}
         {o?.dejaInstalle && <p className="message">Ce jeu est déjà installé ou en cours d’installation.</p>}
         {erreur && <p className="message">{erreur}</p>}
 
@@ -369,6 +402,22 @@ function FenetreSuivi({
   const phase = useInstallation((s) => s.phase);
   const lecteurChoisi = useInstallation((s) => s.lecteur);
   const a = useAvancement(installation, stats, pc.reseau);
+  const file = useFileSteam().data;
+  const client = useQueryClient();
+  const enFile = !pret && !!file?.installations.includes(jeu.appId);
+  const attendJeu = enFile && file?.phase === "attenteJeu";
+  const nomEnCours = useNomJeu(file?.jeuEnCours);
+  const [annulation, setAnnulation] = useState<string | null>(null);
+  const annuler = () => {
+    api
+      .annulerFileSteam(jeu.appId)
+      .then((f) => {
+        client.setQueryData(["file-steam"], f);
+        void client.invalidateQueries({ queryKey: ["installes"] });
+        onFermer();
+      })
+      .catch((e) => setAnnulation(estErreurApp(e) ? e.message : String(e)));
+  };
   const enPause = installation?.etat === "enPause";
   const lecteur = lecteurChoisi ?? (installation?.dossier ? installation.dossier.slice(0, 2).toUpperCase() : null);
   const libre = lecteur ? stats?.disques.find((d) => d.lecteur.toUpperCase() === lecteur.toUpperCase())?.libre : undefined;
@@ -377,8 +426,10 @@ function FenetreSuivi({
 
   const statut = pret
     ? "Prêt à jouer"
-    : phase === "lancement"
-      ? "Steam démarre"
+    : attendJeu
+      ? "En attente"
+      : phase === "lancement" || enFile
+        ? "Steam démarre"
       : enPause
         ? `En pause${lecteur ? ` · ${lecteur}` : ""}`
         : a.connu
@@ -403,7 +454,7 @@ function FenetreSuivi({
           <div className="inst__jaquette inst__jaquette--petite" style={jeu.jaquette ? { backgroundImage: `url("${jeu.jaquette}")` } : undefined} />
           <div className="inst__titres" style={{ gap: 7 }}>
             <span className="inst__statut" role="status">
-              <span className={`inst__point${enPause ? " is-gris" : ""}`} />
+              <span className={`inst__point${enPause || attendJeu ? " is-gris" : ""}`} />
               {statut}
             </span>
             <h2 id="inst-suivi" className="inst__nom" style={{ fontSize: 28 }}>
@@ -415,22 +466,32 @@ function FenetreSuivi({
           </span>
         </div>
 
-        <BarreLiane fraction={fraction} inconnu={inconnu} arret={enPause || pret} />
+        <BarreLiane fraction={fraction} inconnu={inconnu} arret={enPause || pret || attendJeu} />
 
         <div className="inst__resume">
           <span>
-            {a.total > 0 ? (
+            {attendJeu ? (
+              <>
+                Partira dès que tu quittes <strong>{nomEnCours ?? "ton jeu"}</strong>
+              </>
+            ) : a.total > 0 ? (
               <>
                 <strong>{taille(fraction * a.total)}</strong> sur {taille(a.total)}
               </>
-            ) : phase === "lancement" ? (
+            ) : phase === "lancement" || enFile ? (
               "Steam redémarre en arrière-plan…"
             ) : (
               "Steam prépare le téléchargement…"
             )}
           </span>
           <span>
-            {pret ? `Installé${lecteur ? ` sur ${lecteur}` : ""}` : enPause ? "En pause dans Steam" : dureeRestante(a.reste)}
+            {pret
+              ? `Installé${lecteur ? ` sur ${lecteur}` : ""}`
+              : attendJeu
+                ? "Steam redémarrera caché"
+                : enPause
+                  ? "En pause dans Steam"
+                  : dureeRestante(a.reste)}
           </span>
         </div>
 
@@ -441,8 +502,19 @@ function FenetreSuivi({
           <Stat valeur={libre != null ? taille(libre) : "—"} libelle={`libres${lecteur ? ` sur ${lecteur}` : ""}`} />
         </div>
 
+        {annulation && <p className="message">{annulation}</p>}
+
         <div className="inst__boutons inst__boutons--ecartes">
-          {pret ? (
+          {attendJeu ? (
+            <>
+              <button type="button" className="inst-btn" onClick={annuler}>
+                Annuler l’installation
+              </button>
+              <button type="button" className="inst-btn inst-btn--clair" onClick={onReduire}>
+                Continuer en arrière-plan
+              </button>
+            </>
+          ) : pret ? (
             <>
               <button type="button" className="inst-btn" onClick={onFermer}>
                 Fermer
@@ -491,6 +563,9 @@ function Pastille({ installation, pc }: { installation: Installation | null; pc:
   const agrandir = useInstallation((s) => s.agrandir);
   const stats = useStatsSysteme(true);
   const a = useAvancement(installation, stats.data, pc);
+  const file = useFileSteam().data;
+  const attendJeu = !!file?.installations.includes(jeu.appId) && file.phase === "attenteJeu";
+  const nomEnCours = useNomJeu(file?.jeuEnCours);
   const pct = a.connu ? `${a.estimation != null ? "≈" : ""}${Math.floor(a.fraction * 100)} %` : "…";
   return (
     <button type="button" className="inst-pastille" onClick={agrandir} aria-label={`Téléchargement de ${jeu.nom}, ${pct}. Ouvrir`}>
@@ -500,7 +575,13 @@ function Pastille({ installation, pc }: { installation: Installation | null; pc:
         <strong>
           {jeu.nom} · {pct}
         </strong>
-        <span>{installation?.etat === "enPause" ? "En pause" : dureeRestante(a.reste) || "Préparation…"}</span>
+        <span>
+          {attendJeu
+            ? `après ${nomEnCours ?? "ton jeu"}`
+            : installation?.etat === "enPause"
+              ? "En pause"
+              : dureeRestante(a.reste) || "Préparation…"}
+        </span>
       </span>
     </button>
   );

@@ -5,7 +5,12 @@ import {
   type Actu,
   type Bibliotheque,
   type Collections,
+  type AvisJeu,
+  type ConfigPc,
   type DemandeInstallation,
+  type FicheJeu,
+  type VitrineMagasin,
+  type FileSteam,
   type Donnee,
   type ImagesJeu,
   type ErreurApp,
@@ -73,6 +78,13 @@ export const api = {
   // Installation sans la fenêtre de Steam
   optionsInstallation: (appId: number, nom: string) =>
     appeler<OptionsInstallation>("options_installation", { appId, nom }),
-  installerJeu: (d: DemandeInstallation) => appeler<void>("installer_jeu", d),
+  installerJeu: (d: DemandeInstallation) => appeler<FileSteam>("installer_jeu", d),
+  desinstallerJeu: (appId: number) => appeler<FileSteam>("desinstaller_jeu", { appId }),
+  fileSteam: () => appeler<FileSteam>("file_steam"),
+  annulerFileSteam: (appId: number) => appeler<FileSteam>("annuler_file_steam", { appId }),
+  ficheJeu: (appId: number) => appeler<Donnee<FicheJeu>>("fiche_jeu", { appId }),
+  avisJeu: (appId: number) => appeler<Donnee<AvisJeu>>("avis_jeu", { appId }),
+  vitrineMagasin: () => appeler<Donnee<VitrineMagasin>>("vitrine_magasin"),
+  configPc: () => appeler<ConfigPc>("config_pc"),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

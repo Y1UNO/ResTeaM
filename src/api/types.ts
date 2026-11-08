@@ -147,7 +147,13 @@ export type Actu = {
 
 // ——— Étape 3 ———
 
-export type ImagesJeu = { jaquette: string | null; hero: string | null; banniere: string | null };
+export type ImagesJeu = {
+  jaquette: string | null;
+  /** Jaquette 600×900, pour les tuiles de la bibliothèque. */
+  jaquettePetite?: string | null;
+  hero: string | null;
+  banniere: string | null;
+};
 
 export type CategorieNotes = "nouveau" | "equilibrage" | "performances" | "correctifs" | "autre";
 export type ElementNotes = { texte: string; sous: string[] };
@@ -183,6 +189,14 @@ export type OptionsInstallation = {
   jeuEnCours: number | null;
   dejaInstalle: boolean;
 };
+/** Installations et désinstallations qui attendent un redémarrage de Steam. */
+export type FileSteam = {
+  /** `attenteJeu` : un jeu tourne, on attend qu'il se ferme. */
+  phase: "repos" | "attenteJeu" | "redemarrage";
+  jeuEnCours: number | null;
+  installations: number[];
+  desinstallations: number[];
+};
 export type DemandeInstallation = {
   appId: number;
   nom: string;
@@ -195,4 +209,51 @@ export type StatsSysteme = {
   reseauRecu: number;
   steamEcrit: number | null;
   disques: { lecteur: string; libre: number }[];
+};
+
+// ——— Étape 5 : magasin ———
+
+export type Prix = { initial: number; final_: number; reduction: number; texteInitial: string; texteFinal: string };
+export type Media = { video: boolean; nom: string; miniature: string; url: string };
+export type LigneConfig = { cle: string; valeur: string };
+export type FicheJeu = {
+  appId: number;
+  nom: string;
+  gratuit: boolean;
+  resume: string;
+  aPropos: string[];
+  genres: string[];
+  developpeurs: string[];
+  editeurs: string[];
+  sortie: string;
+  aVenir: boolean;
+  langues: string[];
+  prix: Prix | null;
+  demo: boolean;
+  medias: Media[];
+  configMinimale: LigneConfig[];
+  configRecommandee: LigneConfig[];
+  metacritic: number | null;
+};
+export type ResumeAvis = { libelle: string; pourcentage: number; nombre: number };
+export type AvisJeu = { global: ResumeAvis | null; francais: ResumeAvis | null };
+export type OffreMagasin = {
+  appId: number;
+  nom: string;
+  reduction: number;
+  prixInitial: number;
+  prixFinal: number;
+  devise: string;
+  image: string | null;
+  finOffre: number | null;
+};
+export type VitrineMagasin = { offres: OffreMagasin[]; meilleuresVentes: OffreMagasin[]; nouveautes: OffreMagasin[] };
+export type ConfigPc = {
+  systeme: string;
+  memoire: number;
+  processeur: string;
+  coeurs: number;
+  carteGraphique: string | null;
+  memoireGraphique: number | null;
+  espaceLibreMax: number;
 };

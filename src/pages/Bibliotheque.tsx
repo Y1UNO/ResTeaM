@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/commandes";
 import { useBibliotheque, useImages, useJeuxInstalles } from "../api/requetes";
@@ -28,22 +28,33 @@ export function Bibliotheque() {
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<Filtre>("tous");
   const [tri, setTri] = useState<Tri>("az");
-  const installation = useInstallation();
+  const ouvrirChoix = useInstallation((s) => s.ouvrirChoix);
+  const ouvrirSuivi = useInstallation((s) => s.ouvrirSuivi);
 
-  // État d'installation en direct (le disque fait foi).
+  // État d'installation en direct (le disque fait foi). Un jeu dont l'état n'a pas
+  // changé garde le même objet, pour que sa tuile ne se redessine pas à chaque relevé.
+  const precedents = useRef(new Map<number, { base: JeuBibliotheque; cle: string; jeu: JeuBibliotheque }>());
   const tous = useMemo(() => {
     const jeux = (b?.jeux ?? []).filter((j) => !j.cache);
-    if (!installes.data) return jeux;
-    const parId = new Map(installes.data.map((i) => [i.appId, i]));
-    return jeux.map((j): JeuBibliotheque => {
-      const i = parId.get(j.appId);
-      return {
-        ...j,
-        installation: i
+    const parId = new Map((installes.data ?? []).map((i) => [i.appId, i]));
+    const suivants = new Map<number, { base: JeuBibliotheque; cle: string; jeu: JeuBibliotheque }>();
+    const liste = jeux.map((j) => {
+      const i = installes.data ? parId.get(j.appId) : undefined;
+      const installation = !installes.data
+        ? j.installation
+        : i
           ? { etat: i.etat, taille: i.taille, dossier: i.dossier, aTelecharger: i.aTelecharger, telecharge: i.telecharge }
-          : null,
-      };
+          : null;
+      const cle = installation
+        ? `${installation.etat}|${installation.taille}|${installation.dossier}|${installation.aTelecharger}|${installation.telecharge}`
+        : "";
+      const p = precedents.current.get(j.appId);
+      const jeu = p && p.base === j && p.cle === cle ? p.jeu : { ...j, installation };
+      suivants.set(j.appId, { base: j, cle, jeu });
+      return jeu;
     });
+    precedents.current = suivants;
+    return liste;
   }, [b, installes.data]);
 
   const maintenant = Date.now() / 1000;
@@ -75,6 +86,19 @@ export function Bibliotheque() {
   }, [tous, filtre, tri, recherche]);
 
   const images = useImages(tous.map((j) => j.appId));
+
+  // Rappels stables : une tuile ne se redessine que si son jeu ou son image change.
+  const imagesRef = useRef(images.data);
+  imagesRef.current = images.data;
+  const suivre = useCallback(
+    (j: JeuBibliotheque, choix: boolean) => {
+      const im = imagesDe(j.appId, imagesRef.current);
+      const jeu = { appId: j.appId, nom: j.nom, jaquette: im.jaquette, hero: im.hero };
+      if (choix) ouvrirChoix(jeu);
+      else ouvrirSuivi(jeu);
+    },
+    [ouvrirChoix, ouvrirSuivi],
+  );
 
   // Un filtre de collection qui n'existe plus revient à « Tous ».
   useEffect(() => {
@@ -165,19 +189,7 @@ export function Bibliotheque() {
 
         <div key={`${filtre}-${tri}`} className="biblio__grille">
           {visibles.map((j) => (
-            <Tuile
-              key={j.appId}
-              jeu={j}
-              jaquette={imagesDe(j.appId, images.data).jaquette}
-              onInstaller={() => {
-                const im = imagesDe(j.appId, images.data);
-                installation.ouvrirChoix({ appId: j.appId, nom: j.nom, jaquette: im.jaquette, hero: im.hero });
-              }}
-              onSuivre={() => {
-                const im = imagesDe(j.appId, images.data);
-                installation.ouvrirSuivi({ appId: j.appId, nom: j.nom, jaquette: im.jaquette, hero: im.hero });
-              }}
-            />
+            <Tuile key={j.appId} jeu={j} jaquette={imagesDe(j.appId, images.data).jaquettePetite ?? null} onAction={suivre} />
           ))}
         </div>
       </div>
@@ -185,16 +197,15 @@ export function Bibliotheque() {
   );
 }
 
-function Tuile({
+const Tuile = memo(function Tuile({
   jeu,
   jaquette,
-  onInstaller,
-  onSuivre,
+  onAction,
 }: {
   jeu: JeuBibliotheque;
   jaquette: string | null;
-  onInstaller: () => void;
-  onSuivre: () => void;
+  /** `choix` : ouvrir le choix du disque ; sinon le suivi du téléchargement. */
+  onAction: (jeu: JeuBibliotheque, choix: boolean) => void;
 }) {
   const navigate = useNavigate();
   const [ratee, setRatee] = useState(false);
@@ -206,9 +217,9 @@ function Tuile({
 
   const action = (e: MouseEvent) => {
     e.stopPropagation();
-    if (enCours) onSuivre();
+    if (enCours) onAction(jeu, false);
     else if (jouable) void api.steamLien({ type: "jouer", appId: jeu.appId });
-    else onInstaller();
+    else onAction(jeu, true);
   };
 
   return (
@@ -221,7 +232,7 @@ function Tuile({
         onClick={() => navigate(`/jeu/${jeu.appId}`)}
         aria-label={`${jeu.nom} : ouvrir la fiche`}
       >
-        {image && <img src={jaquette!} alt="" loading="lazy" draggable={false} onError={() => setRatee(true)} />}
+        {image && <img src={jaquette!} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setRatee(true)} />}
         {jeu.favori && (
           <span className="tuile__favori" title="Favori">
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -257,4 +268,4 @@ function Tuile({
       </div>
     </div>
   );
-}
+});

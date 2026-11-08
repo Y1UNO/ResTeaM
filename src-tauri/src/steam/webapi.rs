@@ -51,7 +51,7 @@ impl ClientSteam {
         rep.json::<T>().await.map(Reponse::Ok).map_err(|e| Erreur::from(e.without_url()))
     }
 
-    async fn obtenir<T: DeserializeOwned>(&self, url: Url) -> Resultat<T> {
+    pub(crate) async fn obtenir<T: DeserializeOwned>(&self, url: Url) -> Resultat<T> {
         match self.obtenir_ou_absent(url).await? {
             Reponse::Ok(v) => Ok(v),
             Reponse::Absent => Err(Erreur::Steam("HTTP 400".into())),

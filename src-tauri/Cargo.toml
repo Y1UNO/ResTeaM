@@ -30,6 +30,7 @@ rand = "0.10.3"
 reqwest = { version = "0.13", default-features = false, features = ["json", "native-tls", "http2"] }
 keyring = { version = "3", features = ["windows-native"] }
 winreg = "0.56.0"
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
 sysinfo = { version = "0.40.1", default-features = false, features = ["disk", "network", "system"] }
 
 

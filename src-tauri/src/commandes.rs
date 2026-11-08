@@ -16,7 +16,10 @@ use crate::steam::bibliotheque::{self, Bibliotheque};
 use crate::steam::images::{self, ImagesJeu};
 use crate::steam::installation::{self, Disque, StatsSysteme};
 use crate::steam::liens::{self, ActionSteam};
+use crate::steam::magasin::{AvisJeu, FicheJeu, VitrineMagasin};
 use crate::steam::notes::{self, PatchNotes};
+use crate::steam::pc::{self, ConfigPc};
+use crate::steam::redemarrage::{FileSteam, Redemarrage};
 use crate::steam::local::{self, Collections, DossierBibliotheque, JeuInstalle};
 use crate::steam::webapi::{Actu, JeuPossede, ListeAmis, NiveauBadges, SuccesJeu};
 use crate::steam::webapi::{ClientSteam, Joueur};
@@ -28,6 +31,8 @@ pub struct EtatApp {
     pub cache: Cache,
     pub steam: ClientSteam,
     pub annulation: Mutex<Option<oneshot::Sender<()>>>,
+    /// Installations et désinstallations qui attendent un redémarrage de Steam.
+    pub redemarrage: Redemarrage,
 }
 
 fn session_requise(app: &AppHandle) -> Resultat<Session> {
@@ -253,8 +258,8 @@ const TTL_IMAGES: i64 = 7 * 24 * 60 * 60;
 pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resultat<HashMap<u32, ImagesJeu>> {
     let mut resultat = HashMap::new();
     let mut manquants = Vec::new();
-    for id in app_ids.into_iter().take(200) {
-        match etat.cache.frais::<ImagesJeu>(&format!("images2:{id}"))? {
+    for id in app_ids.into_iter().take(150) {
+        match etat.cache.frais::<ImagesJeu>(&format!("images3:{id}"))? {
             Some(i) => {
                 resultat.insert(id, i);
             }
@@ -265,7 +270,7 @@ pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resulta
         match etat.steam.images(&manquants).await {
             Ok(trouvees) => {
                 for (id, i) in trouvees {
-                    etat.cache.ranger(&format!("images2:{id}"), &i, TTL_IMAGES)?;
+                    etat.cache.ranger(&format!("images3:{id}"), &i, TTL_IMAGES)?;
                     resultat.insert(id, i);
                 }
             }
@@ -336,7 +341,8 @@ pub async fn options_installation(etat: State<'_, EtatApp>, app_id: u32, nom: St
 }
 
 /// Lance l'installation sans fenêtre Steam : manifeste dans la bibliothèque choisie,
-/// redémarrage de Steam en arrière-plan, raccourcis demandés.
+/// raccourcis demandés, puis redémarrage de Steam en arrière-plan. Si un jeu tourne,
+/// le redémarrage attend qu'il se ferme (file de `redemarrage.rs`).
 #[tauri::command]
 pub async fn installer_jeu(
     app: AppHandle,
@@ -346,13 +352,11 @@ pub async fn installer_jeu(
     bibliotheque: String,
     raccourci_bureau: bool,
     raccourci_menu: bool,
-) -> Resultat<()> {
+) -> Resultat<FileSteam> {
     let (sid, cle) = identifiants(&app)?;
     let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
-    if let Some(id) = installation::jeu_en_cours() {
-        return Err(Erreur::Interne(format!(
-            "un jeu est en cours (appid {id}) : ferme-le avant d'installer, Steam doit redémarrer"
-        )));
+    if etat.redemarrage.lire().desinstallations.contains(&app_id) {
+        return Err(Erreur::Interne("ce jeu attend sa désinstallation : annule-la plutôt".into()));
     }
     // Le jeu doit être dans la bibliothèque du compte.
     let possedes = etat
@@ -363,7 +367,6 @@ pub async fn installer_jeu(
         return Err(Erreur::Interne("ce jeu n'est pas dans ta bibliothèque Steam".into()));
     }
     installation::ecrire_manifeste(&steam, &bibliotheque, app_id, &nom, &sid)?;
-    installation::redemarrer_steam(&steam).await?;
     if raccourci_bureau {
         if let Ok(bureau) = app.path().desktop_dir() {
             let _ = installation::creer_raccourci(&bureau, app_id, &nom, &steam);
@@ -375,7 +378,33 @@ pub async fn installer_jeu(
             let _ = installation::creer_raccourci(&menu, app_id, &nom, &steam);
         }
     }
-    Ok(())
+    etat.redemarrage.ajouter_installation(&app, app_id);
+    Ok(etat.redemarrage.lire())
+}
+
+/// Désinstalle un jeu sans la fenêtre de Steam : Steam est fermé, les fichiers du jeu
+/// supprimés, puis Steam relancé en arrière-plan. Attend la fin du jeu en cours.
+#[tauri::command]
+pub async fn desinstaller_jeu(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32) -> Resultat<FileSteam> {
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    if !installation::deja_installe(&steam, app_id) {
+        return Err(Erreur::Interne("ce jeu n'est pas installé".into()));
+    }
+    etat.redemarrage.ajouter_desinstallation(&app, app_id);
+    Ok(etat.redemarrage.lire())
+}
+
+/// File des opérations en attente d'un redémarrage de Steam.
+#[tauri::command]
+pub fn file_steam(etat: State<'_, EtatApp>) -> FileSteam {
+    etat.redemarrage.lire()
+}
+
+/// Retire une installation ou une désinstallation de la file (avant le redémarrage).
+#[tauri::command]
+pub fn annuler_file_steam(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32) -> Resultat<FileSteam> {
+    etat.redemarrage.annuler(&app, app_id)?;
+    Ok(etat.redemarrage.lire())
 }
 
 /// Réseau, écriture disque de Steam et espace libre (compteurs cumulés).
@@ -384,4 +413,36 @@ pub async fn stats_systeme() -> StatsSysteme {
     tauri::async_runtime::spawn_blocking(installation::stats_systeme)
         .await
         .unwrap_or_else(|_| StatsSysteme { horodatage_ms: 0, reseau_recu: 0, steam_ecrit: None, disques: vec![] })
+}
+
+// ——— Étape 5 : magasin et fiche d'un jeu ———
+
+const TTL_FICHE: i64 = 6 * 60 * 60;
+const TTL_AVIS: i64 = 6 * 60 * 60;
+const TTL_VITRINE: i64 = 30 * 60;
+
+/// Fiche du magasin d'un jeu (description, prix, médias, configuration requise).
+#[tauri::command]
+pub async fn fiche_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<FicheJeu>> {
+    etat.cache.avec_cache(&format!("fiche:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await
+}
+
+/// Évaluations des joueurs (toutes langues et en français).
+#[tauri::command]
+pub async fn avis_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<AvisJeu>> {
+    etat.cache.avec_cache(&format!("avis:{app_id}"), TTL_AVIS, || etat.steam.avis_jeu(app_id)).await
+}
+
+/// Offres, meilleures ventes et nouveautés du magasin.
+#[tauri::command]
+pub async fn vitrine_magasin(etat: State<'_, EtatApp>) -> Resultat<Donnee<VitrineMagasin>> {
+    etat.cache.avec_cache("vitrine", TTL_VITRINE, || etat.steam.vitrine_magasin()).await
+}
+
+/// Configuration de ce PC (comparaison avec la configuration requise).
+#[tauri::command]
+pub async fn config_pc() -> Resultat<ConfigPc> {
+    tauri::async_runtime::spawn_blocking(pc::config_pc)
+        .await
+        .map_err(|e| Erreur::Interne(format!("lecture de la configuration : {e}")))
 }

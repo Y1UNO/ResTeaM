@@ -7,6 +7,8 @@ import { EmptyPage } from "../pages/EmptyPage";
 import { Parametres } from "../pages/Parametres";
 import { DonneesTest } from "../pages/DonneesTest";
 import { Bibliotheque } from "../pages/Bibliotheque";
+import { Fiche } from "../pages/fiche/Fiche";
+import { Magasin } from "../pages/Magasin";
 import { Connexion } from "../ecrans/Connexion";
 import { CleApi } from "../ecrans/CleApi";
 import { Chargement } from "../ecrans/Chargement";
@@ -32,8 +34,8 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Accueil /> },
       { path: PATHS.bibliotheque, element: <Bibliotheque /> },
-      { path: PATHS.magasin, element: <EmptyPage title="Magasin" step="5" /> },
-      { path: PATHS.jeu, element: <EmptyPage title="Fiche du jeu" step="5" /> },
+      { path: PATHS.magasin, element: <Magasin /> },
+      { path: PATHS.jeu, element: <Fiche /> },
       { path: PATHS.classements, element: <EmptyPage title="Classements" step="7" /> },
       { path: PATHS.souhaits, element: <EmptyPage title="Liste de souhaits" step="7" /> },
       { path: PATHS.recherche, element: <EmptyPage title="Recherche" step="8" /> },

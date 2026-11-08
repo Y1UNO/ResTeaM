@@ -722,3 +722,47 @@
   font-size: 12px;
   color: var(--text-3);
 }
+
+/* Information douce (jeu en cours) : pas une erreur, juste un délai. */
+.inst__info {
+  position: relative;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgba(238, 242, 255, 0.05);
+  border: 1px solid rgba(238, 242, 255, 0.1);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+/* ——— Désinstallation ——— */
+.inst__point.is-alerte {
+  background: #f08a74;
+  box-shadow: 0 0 8px #f08a74;
+}
+.inst__texte {
+  position: relative;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+.inst__texte strong {
+  color: var(--text-1);
+  font-weight: 600;
+  word-break: break-all;
+}
+.inst-btn--danger {
+  border: 1px solid rgba(240, 138, 116, 0.5);
+  background: rgba(240, 138, 116, 0.12);
+  color: #ffd9cf;
+  font-weight: 700;
+}
+.inst-btn--danger:not(:disabled):hover {
+  background: rgba(240, 138, 116, 0.2);
+  box-shadow: 0 0 24px rgba(240, 138, 116, 0.25);
+}

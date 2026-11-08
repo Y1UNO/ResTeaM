@@ -6,10 +6,13 @@
   pointer-events: none;
 }
 
+/* Le flou est porté par chaque nappe (et non par le conteneur) : il est calculé
+   une fois, puis la carte graphique ne fait que déplacer les nappes. */
 .smoke__layer {
   position: absolute;
   border-radius: 50%;
   will-change: transform;
+  filter: blur(var(--smoke-flou));
 }
 .smoke__layer--1 {
   left: 0;
@@ -28,7 +31,7 @@
 .smoke--hero {
   bottom: -120px;
   height: 420px;
-  filter: blur(50px);
+  --smoke-flou: 50px;
 }
 .smoke--hero .smoke__layer--1 {
   bottom: 60px;
@@ -45,13 +48,14 @@
   bottom: 0;
   height: 220px;
   background: var(--bg);
+  filter: blur(var(--smoke-flou));
 }
 
 /* En haut de page (maquettes 03, 05, 06). */
 .smoke--top {
   top: -160px;
   height: 480px;
-  filter: blur(60px);
+  --smoke-flou: 60px;
 }
 .smoke--top .smoke__layer--1 {
   top: 60px;

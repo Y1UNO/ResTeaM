@@ -15,8 +15,12 @@ const CDN: &str = "https://shared.akamai.steamstatic.com/store_item_assets/";
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImagesJeu {
-    /// Jaquette verticale 600×900 (bibliothèque).
+    /// Jaquette verticale 1200×1800 (ruban de l'accueil, fiche).
     pub jaquette: Option<String>,
+    /// Même jaquette en 600×900 : assez nette pour les tuiles de la bibliothèque,
+    /// quatre fois plus légère à décoder.
+    #[serde(default)]
+    pub jaquette_petite: Option<String>,
     /// Grand visuel horizontal de la bibliothèque (fond du hero).
     pub hero: Option<String>,
     /// Bannière 460×215.
@@ -28,6 +32,7 @@ pub fn adresses_classiques(app_id: u32) -> ImagesJeu {
     let base = format!("{CDN}steam/apps/{app_id}/");
     ImagesJeu {
         jaquette: Some(format!("{base}library_600x900.jpg")),
+        jaquette_petite: Some(format!("{base}library_600x900.jpg")),
         hero: Some(format!("{base}library_hero_2x.jpg")),
         banniere: Some(format!("{base}header.jpg")),
     }
@@ -102,6 +107,9 @@ impl ClientSteam {
                         jaquette: adresse(format, &a.library_capsule_2x)
                             .or_else(|| adresse(format, &a.library_capsule))
                             .or(classique.jaquette),
+                        jaquette_petite: adresse(format, &a.library_capsule)
+                            .or_else(|| adresse(format, &a.library_capsule_2x))
+                            .or(classique.jaquette_petite),
                         // 3840×1240 : net même étiré sur un écran 1440p.
                         hero: adresse(format, &a.library_hero_2x)
                             .or_else(|| adresse(format, &a.library_hero))

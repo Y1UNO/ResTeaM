@@ -4,8 +4,9 @@
 //! 2. elle redémarre Steam en arrière-plan (`-shutdown`, puis `-silent`) ;
 //! 3. Steam lit le manifeste et télécharge le jeu tout seul, sans fenêtre.
 //!
-//! Garde-fous : le dossier doit être une bibliothèque Steam déclarée, le jeu ne doit
-//! pas déjà être installé, et aucun jeu ne doit tourner (le redémarrage le couperait).
+//! Garde-fous : le dossier doit être une bibliothèque Steam déclarée et le jeu ne doit
+//! pas déjà être installé. Le redémarrage passe par la file de `redemarrage.rs`,
+//! qui attend la fin du jeu en cours (le redémarrage le couperait).
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -139,7 +140,17 @@ fn processus_steam(sys: &mut System) -> bool {
 }
 
 /// Ferme Steam proprement puis le relance en arrière-plan (sans fenêtre principale).
+#[allow(dead_code)]
 pub async fn redemarrer_steam(steam: &Path) -> Resultat<()> {
+    redemarrer_steam_avec(steam, |_| {}).await
+}
+
+/// Ferme Steam proprement, exécute `pendant` (Steam fermé : on peut toucher à ses
+/// fichiers sans qu'il les réécrive), puis le relance en arrière-plan.
+pub async fn redemarrer_steam_avec<F>(steam: &Path, pendant: F) -> Resultat<()>
+where
+    F: FnOnce(&Path) + Send + 'static,
+{
     let exe = steam.join("steam.exe");
     if !exe.exists() {
         return Err(Erreur::SteamIntrouvable);
@@ -160,7 +171,107 @@ pub async fn redemarrer_steam(steam: &Path) -> Resultat<()> {
         }
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
+    let dossier = steam.to_path_buf();
+    let _ = tokio::task::spawn_blocking(move || pendant(&dossier)).await;
     lancer(&exe, "-silent")
+}
+
+/// Supprime un manifeste « à installer » écrit par ResTeaM et que Steam n'a pas
+/// encore pris en charge (installation annulée avant le redémarrage).
+pub fn retirer_manifeste_non_lu(steam: &Path, app_id: u32) {
+    for d in local::dossiers_bibliotheque(steam) {
+        let chemin = Path::new(&d.chemin).join("steamapps").join(format!("appmanifest_{app_id}.acf"));
+        let Ok(texte) = fs::read_to_string(&chemin) else { continue };
+        let racine = super::vdf::lire(&texte);
+        let Some(a) = racine.get("AppState") else { continue };
+        let intact = a.nombre::<u32>("StateFlags") == Some(1026)
+            && a.nombre::<u64>("buildid") == Some(0)
+            && a.nombre::<u64>("LastUpdated") == Some(0);
+        if intact {
+            let _ = fs::remove_file(&chemin);
+        }
+    }
+}
+
+/// Après un redémarrage, Steam peut quand même ouvrir sa fenêtre principale :
+/// pendant 40 s, on la renvoie dans la zone de notification (comme un clic sur ×).
+/// Seule la grande fenêtre « Steam » est visée, jamais celle de connexion.
+pub async fn cacher_fenetre_steam() {
+    #[cfg(windows)]
+    for _ in 0..80 {
+        tokio::time::sleep(Duration::from_millis(500)).await;
+        let _ = tokio::task::spawn_blocking(fenetre::fermer_fenetre_principale).await;
+    }
+}
+
+#[cfg(windows)]
+mod fenetre {
+    use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System};
+    use windows_sys::Win32::Foundation::{HWND, LPARAM, RECT};
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        EnumWindows, GetClassNameW, GetWindowRect, GetWindowTextW, GetWindowThreadProcessId, IsWindowVisible,
+        PostMessageW, WM_CLOSE,
+    };
+
+    struct Recherche {
+        pids: Vec<u32>,
+        trouvees: Vec<HWND>,
+    }
+
+    fn texte(buf: &[u16], n: i32) -> String {
+        String::from_utf16_lossy(&buf[..n.max(0) as usize])
+    }
+
+    unsafe extern "system" fn visiter(hwnd: HWND, lparam: LPARAM) -> i32 {
+        // SAFETY : `lparam` pointe sur la `Recherche` de `fermer_fenetre_principale`,
+        // vivante pendant tout `EnumWindows` ; `hwnd` vient de Windows.
+        unsafe {
+            let r = &mut *(lparam as *mut Recherche);
+            if IsWindowVisible(hwnd) == 0 {
+                return 1;
+            }
+            let mut pid = 0u32;
+            GetWindowThreadProcessId(hwnd, &mut pid);
+            if !r.pids.contains(&pid) {
+                return 1;
+            }
+            let mut classe = [0u16; 64];
+            let n = GetClassNameW(hwnd, classe.as_mut_ptr(), classe.len() as i32);
+            let mut titre = [0u16; 64];
+            let m = GetWindowTextW(hwnd, titre.as_mut_ptr(), titre.len() as i32);
+            let mut rect = RECT { left: 0, top: 0, right: 0, bottom: 0 };
+            GetWindowRect(hwnd, &mut rect);
+            let grande = rect.right - rect.left >= 800 && rect.bottom - rect.top >= 500;
+            if texte(&classe, n) == "SDL_app" && texte(&titre, m) == "Steam" && grande {
+                r.trouvees.push(hwnd);
+            }
+            1
+        }
+    }
+
+    pub fn fermer_fenetre_principale() {
+        let Ok(mut sys) = System::new() else { return };
+        sys.refresh_processes_specifics(ProcessesToUpdate::All, true, ProcessRefreshKind::nothing());
+        let pids: Vec<u32> = sys
+            .processes()
+            .iter()
+            .filter(|(_, p)| {
+                let n = p.name().to_string_lossy().to_lowercase();
+                n == "steam.exe" || n == "steamwebhelper.exe"
+            })
+            .map(|(pid, _)| pid.as_u32())
+            .collect();
+        if pids.is_empty() {
+            return;
+        }
+        let mut r = Recherche { pids, trouvees: vec![] };
+        unsafe {
+            EnumWindows(Some(visiter), &mut r as *mut Recherche as LPARAM);
+            for h in r.trouvees {
+                PostMessageW(h, WM_CLOSE, 0, 0);
+            }
+        }
+    }
 }
 
 fn lancer(exe: &Path, argument: &str) -> Resultat<()> {

@@ -1,7 +1,8 @@
-import { QueryClient, useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import { QueryClient, useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useSession } from "../app/session";
 import { api } from "./commandes";
-import { estErreurApp } from "./types";
+import { estErreurApp, type ImagesJeu } from "./types";
 
 /** Erreurs qu'il ne sert à rien de réessayer. */
 const DEFINITIVES = new Set(["cle_absente", "cle_refusee", "session_absente", "cle_format"]);
@@ -97,13 +98,30 @@ export function useActusJeu(appId: number | null) {
 // ——— Étape 3 ———
 
 /** Images de plusieurs jeux (une semaine de cache côté Rust). */
+/** Taille des paquets d'images : le premier arrive vite, les suivants en parallèle. */
+const PAQUET_IMAGES = 100;
+
 export function useImages(appIds: number[]) {
-  const cle = [...appIds].sort((a, b) => a - b).join(",");
-  return useQuery({
-    queryKey: ["images", cle],
-    queryFn: () => api.imagesJeux(appIds),
-    enabled: appIds.length > 0,
-    staleTime: Infinity,
+  const cle = [...new Set(appIds)].sort((a, b) => a - b).join(",");
+  const paquets = useMemo(() => {
+    const ids = cle ? cle.split(",").map(Number) : [];
+    const liste: number[][] = [];
+    for (let i = 0; i < ids.length; i += PAQUET_IMAGES) liste.push(ids.slice(i, i + PAQUET_IMAGES));
+    return liste;
+  }, [cle]);
+  const combiner = useCallback((resultats: UseQueryResult<Record<string, ImagesJeu>>[]) => {
+    if (resultats.every((r) => !r.data)) return { data: undefined };
+    const data: Record<string, ImagesJeu> = {};
+    for (const r of resultats) Object.assign(data, r.data);
+    return { data };
+  }, []);
+  return useQueries({
+    queries: paquets.map((p) => ({
+      queryKey: ["images", p.join(",")],
+      queryFn: () => api.imagesJeux(p),
+      staleTime: Infinity,
+    })),
+    combine: combiner,
   });
 }
 
@@ -125,4 +143,55 @@ export function useStatsSysteme(actif: boolean) {
     refetchInterval: actif ? 2_000 : false,
     staleTime: 0,
   });
+}
+
+/**
+ * File des installations / désinstallations qui attendent un redémarrage de Steam.
+ * Relue toutes les 2 s tant qu'elle n'est pas vide, sinon toutes les 15 s.
+ */
+export function useFileSteam() {
+  return useQuery({
+    queryKey: ["file-steam"],
+    queryFn: api.fileSteam,
+    staleTime: 0,
+    refetchInterval: (q) => {
+      const f = q.state.data;
+      return f && (f.installations.length || f.desinstallations.length) ? 2_000 : 15_000;
+    },
+  });
+}
+
+/** Nom d'un jeu du compte d'après la bibliothèque (pour « attend la fin de … »). */
+export function useNomJeu(appId: number | null | undefined): string | null {
+  const b = useBibliotheque();
+  if (appId == null) return null;
+  return b.data?.donnees.jeux.find((j) => j.appId === appId)?.nom ?? null;
+}
+
+// ——— Étape 5 : magasin ———
+
+export function useFicheJeu(appId: number | null) {
+  return useQuery({
+    queryKey: ["fiche", appId],
+    queryFn: () => api.ficheJeu(appId as number),
+    enabled: appId != null,
+    staleTime: 10 * 60_000,
+  });
+}
+
+export function useAvisJeu(appId: number | null) {
+  return useQuery({
+    queryKey: ["avis", appId],
+    queryFn: () => api.avisJeu(appId as number),
+    enabled: appId != null,
+    staleTime: 10 * 60_000,
+  });
+}
+
+export function useVitrineMagasin() {
+  return useQuery({ queryKey: ["vitrine"], queryFn: api.vitrineMagasin, staleTime: 10 * 60_000 });
+}
+
+export function useConfigPc() {
+  return useQuery({ queryKey: ["config-pc"], queryFn: api.configPc, staleTime: Infinity });
 }

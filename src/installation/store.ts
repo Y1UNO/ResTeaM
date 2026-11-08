@@ -21,6 +21,8 @@ type EtatInstallation = {
   tailleEstimee: number | null;
   /** Dernière erreur d'installation, affichée dans la fenêtre de choix. */
   erreur: string | null;
+  /** Le Rust a répondu avant la fin de l'animation de la fenêtre de choix. */
+  demarreEnAvance: boolean;
   ouvrirChoix: (jeu: JeuSuivi, erreur?: string) => void;
   /** Ouvre directement le suivi (téléchargement déjà lancé, dans l'app ou dans Steam). */
   ouvrirSuivi: (jeu: JeuSuivi) => void;
@@ -38,11 +40,23 @@ export const useInstallation = create<EtatInstallation>((set) => ({
   lecteur: null,
   tailleEstimee: null,
   erreur: null,
+  demarreEnAvance: false,
   ouvrirChoix: (jeu, erreur) =>
-    set({ jeu, phase: "choix", reduite: false, lecteur: null, tailleEstimee: null, erreur: erreur ?? null }),
+    set({
+      jeu,
+      phase: "choix",
+      reduite: false,
+      lecteur: null,
+      tailleEstimee: null,
+      erreur: erreur ?? null,
+      demarreEnAvance: false,
+    }),
   ouvrirSuivi: (jeu) => set((s) => ({ jeu, phase: "suivi", reduite: false, lecteur: s.jeu?.appId === jeu.appId ? s.lecteur : null })),
-  lance: (lecteur, tailleEstimee) => set({ phase: "lancement", lecteur, tailleEstimee }),
-  demarre: () => set({ phase: "suivi" }),
+  // La fenêtre de choix se ferme en 450 ms ; le Rust peut répondre avant : on
+  // retient la réponse pour ne pas rester bloqué sur « Steam démarre ».
+  lance: (lecteur, tailleEstimee) =>
+    set((s) => ({ phase: s.demarreEnAvance ? "suivi" : "lancement", demarreEnAvance: false, lecteur, tailleEstimee })),
+  demarre: () => set((s) => (s.phase === "choix" ? { demarreEnAvance: true } : { phase: "suivi" })),
   reduire: () => set({ reduite: true }),
   agrandir: () => set({ reduite: false }),
   fermer: () => set({ jeu: null, reduite: false }),

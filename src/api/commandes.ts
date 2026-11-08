@@ -5,6 +5,7 @@ import {
   type Actu,
   type Bibliotheque,
   type Collections,
+  type DemandeInstallation,
   type Donnee,
   type ImagesJeu,
   type ErreurApp,
@@ -14,8 +15,10 @@ import {
   type Joueur,
   type ListeAmis,
   type NiveauBadges,
+  type OptionsInstallation,
   type PatchNotes,
   type Session,
+  type StatsSysteme,
   type SuccesJeu,
 } from "./types";
 
@@ -66,4 +69,10 @@ export const api = {
   imagesJeux: (appIds: number[]) => appeler<Record<string, ImagesJeu>>("images_jeux", { appIds }),
   patchNotes: (appId: number) => appeler<Donnee<PatchNotes | null>>("patch_notes", { appId }),
   steamLien: (action: ActionSteam) => appeler<void>("steam_lien", { action }),
+
+  // Installation sans la fenêtre de Steam
+  optionsInstallation: (appId: number, nom: string) =>
+    appeler<OptionsInstallation>("options_installation", { appId, nom }),
+  installerJeu: (d: DemandeInstallation) => appeler<void>("installer_jeu", d),
+  statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

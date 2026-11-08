@@ -115,3 +115,14 @@ export function usePatchNotes(appId: number | null) {
     staleTime: 10 * 60_000,
   });
 }
+
+/** Données du PC (réseau, écriture disque, espace libre), toutes les 2 s si `actif`. */
+export function useStatsSysteme(actif: boolean) {
+  return useQuery({
+    queryKey: ["stats-systeme"],
+    queryFn: api.statsSysteme,
+    enabled: actif,
+    refetchInterval: actif ? 2_000 : false,
+    staleTime: 0,
+  });
+}

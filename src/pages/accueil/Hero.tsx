@@ -10,6 +10,7 @@ import { degradeJaquette } from "../../lib/images";
 import { marquerNotesVues, notesVuesLe } from "../../lib/notesVues";
 import { Affiche } from "./Ambiance";
 import { PanneauPatchNotes } from "./PanneauPatchNotes";
+import { FenetreInstallation } from "./FenetreInstallation";
 import { SuiviInstallation } from "./SuiviInstallation";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
@@ -38,6 +39,7 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
   const [etat, setEtat] = useState<EtatJaquette>("repos");
   const [lancement, setLancement] = useState(false);
   const [jaquetteRatee, setJaquetteRatee] = useState(false);
+  const [fenetre, setFenetre] = useState(false);
   const minuterie = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -83,9 +85,8 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
       minuterie.current = window.setTimeout(() => setLancement(false), 4000);
       return;
     }
-    // Steam ouvre sa fenêtre d'installation (choix du disque) ; l'app suit ensuite la progression.
-    void api.steamLien({ type: "installer", appId: jeu.appId });
-    onInstaller();
+    // Fenêtre d'installation de ResTeaM : choix du disque, puis Steam télécharge en arrière-plan.
+    setFenetre(true);
   };
 
   const s = succes.data?.donnees;
@@ -187,6 +188,16 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
           {n && <span className="jaquette-hero__indice">Clique pour lire les notes</span>}
         </button>
       </div>
+
+      {fenetre && (
+        <FenetreInstallation
+          appId={jeu.appId}
+          nom={jeu.nom}
+          jaquette={afficheImage ? images.jaquette : null}
+          onFermer={() => setFenetre(false)}
+          onLancee={onInstaller}
+        />
+      )}
 
       {n && (etat === "ouvert" || etat === "fermeture") && (
         <PanneauPatchNotes

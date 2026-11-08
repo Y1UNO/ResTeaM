@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod bibliotheque;
 pub mod images;
+pub mod installation;
 pub mod liens;
 pub mod local;
 pub mod notes;

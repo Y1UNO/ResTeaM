@@ -272,6 +272,33 @@ impl ClientSteam {
     }
 }
 
+impl ClientSteam {
+    /// Fiche du magasin (sans clé) : nom et espace disque demandé (configuration minimale).
+    pub async fn config_magasin(&self, app_id: u32) -> Resultat<ConfigMagasin> {
+        let app = app_id.to_string();
+        let url = Url::parse_with_params(
+            "https://store.steampowered.com/api/appdetails",
+            &[("appids", app.as_str()), ("cc", "fr"), ("l", "french")],
+        )
+        .map_err(|_| Erreur::Interne("URL".into()))?;
+        let corps: serde_json::Value = self.obtenir(url).await?;
+        let data = &corps[app.as_str()]["data"];
+        let minimum = data["pc_requirements"]["minimum"].as_str().unwrap_or_default();
+        Ok(ConfigMagasin {
+            nom: data["name"].as_str().map(str::to_string),
+            taille: super::installation::taille_depuis_config(minimum),
+        })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigMagasin {
+    pub nom: Option<String>,
+    /// Octets demandés par la configuration minimale (estimation).
+    pub taille: Option<u64>,
+}
+
 // ——— Formes des réponses de Steam ———
 
 #[derive(Deserialize)]

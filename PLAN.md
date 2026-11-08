@@ -146,7 +146,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 | Fenêtre | **Sans cadre Windows** (comme Steam) : bande invisible en haut pour déplacer la fenêtre, boutons Réduire / Agrandir / Fermer dessinés dans la DA (`src/app/TitleBar.tsx`) |
 | Accès aux Paramètres | **Clic sur le logo → menu → Paramètres** (`src/app/LogoMenu.tsx`). « Se déconnecter » s'ajoutera dans ce menu en 2a |
 | Fond des jeux (hero) | **Affiche nette, resserrée à droite** (visuel `library_hero_2x`, 3840 px), jamais sous la barre de gauche. Bords gauche et bas fondus dans une **brume** douce. Derrière : des **lueurs aux couleurs de l'affiche** (3 teintes extraites de l'image), qui passent sous la barre et continuent sous le ruban. Écart voulu par rapport à DA.md (« image floutée », « fumée jamais colorée ») |
-| Installation | « Installer » ouvre la fenêtre d'installation de Steam (choix du disque **dans Steam** : aucun lien `steam://` ne permet d'imposer un dossier). L'app suit ensuite la progression en lisant l'`appmanifest` toutes les 2 s : pourcentage, vitesse, temps restant |
+| Installation | **Fenêtre de ResTeaM, sans celle de Steam** (accord de Tom) : choix du disque avec l'espace libre réel, raccourcis Bureau et menu Démarrer. Ensuite, l'app écrit `appmanifest_<id>.acf` (StateFlags 1026) dans la bibliothèque choisie et redémarre Steam en arrière-plan (`-shutdown`, puis `-silent`). Steam télécharge seul. Refusé si un jeu tourne (`RunningAppID`), si le jeu est déjà installé, si le dossier n'est pas une bibliothèque Steam ou si le jeu n'est pas sur le compte |
 | Clé API | Tom la saisit lui-même dans l'app (Paramètres). Elle n'est jamais écrite dans le code, le dépôt, la mémoire ou une conversation |
 
 ### Encore ouvert
@@ -255,6 +255,24 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - `useJeuxInstalles` relit le disque toutes les 2 s tant qu'un téléchargement existe ;
   - le faux serveur d'aperçu simule une installation (4 s d'attente, puis 40 s de téléchargement).
 - **À vérifier sur un vrai téléchargement** : Steam doit réécrire `BytesDownloaded` assez souvent dans l'`appmanifest`. Sinon, il faudra lire le dossier `steamapps/downloading/<id>`.
+
+### Étape 3 ter — Installation sans la fenêtre de Steam (8 novembre 2026)
+
+- **Rust** (`steam/installation.rs`) :
+  - `disques()` : bibliothèques avec l'espace libre réel (`sysinfo`) ;
+  - `jeu_en_cours()` : registre `RunningAppID` ;
+  - `ecrire_manifeste()` (vérifications strictes) et `redemarrer_steam()` (processus détaché, sans poignée héritée) ;
+  - `creer_raccourci()` : fichier `.url` vers `steam://rungameid` ;
+  - `taille_depuis_config()` : « Espace disque : 15 GB » lu dans la fiche du magasin ;
+  - `stats_systeme()` : compteurs réseau cumulés, écriture disque de `steam.exe`, espace libre par lecteur.
+- **Commandes** : `options_installation`, `installer_jeu`, `stats_systeme`.
+- **Front** :
+  - `FenetreInstallation.tsx` : portail au-dessus de toute l'app, animations du popup de la maquette 02 ;
+  - disques en boutons radio, avec une barre d'occupation et la place que prendra le jeu ; disque désactivé si l'espace manque ;
+  - `SuiviInstallation` : « Steam redémarre », puis « Préparation » et « Téléchargement ». Il affiche le %, le temps restant, le débit réseau, celui de Steam, l'écriture disque et l'espace libre du lecteur.
+- **Vrai test (Hades, 1145360, sur E:)** : réussi, sans aucune fenêtre Steam. Dans `logs/content_log.txt` : prise en compte à 23:07:30, téléchargement de 10,8 Go de 23:07:37 à 23:11:55, installé à 23:11:58.
+- **Non vérifié** : Steam réécrit-il `BytesDownloaded` pendant le téléchargement ? En secours, si la valeur reste figée plus de 15 s, la progression est estimée d'après les octets reçus par la carte réseau (affichée avec « ≈ »).
+- **Piège** : Steam relancé depuis un processus garde ses poignées stdout/stderr. D'où `Stdio::null()` au lancement.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

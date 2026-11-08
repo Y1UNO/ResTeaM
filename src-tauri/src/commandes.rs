@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 use tokio::sync::oneshot;
 
@@ -14,6 +14,7 @@ use crate::session::{self, Session};
 use crate::steam::auth;
 use crate::steam::bibliotheque::{self, Bibliotheque};
 use crate::steam::images::{self, ImagesJeu};
+use crate::steam::installation::{self, Disque, StatsSysteme};
 use crate::steam::liens::{self, ActionSteam};
 use crate::steam::notes::{self, PatchNotes};
 use crate::steam::local::{self, Collections, DossierBibliotheque, JeuInstalle};
@@ -297,4 +298,90 @@ pub async fn patch_notes(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donn
         hors_ligne: actus.hors_ligne,
         recupere_le: actus.recupere_le,
     })
+}
+
+// ——— Installation sans la fenêtre de Steam ———
+
+const TTL_CONFIG: i64 = 7 * 24 * 60 * 60;
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionsInstallation {
+    pub nom: String,
+    /// Estimation tirée de la configuration minimale du magasin.
+    pub taille_estimee: Option<u64>,
+    pub disques: Vec<Disque>,
+    /// Jeu lancé en ce moment : l'installation attendra (Steam doit redémarrer).
+    pub jeu_en_cours: Option<u32>,
+    pub deja_installe: bool,
+}
+
+/// Ce qu'il faut pour la fenêtre d'installation : taille, disques et espace libre.
+#[tauri::command]
+pub async fn options_installation(etat: State<'_, EtatApp>, app_id: u32, nom: String) -> Resultat<OptionsInstallation> {
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    let config = etat
+        .cache
+        .avec_cache(&format!("config:{app_id}"), TTL_CONFIG, || etat.steam.config_magasin(app_id))
+        .await
+        .map(|d| d.donnees)
+        .ok();
+    Ok(OptionsInstallation {
+        nom: config.as_ref().and_then(|c| c.nom.clone()).unwrap_or(nom),
+        taille_estimee: config.and_then(|c| c.taille),
+        disques: installation::disques(&steam),
+        jeu_en_cours: installation::jeu_en_cours(),
+        deja_installe: installation::deja_installe(&steam, app_id),
+    })
+}
+
+/// Lance l'installation sans fenêtre Steam : manifeste dans la bibliothèque choisie,
+/// redémarrage de Steam en arrière-plan, raccourcis demandés.
+#[tauri::command]
+pub async fn installer_jeu(
+    app: AppHandle,
+    etat: State<'_, EtatApp>,
+    app_id: u32,
+    nom: String,
+    bibliotheque: String,
+    raccourci_bureau: bool,
+    raccourci_menu: bool,
+) -> Resultat<()> {
+    let (sid, cle) = identifiants(&app)?;
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    if let Some(id) = installation::jeu_en_cours() {
+        return Err(Erreur::Interne(format!(
+            "un jeu est en cours (appid {id}) : ferme-le avant d'installer, Steam doit redémarrer"
+        )));
+    }
+    // Le jeu doit être dans la bibliothèque du compte.
+    let possedes = etat
+        .cache
+        .avec_cache(&format!("possedes:{sid}"), TTL_BIBLIOTHEQUE, || etat.steam.jeux_possedes(&cle, &sid))
+        .await?;
+    if !possedes.donnees.iter().any(|j| j.app_id == app_id) {
+        return Err(Erreur::Interne("ce jeu n'est pas dans ta bibliothèque Steam".into()));
+    }
+    installation::ecrire_manifeste(&steam, &bibliotheque, app_id, &nom, &sid)?;
+    installation::redemarrer_steam(&steam).await?;
+    if raccourci_bureau {
+        if let Ok(bureau) = app.path().desktop_dir() {
+            let _ = installation::creer_raccourci(&bureau, app_id, &nom, &steam);
+        }
+    }
+    if raccourci_menu {
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            let menu = std::path::Path::new(&appdata).join(r"Microsoft\Windows\Start Menu\Programs\Steam");
+            let _ = installation::creer_raccourci(&menu, app_id, &nom, &steam);
+        }
+    }
+    Ok(())
+}
+
+/// Réseau, écriture disque de Steam et espace libre (compteurs cumulés).
+#[tauri::command]
+pub async fn stats_systeme() -> StatsSysteme {
+    tauri::async_runtime::spawn_blocking(installation::stats_systeme)
+        .await
+        .unwrap_or_else(|_| StatsSysteme { horodatage_ms: 0, reseau_recu: 0, steam_ecrit: None, disques: vec![] })
 }

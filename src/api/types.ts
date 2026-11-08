@@ -172,3 +172,27 @@ export type ActionSteam =
   | { type: "amis" }
   | { type: "telechargements" }
   | { type: "page"; url: string };
+
+// ——— Installation sans la fenêtre de Steam ———
+
+export type Disque = { bibliotheque: string; lecteur: string; nom: string; libre: number; total: number };
+export type OptionsInstallation = {
+  nom: string;
+  tailleEstimee: number | null;
+  disques: Disque[];
+  jeuEnCours: number | null;
+  dejaInstalle: boolean;
+};
+export type DemandeInstallation = {
+  appId: number;
+  nom: string;
+  bibliotheque: string;
+  raccourciBureau: boolean;
+  raccourciMenu: boolean;
+};
+export type StatsSysteme = {
+  horodatageMs: number;
+  reseauRecu: number;
+  steamEcrit: number | null;
+  disques: { lecteur: string; libre: number }[];
+};

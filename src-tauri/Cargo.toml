@@ -30,6 +30,7 @@ rand = "0.10.3"
 reqwest = { version = "0.13", default-features = false, features = ["json", "native-tls", "http2"] }
 keyring = { version = "3", features = ["windows-native"] }
 winreg = "0.56.0"
+sysinfo = { version = "0.40.1", default-features = false, features = ["disk", "network", "system"] }
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

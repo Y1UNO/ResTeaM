@@ -95,6 +95,7 @@ const INSTALLES = [1145350, 391540, 1903340, 2868840];
 /** Installations simulées : appId → heure du clic sur « Installer ». */
 const INSTALLATIONS = new Map<number, number>();
 const TAILLE_SIMULEE = 30_000_000_000;
+const COMPTEURS = { t: Date.now(), reseau: 5_000_000_000, ecrit: 1_000_000_000 };
 
 function installationsSimulees() {
   return [...INSTALLATIONS].flatMap(([appId, debut]) => {
@@ -106,7 +107,7 @@ function installationsSimulees() {
       {
         appId,
         nom: j?.nom ?? String(appId),
-        dossier: "",
+        dossier: String.raw`E:\SteamLibrary\steamapps\common\ `.trim() + (j?.nom ?? appId),
         bibliotheque: String.raw`E:\SteamLibrary`,
         taille: Math.round(TAILLE_SIMULEE * p),
         etat: p < 1 ? "telechargement" : "installe",
@@ -241,6 +242,38 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       const a = args?.action as { type?: string; appId?: number } | undefined;
       if (a?.type === "installer" && a.appId) INSTALLATIONS.set(a.appId, Date.now());
       return null;
+    }
+    case "options_installation":
+      return {
+        nom: String(args?.nom ?? "Jeu"),
+        tailleEstimee: 15_000_000_000,
+        disques: [
+          { bibliotheque: String.raw`C:\Program Files (x86)\Steam`, lecteur: "C:", nom: "", libre: 9_000_000_000, total: 499_000_000_000 },
+          { bibliotheque: String.raw`E:\SteamLibrary`, lecteur: "E:", nom: "Data", libre: 593_000_000_000, total: 821_000_000_000 },
+        ],
+        jeuEnCours: null,
+        dejaInstalle: false,
+      };
+    case "installer_jeu":
+      INSTALLATIONS.set(Number(args?.appId), Date.now());
+      return null;
+    case "stats_systeme": {
+      // Compteurs cumulés, comme ceux de Windows.
+      const t = Date.now();
+      const actifs = installationsSimulees().filter((i) => i.etat === "telechargement").length;
+      const dt = (t - COMPTEURS.t) / 1000;
+      COMPTEURS.reseau += dt * (actifs ? 780_000_000 : 40_000);
+      COMPTEURS.ecrit += dt * (actifs ? 750_000_000 : 0);
+      COMPTEURS.t = t;
+      return {
+        horodatageMs: t,
+        reseauRecu: Math.round(COMPTEURS.reseau),
+        steamEcrit: Math.round(COMPTEURS.ecrit),
+        disques: [
+          { lecteur: "C:", libre: 9_000_000_000 },
+          { lecteur: "E:", libre: 593_000_000_000 - installationsSimulees().reduce((s, i) => s + i.taille, 0) },
+        ],
+      };
     }
     case "patch_notes":
       return enveloppe({

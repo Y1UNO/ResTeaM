@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { NavRail } from "./NavRail";
 import { TitleBar } from "./TitleBar";
+import { CentreInstallation } from "../installation/CentreInstallation";
 import { PATHS } from "./paths";
 import "./Layout.css";
 
@@ -31,6 +32,7 @@ export function Layout() {
     <div className="app">
       <TitleBar />
       <NavRail />
+      <CentreInstallation />
       <main className="app__main">
         <div key={pathname} className="app__page">
           <Outlet />

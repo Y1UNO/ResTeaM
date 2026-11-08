@@ -9,13 +9,12 @@ import { Lueurs } from "./accueil/Ambiance";
 import { Hero } from "./accueil/Hero";
 import { PanneauAmis } from "./accueil/PanneauAmis";
 import { Ruban, type OngletRuban } from "./accueil/Ruban";
+import { useInstallation } from "../installation/store";
 import "./pages.css";
 import "./accueil/accueil.css";
 
 const NB_RUBAN = 8;
 const FOND_NEUTRE = "radial-gradient(ellipse at 65% 35%, rgba(70,72,84,.55), rgba(40,42,50,.2) 55%, #0E0E10 100%)";
-/** Après « Installer », on attend que Steam crée le jeu sur le disque pendant 15 min au plus. */
-const ATTENTE_MAX = 15 * 60_000;
 
 const enCours = (j: JeuBibliotheque) =>
   j.installation?.etat === "telechargement" || j.installation?.etat === "enPause";
@@ -29,8 +28,8 @@ export function Accueil() {
   const biblio = useBibliotheque();
   const b = biblio.data?.donnees;
 
-  // Installation lancée depuis l'app : appId + heure du clic.
-  const [attente, setAttente] = useState<{ appId: number; depuis: number } | null>(null);
+  // Une installation suivie par l'app : on relit le disque en continu.
+  const installationSuivie = useInstallation((s) => s.jeu != null);
 
   const [onglet, setOnglet] = useState<OngletRuban>("reprendre");
   const favoris = useMemo(
@@ -50,7 +49,7 @@ export function Accueil() {
 
   // Lecture du disque : toutes les 2 s tant qu'un téléchargement est en cours ou attendu.
   const telechargeAvant = base.some(enCours);
-  const installes = useJeuxInstalles(telechargeAvant || attente != null);
+  const installes = useJeuxInstalles(telechargeAvant || installationSuivie);
 
   // État d'installation en direct (le disque fait foi, la bibliothèque peut dater d'une minute).
   const jeux = useMemo(() => {
@@ -66,13 +65,6 @@ export function Accueil() {
       };
     });
   }, [base, installes.data]);
-
-  // Fin de l'attente : Steam a commencé (ou fini), ou délai dépassé.
-  useEffect(() => {
-    if (!attente) return;
-    const jeu = installes.data?.find((i) => i.appId === attente.appId);
-    if (jeu || Date.now() - attente.depuis > ATTENTE_MAX) setAttente(null);
-  }, [installes.data, attente]);
 
   // Un téléchargement vient de se terminer : on rafraîchit la bibliothèque.
   const enCoursIds = jeux.filter(enCours).map((j) => j.appId).join(",");
@@ -97,12 +89,7 @@ export function Accueil() {
       {vedette && <Lueurs palette={palette} />}
 
       {vedette && imagesVedette ? (
-        <Hero
-          jeu={vedette}
-          images={imagesVedette}
-          enAttente={attente?.appId === vedette.appId}
-          onInstaller={() => setAttente({ appId: vedette.appId, depuis: Date.now() })}
-        />
+        <Hero jeu={vedette} images={imagesVedette} />
       ) : (
         <section className="hero" aria-busy={biblio.isLoading}>
           <HeroBackdrop image={null} repli={FOND_NEUTRE} />

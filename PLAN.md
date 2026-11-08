@@ -289,6 +289,17 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - pendant le téléchargement, une liane pousse le long de la barre, avec un engrenage qui tourne à sa pointe ;
   - **pas encore intégré dans l'app** : en attente de l'avis de Tom.
 
+### Étape 4 bis — Design d'installation de Tom intégré (9 novembre 2026)
+
+- Source : le design Claude Design de Tom (`ResTeaM_installation.zip` : choix, téléchargement, pastille, prêt à jouer).
+- **Centre d'installation global** (`src/installation/`), monté dans `Layout` : il reste visible sur toutes les pages.
+  - `store.ts` (zustand) : jeu suivi, phase `choix` → `lancement` (Steam redémarre) → `suivi`, fenêtre réduite ou non ;
+  - `Lianes.tsx` : engrenages, feuilles, fleurs, vrilles, barre-liane qui se couvre de feuilles avec l'avancement, anneau de la pastille ;
+  - `CentreInstallation.tsx` : fenêtre de choix (disque le plus libre par défaut, disques trop petits grisés), suivi (%, barre-liane, réseau, Steam, écriture disque, espace libre), pastille en bas à droite (« Continuer en arrière-plan ») ; la fenêtre revient seule quand le jeu est prêt, avec les fleurs écloses et le bouton Jouer ;
+  - `mesures.ts` : débits du PC et estimation par le réseau si Steam ne réécrit pas l'avancement (le % est alors précédé de ≈).
+- L'accueil et la bibliothèque ouvrent ce centre ; `FenetreInstallation.tsx` et `SuiviInstallation.tsx` sont supprimés.
+- **Écart avec le design** : pas de bouton Pause. Steam ne peut pas être mis en pause depuis une autre app ; il est remplacé par « Ouvrir dans Steam ».
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

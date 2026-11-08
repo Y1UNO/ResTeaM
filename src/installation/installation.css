@@ -1,0 +1,724 @@
+/* Fenêtre d'installation — design de Tom (Claude Design, 8 nov. 2026). */
+
+/* ——— Animations ——— */
+@keyframes inst-monte {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(30px, -420px);
+    opacity: 0;
+  }
+}
+@keyframes inst-dessine {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes inst-deplie {
+  0% {
+    transform: scale(0) rotate(-40deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.12) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+@keyframes inst-frisson {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes inst-chute {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate(-26px, 260px) rotate(200deg);
+  }
+  100% {
+    transform: translate(18px, 560px) rotate(420deg);
+    opacity: 0;
+  }
+}
+@keyframes inst-eclot {
+  0% {
+    transform: scale(0.25);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes inst-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes inst-tourne-r {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes inst-engrenage-entre {
+  from {
+    transform: scale(0) rotate(-120deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+@keyframes inst-entre {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.94);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes inst-sort {
+  from {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.96);
+    filter: blur(8px);
+  }
+}
+@keyframes inst-pastille {
+  from {
+    opacity: 0;
+    transform: translate(-40px, -40px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes inst-reflet {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+@keyframes inst-respire {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+.inst-dessine {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: inst-dessine 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards;
+}
+.inst-dessine-2 {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: inst-dessine 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.9s forwards;
+}
+.inst-feuille {
+  transform-origin: 0 0;
+  transform: scale(0);
+  animation: inst-deplie 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+.inst-frisson {
+  transform-origin: 0 0;
+  animation: inst-frisson 5s ease-in-out infinite;
+}
+.inst-bouton {
+  transform-origin: 0 0;
+  animation: inst-eclot 1s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.inst-spin {
+  transform-origin: 0 0;
+  animation: inst-tourne 9s linear infinite;
+}
+.inst-spin-r {
+  transform-origin: 0 0;
+  animation: inst-tourne-r 6s linear infinite;
+}
+.inst-spin-vite {
+  transform-origin: 0 0;
+  animation: inst-tourne 2.4s linear infinite;
+}
+.inst-spin-vite-r {
+  transform-origin: 0 0;
+  animation: inst-tourne-r 1.6s linear infinite;
+}
+.inst-gear-in {
+  transform-origin: 0 0;
+  animation: inst-engrenage-entre 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* ——— Calque plein écran ——— */
+.inst {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.inst__voile {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(var(--inst-teinte), 0.32), rgba(var(--inst-teinte), 0.08) 45%, rgba(10, 10, 11, 0) 75%),
+    rgba(9, 9, 10, 0.72);
+  backdrop-filter: blur(8px);
+}
+.inst__voile.is-entree {
+  animation: fade-in 0.4s ease both;
+}
+.inst__voile.is-sortie {
+  animation: fondu-sortie 0.45s ease both;
+}
+@keyframes fondu-sortie {
+  to {
+    opacity: 0;
+  }
+}
+.inst__poussiere {
+  position: absolute;
+  bottom: -2%;
+  border-radius: 50%;
+  background: #7dffb6;
+  box-shadow: 0 0 10px rgba(125, 255, 182, 0.8);
+  opacity: 0;
+  animation: inst-monte linear infinite;
+  pointer-events: none;
+}
+
+.inst__bloc {
+  position: relative;
+  pointer-events: auto;
+}
+.inst__bloc.is-entree {
+  animation: inst-entre 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.inst__bloc.is-sortie {
+  animation: inst-sort 0.45s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+.inst-orne {
+  position: absolute;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.55));
+}
+.inst__petale {
+  position: absolute;
+  z-index: 3;
+  width: 9px;
+  height: 7px;
+  border-radius: 70% 0 70% 0;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f6ff 45%, #cff5de 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  animation: inst-chute linear infinite;
+  pointer-events: none;
+}
+
+/* Le panneau en verre. */
+.inst__panneau {
+  position: relative;
+  z-index: 1;
+  padding: 28px;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 70% at 0% 0%, rgba(63, 224, 138, 0.07), rgba(63, 224, 138, 0) 55%),
+    radial-gradient(90% 60% at 100% 100%, rgba(var(--inst-teinte), 0.07), rgba(var(--inst-teinte), 0) 60%),
+    rgba(19, 20, 22, 0.92);
+  border: 1px solid rgba(238, 242, 255, 0.1);
+  backdrop-filter: blur(24px);
+  box-shadow:
+    0 50px 120px rgba(0, 0, 0, 0.85),
+    0 12px 30px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.inst__grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.inst__liseré {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.inst__entete {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.inst__jaquette {
+  position: relative;
+  flex: 0 0 auto;
+  width: 72px;
+  height: 96px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #1a1210 center / cover no-repeat;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.inst__jaquette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 40%);
+}
+.inst__jaquette--petite {
+  width: 58px;
+  height: 76px;
+  border-radius: 12px;
+}
+.inst__titres {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inst__statut {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.inst__point {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3fe08a;
+  box-shadow: 0 0 8px #3fe08a;
+}
+.inst__point.is-gris {
+  background: var(--text-3);
+  box-shadow: none;
+}
+.inst__nom {
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.inst__puces {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.inst__puces span {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: #d6d6da;
+}
+.inst__fermer {
+  align-self: flex-start;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  background: none;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.inst__fermer:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-1);
+}
+.inst__etiquette {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+/* Disques. */
+.inst__disques {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.inst-disque {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(238, 242, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  text-align: left;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  cursor: pointer;
+  transition:
+    border-color 0.3s ease,
+    background 0.3s ease,
+    transform 0.25s ease,
+    box-shadow 0.3s ease;
+}
+.inst-disque:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+.inst-disque.is-actif {
+  border-color: rgba(63, 224, 138, 0.55);
+  background: rgba(63, 224, 138, 0.06);
+  box-shadow: 0 0 24px rgba(63, 224, 138, 0.12);
+}
+.inst-disque:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.inst-disque__corps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.inst-disque__ligne {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.inst-disque__ligne--petite {
+  font-size: 12px;
+  color: var(--text-4);
+}
+.inst-disque__barre {
+  position: relative;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.inst-disque__barre span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  transition:
+    left 0.4s var(--ease),
+    width 0.4s var(--ease);
+}
+.inst-disque__occupe {
+  left: 0;
+  background: rgba(238, 242, 255, 0.55);
+}
+.inst-disque__jeu {
+  background: #3fe08a;
+  box-shadow: 0 0 8px rgba(63, 224, 138, 0.6);
+}
+.inst-disque__alerte {
+  color: var(--text-1);
+  font-weight: 700;
+}
+
+/* Cases à cocher. */
+.inst__options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.inst-case {
+  height: 38px;
+  padding: 0 14px 0 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(238, 242, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+.inst-case__boite {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(238, 242, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-accent);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.inst-case.is-coche .inst-case__boite {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.inst__note {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.inst__boutons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.inst__boutons--ecartes {
+  justify-content: space-between;
+}
+.inst-btn {
+  position: relative;
+  overflow: hidden;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  background: none;
+  color: var(--text-1);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.3s ease,
+    opacity 0.2s ease;
+}
+.inst-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+.inst-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.inst-btn--clair {
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+  box-shadow: 0 0 24px rgba(238, 242, 255, 0.18);
+}
+.inst-btn--jouer {
+  height: 48px;
+  padding: 0 28px;
+  border: none;
+  background: #3fe08a;
+  color: #04140b;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 0 30px rgba(63, 224, 138, 0.45);
+}
+.inst-btn__reflet {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+  animation: inst-reflet 2.2s ease-in-out infinite;
+}
+.inst-btn > span:not(.inst-btn__reflet) {
+  position: relative;
+}
+
+/* Suivi. */
+.inst__pct {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+.inst__resume {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.inst__resume strong {
+  color: var(--text-1);
+}
+.inst__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.inst__stat {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(238, 242, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.inst__stat strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.inst__stat span {
+  font-size: 11.5px;
+  color: var(--text-4);
+}
+
+/* Barre en liane. */
+.inst-barre {
+  position: relative;
+  width: 568px;
+  height: 44px;
+}
+.inst-barre__rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 21px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.inst-barre__svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.inst-barre__trait {
+  transition: stroke-dashoffset 1.8s linear;
+}
+.inst-barre__lueur {
+  filter: drop-shadow(0 0 6px rgba(63, 224, 138, 0.45));
+}
+.inst-barre__tete {
+  position: absolute;
+  top: 22px;
+  width: 0;
+  height: 0;
+  transition: left 1.8s linear;
+}
+.inst-barre__gros {
+  position: absolute;
+  left: -20px;
+  top: -20px;
+  overflow: visible;
+  filter: drop-shadow(0 0 8px rgba(63, 224, 138, 0.5));
+}
+.inst-barre__petit {
+  position: absolute;
+  left: -2px;
+  top: -32px;
+  overflow: visible;
+}
+.inst-barre.is-arret .inst-spin-vite,
+.inst-barre.is-arret .inst-spin-vite-r {
+  animation-play-state: paused;
+}
+.inst-barre.is-inconnu .inst-barre__tete {
+  animation: inst-respire 1.6s ease-in-out infinite;
+}
+
+/* Pastille réduite. */
+.inst-pastille {
+  position: fixed;
+  z-index: 60;
+  right: 36px;
+  bottom: 36px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px 10px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  background: rgba(20, 21, 23, 0.9);
+  backdrop-filter: blur(20px);
+  color: var(--text-1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  animation: inst-pastille 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: transform 0.2s ease;
+}
+.inst-pastille:hover {
+  transform: translateY(-2px);
+}
+.inst-pastille__texte {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.inst-pastille__texte strong {
+  font-size: 14px;
+}
+.inst-pastille__texte span {
+  font-size: 12px;
+  color: var(--text-3);
+}

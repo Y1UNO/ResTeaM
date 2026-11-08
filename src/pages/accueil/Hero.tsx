@@ -10,8 +10,7 @@ import { degradeJaquette } from "../../lib/images";
 import { marquerNotesVues, notesVuesLe } from "../../lib/notesVues";
 import { Affiche } from "./Ambiance";
 import { PanneauPatchNotes } from "./PanneauPatchNotes";
-import { FenetreInstallation } from "./FenetreInstallation";
-import { SuiviInstallation } from "./SuiviInstallation";
+import { useInstallation } from "../../installation/store";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
 
@@ -23,23 +22,18 @@ function kicker(jeu: JeuBibliotheque): string {
   return ecart < SEMAINE ? "Reprendre · joué cette semaine" : `Reprendre · joué le ${date(jeu.dernierLancement)}`;
 }
 
-type Props = {
-  jeu: JeuBibliotheque;
-  images: ImagesJeu;
-  /** « Installer » vient d'être cliqué : on attend que Steam commence. */
-  enAttente: boolean;
-  onInstaller: () => void;
-};
+type Props = { jeu: JeuBibliotheque; images: ImagesJeu };
 
 /** Hero de la maquette 01 avec le jeu en vedette. */
-export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
+export function Hero({ jeu, images }: Props) {
   const navigate = useNavigate();
   const succes = useSuccesJeu(jeu.appId);
   const notes = usePatchNotes(jeu.appId);
   const [etat, setEtat] = useState<EtatJaquette>("repos");
   const [lancement, setLancement] = useState(false);
   const [jaquetteRatee, setJaquetteRatee] = useState(false);
-  const [fenetre, setFenetre] = useState(false);
+  const installation = useInstallation();
+  const suivi = installation.jeu?.appId === jeu.appId;
   const minuterie = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -74,8 +68,9 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
   const enTelechargement = inst && (inst.etat === "telechargement" || inst.etat === "enPause");
 
   const actionPrincipale = () => {
-    if (enTelechargement || enAttente) {
-      void api.steamLien({ type: "telechargements" });
+    const jeuSuivi = { appId: jeu.appId, nom: jeu.nom, jaquette: images.jaquette, hero: images.hero };
+    if (enTelechargement || (suivi && installation.phase !== "choix")) {
+      installation.ouvrirSuivi(jeuSuivi);
       return;
     }
     if (jouable) {
@@ -86,7 +81,7 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
       return;
     }
     // Fenêtre d'installation de ResTeaM : choix du disque, puis Steam télécharge en arrière-plan.
-    setFenetre(true);
+    installation.ouvrirChoix(jeuSuivi);
   };
 
   const s = succes.data?.donnees;
@@ -153,16 +148,14 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
                 ? "Ouverture dans Steam…"
                 : jouable
                   ? "Jouer"
-                  : enTelechargement || enAttente
-                    ? "Voir dans Steam"
+                  : enTelechargement || (suivi && installation.phase !== "choix")
+                    ? "Voir le téléchargement"
                     : "Installer"}
             </button>
             <button type="button" className="btn btn--secondaire" onClick={() => navigate(`/jeu/${jeu.appId}`)}>
               Fiche du jeu
             </button>
           </div>
-
-          <SuiviInstallation appId={jeu.appId} installation={inst} enAttente={enAttente && !enTelechargement} />
         </div>
 
         <button
@@ -188,16 +181,6 @@ export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
           {n && <span className="jaquette-hero__indice">Clique pour lire les notes</span>}
         </button>
       </div>
-
-      {fenetre && (
-        <FenetreInstallation
-          appId={jeu.appId}
-          nom={jeu.nom}
-          jaquette={afficheImage ? images.jaquette : null}
-          onFermer={() => setFenetre(false)}
-          onLancee={onInstaller}
-        />
-      )}
 
       {n && (etat === "ouvert" || etat === "fermeture") && (
         <PanneauPatchNotes

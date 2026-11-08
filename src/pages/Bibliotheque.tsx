@@ -7,7 +7,7 @@ import { Smoke } from "../components/Smoke";
 import { entier, heures } from "../lib/format";
 import { degradeJaquette, imagesDe } from "../lib/images";
 import { rangDepuisMinutes } from "../lib/rangs";
-import { FenetreInstallation } from "./accueil/FenetreInstallation";
+import { useInstallation } from "../installation/store";
 import "./pages.css";
 import "./Bibliotheque.css";
 
@@ -28,7 +28,7 @@ export function Bibliotheque() {
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<Filtre>("tous");
   const [tri, setTri] = useState<Tri>("az");
-  const [aInstaller, setAInstaller] = useState<JeuBibliotheque | null>(null);
+  const installation = useInstallation();
 
   // État d'installation en direct (le disque fait foi).
   const tous = useMemo(() => {
@@ -169,26 +169,33 @@ export function Bibliotheque() {
               key={j.appId}
               jeu={j}
               jaquette={imagesDe(j.appId, images.data).jaquette}
-              onInstaller={() => setAInstaller(j)}
+              onInstaller={() => {
+                const im = imagesDe(j.appId, images.data);
+                installation.ouvrirChoix({ appId: j.appId, nom: j.nom, jaquette: im.jaquette, hero: im.hero });
+              }}
+              onSuivre={() => {
+                const im = imagesDe(j.appId, images.data);
+                installation.ouvrirSuivi({ appId: j.appId, nom: j.nom, jaquette: im.jaquette, hero: im.hero });
+              }}
             />
           ))}
         </div>
       </div>
-
-      {aInstaller && (
-        <FenetreInstallation
-          appId={aInstaller.appId}
-          nom={aInstaller.nom}
-          jaquette={imagesDe(aInstaller.appId, images.data).jaquette}
-          onFermer={() => setAInstaller(null)}
-          onLancee={() => void installes.refetch()}
-        />
-      )}
     </div>
   );
 }
 
-function Tuile({ jeu, jaquette, onInstaller }: { jeu: JeuBibliotheque; jaquette: string | null; onInstaller: () => void }) {
+function Tuile({
+  jeu,
+  jaquette,
+  onInstaller,
+  onSuivre,
+}: {
+  jeu: JeuBibliotheque;
+  jaquette: string | null;
+  onInstaller: () => void;
+  onSuivre: () => void;
+}) {
   const navigate = useNavigate();
   const [ratee, setRatee] = useState(false);
   const r = rangDepuisMinutes(jeu.minutesTotal);
@@ -199,7 +206,7 @@ function Tuile({ jeu, jaquette, onInstaller }: { jeu: JeuBibliotheque; jaquette:
 
   const action = (e: MouseEvent) => {
     e.stopPropagation();
-    if (enCours) void api.steamLien({ type: "telechargements" });
+    if (enCours) onSuivre();
     else if (jouable) void api.steamLien({ type: "jouer", appId: jeu.appId });
     else onInstaller();
   };

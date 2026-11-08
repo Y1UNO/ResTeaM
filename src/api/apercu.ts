@@ -17,6 +17,8 @@ const erreur = (code: ErreurApp["code"], message: string): ErreurApp => ({ code,
 
 export async function apercu<T>(commande: string, args?: Record<string, unknown>): Promise<T> {
   await attendre(250);
+  // Redémarrage de Steam simulé.
+  if (commande === "installer_jeu") await attendre(2500);
   switch (commande) {
     case "session_lire":
       return (etat.steamId ? { steamId: etat.steamId } : null) as T;

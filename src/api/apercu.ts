@@ -71,7 +71,144 @@ export async function apercu<T>(commande: string, args?: Record<string, unknown>
         horsLigne: false,
         recupereLe: Math.floor(Date.now() / 1000),
       } as T;
-    default:
+    default: {
+      const donnee = donneesApercu(commande, args);
+      if (donnee !== undefined) return donnee as T;
       throw erreur("interne", `Commande inconnue : ${commande}`);
+    }
+  }
+}
+
+// ——— Fausses données de l'étape 2b (noms des maquettes) ———
+
+const maintenant = () => Math.floor(Date.now() / 1000);
+const enveloppe = <T,>(donnees: T) => ({ donnees, horsLigne: false, recupereLe: maintenant() - 120 });
+const JEUX = [
+  { appId: 1145350, nom: "Hades II", minutes: 2880, deux: 708, favori: true },
+  { appId: 391540, nom: "Undertale", minutes: 438, deux: 60, favori: true },
+  { appId: 990080, nom: "Hogwarts Legacy", minutes: 1200, deux: 0, favori: false },
+  { appId: 1903340, nom: "Clair Obscur: Expedition 33", minutes: 0, deux: 0, favori: true },
+  { appId: 2868840, nom: "Slay the Spire 2", minutes: 95, deux: 95, favori: false },
+  { appId: 730, nom: "Counter-Strike 2", minutes: 31500, deux: 0, favori: false },
+];
+const INSTALLES = [1145350, 391540, 1903340, 2868840];
+
+function donneesApercu(commande: string, args?: Record<string, unknown>): unknown {
+  switch (commande) {
+    case "steam_local":
+      return {
+        trouve: true,
+        chemin: String.raw`C:\Program Files (x86)\Steam`,
+        bibliotheques: [
+          { chemin: String.raw`C:\Program Files (x86)\Steam`, nombreJeux: 3 },
+          { chemin: String.raw`E:\SteamLibrary`, nombreJeux: 7 },
+        ],
+      };
+    case "jeux_installes":
+      return INSTALLES.map((id, i) => {
+        const j = JEUX.find((x) => x.appId === id)!;
+        const dl = i === 3;
+        return {
+          appId: id,
+          nom: j.nom,
+          dossier: String.raw`E:\SteamLibrary\steamapps\common\ `.trim() + j.nom,
+          bibliotheque: String.raw`E:\SteamLibrary`,
+          taille: 3_000_000_000 * (i + 1),
+          etat: dl ? "telechargement" : "installe",
+          aTelecharger: dl ? 2_100_000_000 : 0,
+          telecharge: dl ? 1_300_000_000 : 0,
+          derniereMaj: maintenant() - 86400 * 3,
+          dernierLancement: maintenant() - 86400,
+        };
+      });
+    case "bibliotheque":
+      return enveloppe({
+        jeux: JEUX.map((j) => ({
+          appId: j.appId,
+          nom: j.nom,
+          minutesTotal: j.minutes,
+          minutesDeuxSemaines: j.deux,
+          icone: "",
+          dernierLancement: maintenant() - 86400 * 2,
+          installation: INSTALLES.includes(j.appId)
+            ? { etat: "installe", taille: 11_774_185_682, dossier: "", aTelecharger: 0, telecharge: 0 }
+            : null,
+          favori: j.favori,
+          cache: false,
+          collections: j.appId === 730 ? ["uc-coop"] : [],
+        })),
+        collections: [{ id: "uc-coop", nom: "Avec les potes", nombre: 5, dynamique: false }],
+        nombreInstalles: INSTALLES.length,
+        nombreFavoris: JEUX.filter((j) => j.favori).length,
+        steamLocal: true,
+      });
+    case "recemment_joues":
+      return enveloppe(
+        JEUX.filter((j) => j.deux > 0).map((j) => ({
+          appId: j.appId,
+          nom: j.nom,
+          minutesTotal: j.minutes,
+          minutesDeuxSemaines: j.deux,
+          icone: "",
+          dernierLancement: maintenant() - 86400,
+        })),
+      );
+    case "niveau_badges":
+      return enveloppe({ niveau: 11, xp: 1130, xpNiveauActuel: 1100, xpPourSuivant: 70, badges: new Array(6).fill(0).map((_, i) => ({ id: i, appId: null, niveau: 1, xp: 100, obtenuLe: maintenant(), rarete: 1000 })) });
+    case "amis":
+      return enveloppe({
+        prive: false,
+        amis: [
+          ["Meguru Bachira", 1, "Apex Legends"],
+          ["Tututemobile", 1, "Hades II"],
+          ["AtoxXy", 0, null],
+          ["Furios-KL", 0, null],
+        ].map(([pseudo, etat, jeu], i) => ({
+          steamId: `7656119800000000${i}`,
+          pseudo,
+          avatar: "",
+          urlProfil: "",
+          etat,
+          visibilite: 3,
+          nomReel: null,
+          pays: null,
+          jeuEnCours: jeu,
+          jeuEnCoursId: null,
+          derniereDeconnexion: maintenant() - 3600 * (i * 20 + 5),
+          lobby: i === 0 ? "1" : null,
+          serveur: null,
+          amiDepuis: 0,
+        })),
+      });
+    case "succes_jeu": {
+      if (args?.appId === 391540) return enveloppe(null);
+      const succes = new Array(8).fill(0).map((_, i) => ({
+        id: `S${i}`,
+        nom: ["Premier sang", "Sans un bruit", "Collectionneur", "Lune noire", "Infatigable", "Tout vu", "Maître", "Éternel"][i],
+        description: null,
+        icone: null,
+        iconeGrise: null,
+        cache: false,
+        debloque: i < 3,
+        debloqueLe: i < 3 ? maintenant() - 86400 * (i + 1) : null,
+      }));
+      return enveloppe({ appId: args?.appId, total: 50, debloques: 18, succes });
+    }
+    case "actus_jeu":
+      return enveloppe(
+        ["Mise à jour majeure 1.2", "Notes de version 1.1.4", "Feuille de route de l’hiver"].map((titre, i) => ({
+          id: String(i),
+          titre,
+          url: "",
+          auteur: null,
+          contenu: "",
+          date: maintenant() - 86400 * (3 + i * 9),
+          source: "Annonces de la communauté",
+          officielle: true,
+          patch: i < 2,
+        })),
+      );
+    default:
+      return undefined;
   }
 }

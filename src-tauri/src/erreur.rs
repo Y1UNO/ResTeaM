@@ -16,6 +16,10 @@ pub enum Erreur {
     CleFormat,
     #[error("Tu n'es pas connecté à Steam.")]
     SessionAbsente,
+    #[error("Ces données sont privées sur Steam.")]
+    Prive,
+    #[error("Steam n'est pas installé sur ce PC (ou introuvable).")]
+    SteamIntrouvable,
     #[error("Steam limite le nombre de requêtes. Réessaie dans un moment.")]
     Quota,
     #[error("Impossible de joindre Steam. Vérifie ta connexion Internet.")]
@@ -39,6 +43,8 @@ impl Erreur {
             Erreur::CleRefusee => "cle_refusee",
             Erreur::CleFormat => "cle_format",
             Erreur::SessionAbsente => "session_absente",
+            Erreur::Prive => "prive",
+            Erreur::SteamIntrouvable => "steam_introuvable",
             Erreur::Quota => "quota",
             Erreur::Reseau => "reseau",
             Erreur::Steam(_) => "steam",

@@ -1,5 +1,20 @@
 import { invoke } from "@tauri-apps/api/core";
-import { estErreurApp, type Donnee, type ErreurApp, type Joueur, type Session } from "./types";
+import {
+  estErreurApp,
+  type Actu,
+  type Bibliotheque,
+  type Collections,
+  type Donnee,
+  type ErreurApp,
+  type InfosSteamLocal,
+  type JeuInstalle,
+  type JeuPossede,
+  type Joueur,
+  type ListeAmis,
+  type NiveauBadges,
+  type Session,
+  type SuccesJeu,
+} from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
 export const dansTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -30,4 +45,17 @@ export const api = {
   cleSupprimer: () => appeler<void>("cle_supprimer"),
   ouvrirPageCleApi: () => appeler<void>("ouvrir_page_cle_api"),
   joueurMoi: () => appeler<Donnee<Joueur>>("joueur_moi"),
+
+  // Lecture locale (sans réseau)
+  steamLocal: () => appeler<InfosSteamLocal>("steam_local"),
+  jeuxInstalles: () => appeler<JeuInstalle[]>("jeux_installes"),
+  collections: () => appeler<Collections>("collections"),
+
+  // Données du compte (Web API, avec cache Rust)
+  bibliotheque: () => appeler<Donnee<Bibliotheque>>("bibliotheque"),
+  recemmentJoues: () => appeler<Donnee<JeuPossede[]>>("recemment_joues"),
+  niveauBadges: () => appeler<Donnee<NiveauBadges>>("niveau_badges"),
+  amis: () => appeler<Donnee<ListeAmis>>("amis"),
+  succesJeu: (appId: number) => appeler<Donnee<SuccesJeu | null>>("succes_jeu", { appId }),
+  actusJeu: (appId: number) => appeler<Donnee<Actu[]>>("actus_jeu", { appId }),
 };

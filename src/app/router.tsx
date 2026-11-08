@@ -5,6 +5,7 @@ import { PATHS } from "./paths";
 import { Accueil } from "../pages/Accueil";
 import { EmptyPage } from "../pages/EmptyPage";
 import { Parametres } from "../pages/Parametres";
+import { DonneesTest } from "../pages/DonneesTest";
 import { Connexion } from "../ecrans/Connexion";
 import { CleApi } from "../ecrans/CleApi";
 import { Chargement } from "../ecrans/Chargement";
@@ -38,6 +39,7 @@ export const router = createHashRouter([
       { path: PATHS.telechargements, element: <EmptyPage title="Téléchargements" step="8" /> },
       { path: PATHS.profil, element: <EmptyPage title="Profil" step="6" /> },
       { path: PATHS.parametres, element: <Parametres /> },
+      { path: PATHS.donnees, element: <DonneesTest /> },
       { path: "*", element: <Navigate to={PATHS.accueil} replace /> },
     ],
   },

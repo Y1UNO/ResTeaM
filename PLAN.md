@@ -191,6 +191,28 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - vrai avatar en bas de la barre.
 - **Piège corrigé** : les conteneurs avec de la fumée qui déborde utilisent `overflow: clip`, pas `hidden`. Sinon, le focus d'un champ fait défiler le contenu.
 
+### Étape 2b — Lecture locale et données du compte (8 novembre 2026)
+
+- **Lecture locale** :
+  - `steam/vdf.rs` : parseur KeyValues avec tests ;
+  - `steam/local.rs` : dossier Steam via le registre (`winreg`), `libraryfolders.vdf` et `appmanifest_*.acf` (état depuis `StateFlags`, progression `BytesDownloaded/BytesToDownload`) ;
+  - favoris et collections dans `userdata/<SteamID64 − 76561197960265728>/config/cloudstorage/cloud-storage-namespace-1.json`. Une collection est dynamique si son `filterSpec` a une recherche ou des options ;
+  - le redistribuable 228980 est ignoré.
+- **Web API** (`steam/webapi.rs`) :
+  - GetOwnedGames, GetRecentlyPlayedGames, GetBadges (niveau, XP, badges) ;
+  - GetFriendList + GetPlayerSummaries par paquets de 100 ;
+  - GetPlayerAchievements + GetSchemaForGame (en français). Un 400 signifie « pas de succès » et donne `null` ;
+  - GetNewsForApp, limité à `feeds=steam_community_announcements` (sinon la presse étrangère se mélange aux patch notes).
+  - Le code HTTP 401 donne l'erreur `prive`, le 403 donne `cle_refusee`.
+- **Bibliothèque** (`steam/bibliotheque.rs`) : jeux possédés croisés avec l'installation, les favoris et les collections.
+- **Commandes** : `steam_local`, `jeux_installes` (sans cache, relue toutes les 3 s pour les téléchargements), `collections`, `bibliotheque`, `recemment_joues`, `niveau_badges`, `amis`, `succes_jeu(appId)`, `actus_jeu(appId)`. Les TTL sont ceux de la section 2.
+- **Front** :
+  - `src/lib/rangs.ts` : rangs et jauge à 9 segments ;
+  - `src/lib/format.ts` : heures, tailles, dates relatives et statut, en français ;
+  - hooks dans `src/api/requetes.ts` ;
+  - **page de test provisoire** `/donnees` (menu du logo → « Données Steam (test) »), à retirer quand les vrais écrans seront faits.
+- **Tests** : `cargo test` lance 20 tests. `cargo test donnees_reelles -- --ignored --nocapture` interroge le vrai compte avec la clé enregistrée et n'affiche que des nombres. Résultat : 81 jeux, niveau 11, 6 badges, 24 amis.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

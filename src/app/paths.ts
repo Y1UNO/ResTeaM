@@ -12,4 +12,5 @@ export const PATHS = {
   parametres: "/parametres",
   connexion: "/connexion",
   cleApi: "/cle-api",
+  donnees: "/donnees",
 } as const;

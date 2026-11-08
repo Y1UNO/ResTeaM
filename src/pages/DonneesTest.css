@@ -1,0 +1,218 @@
+/* Page de test provisoire (étape 2b) : simple, mais dans la DA. */
+.donnees {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.donnees__carte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  animation: rise-in 0.5s var(--ease) both;
+}
+.donnees__carte--large {
+  grid-column: 1 / -1;
+}
+.donnees__entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.donnees__source {
+  font-size: 12px;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+.donnees__sous-titre {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.donnees__vide {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.donnees__chiffres {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.donnees__chiffre {
+  min-width: 96px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.donnees__chiffre strong {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: -0.8px;
+  line-height: 1;
+}
+.donnees__chiffre span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.donnees__ligne {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+.donnees__ligne span:first-child {
+  flex: 0 0 120px;
+  color: var(--text-4);
+}
+.donnees__ligne span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.donnees__liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.donnees__jeu,
+.donnees__actu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 4px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  transition: background-color var(--dur-fast) ease;
+}
+.donnees__jeu:hover,
+.donnees__actu:hover {
+  background: rgba(238, 242, 255, 0.04);
+}
+.donnees__nom {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.donnees__val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.donnees__etat {
+  min-width: 90px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.donnees__rang {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid rgba(238, 242, 255, 0.6);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.donnees__icone {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+.donnees__icone--rond {
+  border-radius: 50%;
+}
+.donnees__icone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.donnees__tag {
+  margin-right: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(238, 242, 255, 0.22);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.donnees__dl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.donnees__dl-haut {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.donnees__dl-haut span:last-child {
+  color: var(--text-3);
+  font-size: 13px;
+}
+.donnees__barre {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fill-track);
+  overflow: hidden;
+}
+.donnees__barre > div {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--halo-3);
+  transition: width 0.6s var(--ease);
+}
+
+.donnees__choix {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-4);
+}
+.donnees__choix select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-3);
+  background: rgba(9, 9, 10, 0.6);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 14px;
+}
+.donnees__deux {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}

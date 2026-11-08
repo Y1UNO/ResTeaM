@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../components/Logo";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/commandes";
-import { IconLogout, IconSettings } from "../components/icons";
+import { IconData, IconLogout, IconSettings } from "../components/icons";
 import { useSession } from "./session";
 import { PATHS } from "./paths";
 import "./LogoMenu.css";
@@ -92,6 +92,15 @@ export function LogoMenu() {
           >
             <IconSettings />
             Paramètres
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`logo-menu__item${pathname === PATHS.donnees ? " is-current" : ""}`}
+            onClick={() => go(PATHS.donnees)}
+          >
+            <IconData />
+            Données Steam (test)
           </button>
           <div className="logo-menu__separateur" role="separator" />
           <button type="button" role="menuitem" className="logo-menu__item" onClick={seDeconnecter}>

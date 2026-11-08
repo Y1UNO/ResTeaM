@@ -36,6 +36,15 @@ pub fn run() {
             commandes::cle_supprimer,
             commandes::ouvrir_page_cle_api,
             commandes::joueur_moi,
+            commandes::steam_local,
+            commandes::jeux_installes,
+            commandes::collections,
+            commandes::bibliotheque,
+            commandes::recemment_joues,
+            commandes::niveau_badges,
+            commandes::amis,
+            commandes::succes_jeu,
+            commandes::actus_jeu,
         ])
         .run(tauri::generate_context!())
         .expect("erreur au lancement de ResTeaM");

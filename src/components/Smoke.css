@@ -1,0 +1,63 @@
+/* Valeurs reprises telles quelles des maquettes. */
+.smoke {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  pointer-events: none;
+}
+
+.smoke__layer {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+.smoke__layer--1 {
+  left: 0;
+  width: 60%;
+  height: 260px;
+  animation: smoke-drift-1 30s ease-in-out infinite;
+}
+.smoke__layer--2 {
+  right: 0;
+  width: 65%;
+  height: 280px;
+  animation: smoke-drift-2 38s ease-in-out infinite;
+}
+
+/* En bas du hero (maquette 01). */
+.smoke--hero {
+  bottom: -120px;
+  height: 420px;
+  filter: blur(50px);
+}
+.smoke--hero .smoke__layer--1 {
+  bottom: 60px;
+  background: rgba(46, 46, 52, 0.85);
+}
+.smoke--hero .smoke__layer--2 {
+  bottom: 40px;
+  background: rgba(28, 28, 32, 0.95);
+}
+.smoke__floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 220px;
+  background: var(--bg);
+}
+
+/* En haut de page (maquettes 03, 05, 06). */
+.smoke--top {
+  top: -160px;
+  height: 480px;
+  filter: blur(60px);
+}
+.smoke--top .smoke__layer--1 {
+  top: 60px;
+  background: rgba(46, 48, 58, 0.7);
+}
+.smoke--top .smoke__layer--2 {
+  top: 40px;
+  background: rgba(30, 32, 40, 0.85);
+}

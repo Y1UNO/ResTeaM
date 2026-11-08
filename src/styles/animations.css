@@ -1,0 +1,76 @@
+/* Animations partagées (reprises de la maquette 01). */
+
+/* Fumée monochrome : deux nappes qui dérivent lentement (30 s et 38 s). */
+@keyframes smoke-drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(160px, -30px) scale(1.25, 0.85);
+  }
+}
+@keyframes smoke-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(-200px, 20px) scale(0.85, 1.2);
+  }
+}
+
+/* Image du hero : fondu + léger zoom. */
+@keyframes hero-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Titre qui glisse vers le haut. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entrée de page : fondu + petite montée. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

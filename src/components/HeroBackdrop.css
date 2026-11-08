@@ -1,0 +1,17 @@
+.hero-backdrop__art {
+  position: absolute;
+  inset: -40px;
+  filter: blur(28px) saturate(1.1);
+  animation: hero-zoom-in var(--dur-3) var(--ease) both;
+}
+
+.hero-backdrop__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(9, 9, 10, 0.95) 0%,
+    rgba(9, 9, 10, 0.6) 45%,
+    rgba(9, 9, 10, 0.25) 100%
+  );
+}

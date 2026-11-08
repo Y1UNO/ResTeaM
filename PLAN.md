@@ -148,3 +148,17 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 
 - **Clé Steam Web API** : à avoir pour l'étape 2a (steamcommunity.com/dev/apikey).
 - **GitHub** : pousser le dépôt sous YIUNO ou rester en local ?
+
+## 6. Journal des étapes
+
+### Étape 1 — Socle et DA (8 novembre 2026)
+
+- Projet Tauri 2 + React 19 + TypeScript + Vite, routage React Router en mode hash (`src/app/router.tsx`, chemins dans `src/app/paths.ts`).
+- DA : `src/styles/tokens.css` (couleurs, rayons, ombres, courbes, mesures de mise en page), `animations.css` (fumée, zoom du hero, montées), `base.css`.
+- Polices embarquées via `@fontsource` (Space Grotesk 500/700, Inter 400–700), aucun appel réseau.
+- Composants : `Smoke` (variantes `hero` = maquettes 01/02, `top` = maquettes 03/05/06), `HeroBackdrop` (image floutée + voile + fumée ; dégradé de remplacement de la maquette tant qu'il n'y a pas d'image), `icons.tsx`.
+- Barre de gauche `src/app/NavRail.tsx` : valeurs de la maquette 01 ; logo neutre sans lettre ; avatar en bas (silhouette tant qu'on n'est pas connecté, liseré lunaire quand le Profil est ouvert). Ctrl+K ouvre la Recherche.
+- Bibliothèque (rail) → Accueil `/` ; `/bibliotheque` (page complète, étape 4) allume aussi Bibliothèque. Magasin et `/jeu/:appId` allument Magasin.
+- Fenêtre : maximisée, minimum 1280 × 800, fond `#09090A` dès l'ouverture, thème sombre. CSP stricte (images Steam autorisées pour la suite).
+- Icône d'app : carré neutre généré depuis `assets-src/logo-neutre.svg` (`npx tauri icon assets-src/logo-neutre.svg`, puis supprimer `icons/android` et `icons/ios`).
+- Construire l'exe : `npm run build:exe` → `src-tauri/target/release/ResTeaM.exe`. Installateur NSIS : `npm run build:installer`.

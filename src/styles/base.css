@@ -1,0 +1,73 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+}
+
+html {
+  color-scheme: dark;
+  scrollbar-gutter: stable;
+}
+
+body {
+  color: var(--text-1);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Barre de défilement discrète, dans la DA. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-pill);
+  border: 3px solid transparent;
+  background: rgba(238, 242, 255, 0.12) padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(238, 242, 255, 0.22) padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

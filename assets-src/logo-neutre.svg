@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Logo neutre provisoire : carré clair aux coins arrondis, comme dans la barre de navigation. -->
+  <rect x="112" y="112" width="800" height="800" rx="248" fill="#F2F2F3"/>
+</svg>

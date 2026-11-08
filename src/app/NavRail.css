@@ -1,0 +1,141 @@
+/* Barre de gauche : valeurs reprises de la maquette 01. */
+.rail {
+  position: fixed;
+  z-index: 30;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 0;
+  background: linear-gradient(90deg, rgba(9, 9, 10, 0.55) 0%, rgba(9, 9, 10, 0) 100%);
+  box-shadow:
+    inset -1px 0 0 rgba(238, 242, 255, 0.12),
+    6px 0 18px -10px rgba(238, 242, 255, 0.12);
+  user-select: none;
+}
+
+/* Logo neutre : carré sans lettre. */
+.rail__logo {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-logo);
+  background: rgba(242, 242, 243, 0.92);
+  margin-bottom: 22px;
+  transition:
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-fast) var(--ease);
+}
+.rail__logo:hover {
+  box-shadow: 0 0 18px var(--halo-2);
+}
+.rail__logo:active {
+  transform: scale(0.96);
+}
+
+.rail__spacer {
+  flex: 1;
+}
+
+.rail__btn {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--text-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.rail__btn--tool {
+  color: var(--text-3);
+}
+.rail__btn:hover {
+  background: var(--fill-hover);
+  color: var(--text-1);
+}
+.rail__btn.is-active {
+  background: var(--fill-active);
+  color: var(--text-1);
+}
+
+/* Petit trait d'accent collé au bord de la fenêtre. */
+.rail__bar {
+  position: absolute;
+  left: -16px;
+  top: 14px;
+  width: 4px;
+  height: 24px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transition:
+    opacity var(--dur-fast) ease,
+    transform var(--dur-1) var(--ease);
+}
+.is-active > .rail__bar {
+  opacity: 1;
+  transform: none;
+}
+
+/* Avatar du profil (maquette 04). */
+.rail__avatar {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  margin-top: 6px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  background: linear-gradient(160deg, #34343a, #18181b);
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-4);
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.rail__avatar:hover {
+  border-color: rgba(238, 242, 255, 0.45);
+  color: var(--text-2);
+}
+.rail__avatar.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--halo-1);
+  color: var(--text-1);
+}
+.rail__avatar:focus-visible {
+  outline-offset: 3px;
+}
+.rail__bar--avatar {
+  left: -18px;
+  top: 13px;
+}
+.rail__avatar-img {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rail__avatar-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

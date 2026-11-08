@@ -1,0 +1,87 @@
+/*
+ * Tokens de la DA « Nocturne · Clair de lune » (kit/DA.md).
+ * Référence absolue : kit/design/01-accueil-reference-V3.dc.html.
+ * Une seule couleur d'accent, réservée aux interactions.
+ */
+:root {
+  /* Fond */
+  --bg: #09090a;
+  --bg-deep: #0e0e10; /* fin des dégradés d'images de jeu */
+
+  /* Surfaces en verre fumé (+ backdrop-filter: blur(14–26px)) */
+  --surface-1: rgba(18, 18, 20, 0.55);
+  --surface-2: rgba(18, 18, 20, 0.6);
+  --surface-3: rgba(18, 18, 20, 0.65);
+  --surface-panel: rgba(14, 14, 17, 0.82);
+  --surface-card: #131315;
+  --blur-sm: 8px;
+  --blur-md: 14px;
+  --blur-lg: 22px;
+  --blur-xl: 26px;
+
+  /* Bordures */
+  --line-1: rgba(238, 242, 255, 0.08);
+  --line-2: rgba(238, 242, 255, 0.1);
+  --line-3: rgba(238, 242, 255, 0.12);
+  --line-active: rgba(238, 242, 255, 0.16);
+  --line-strong: rgba(238, 242, 255, 0.18);
+
+  /* Texte */
+  --text-1: #f2f2f3;
+  --text-2: #c9c9ce;
+  --text-kicker: #cfcfd4;
+  --text-3: #a3a3a8;
+  --text-4: #8e8e94;
+
+  /* Accent Clair de lune */
+  --accent: #eef2ff;
+  --on-accent: #0a0d14;
+  --halo-1: rgba(238, 242, 255, 0.12);
+  --halo-2: rgba(238, 242, 255, 0.18);
+  --halo-3: rgba(238, 242, 255, 0.25);
+  --halo-4: rgba(238, 242, 255, 0.45);
+
+  /* Calques neutres (survol, sélection) */
+  --fill-hover: rgba(255, 255, 255, 0.04);
+  --fill-active: rgba(255, 255, 255, 0.08);
+  --fill-track: rgba(255, 255, 255, 0.1);
+
+  /* Typographie */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-text: "Inter", "Segoe UI", system-ui, sans-serif;
+  --fs-label: 12px;
+  --fs-body: 14px;
+  --fs-page-title: 64px;
+  --fs-hero-title: 88px;
+  --ls-label: 1.4px;
+
+  /* Formes */
+  --radius-xs: 10px;
+  --radius-sm: 12px;
+  --radius-logo: 13px;
+  --radius-md: 16px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
+
+  /* Ombres profondes */
+  --shadow-1: 0 14px 30px rgba(0, 0, 0, 0.6);
+  --shadow-2: 0 22px 50px rgba(0, 0, 0, 0.8);
+  --shadow-3: 0 40px 100px rgba(0, 0, 0, 0.9);
+
+  /* Animations */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 0.25s;
+  --dur-1: 0.35s;
+  --dur-2: 0.6s;
+  --dur-3: 0.9s;
+
+  /* Mise en page (maquettes calées sur 1440 px) */
+  --rail-w: 84px;
+  --page-left: 140px;
+  --page-right: 64px;
+  --hero-right: 128px;
+  --hero-h: 680px;
+}

@@ -1,0 +1,18 @@
+.app {
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* Le contenu passe sous la barre transparente, comme dans la maquette. */
+.app__main {
+  position: relative;
+  min-height: 100vh;
+}
+
+.app__page {
+  position: relative;
+  min-height: 100vh;
+  animation: page-in var(--dur-2) var(--ease) both;
+}

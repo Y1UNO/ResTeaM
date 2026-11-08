@@ -9,6 +9,7 @@ import {
   IconStore,
   IconWishlist,
 } from "../components/icons";
+import { Logo } from "../components/Logo";
 import { PATHS } from "./paths";
 import "./NavRail.css";
 
@@ -87,8 +88,9 @@ export function NavRail({ avatarUrl, personaName }: NavRailProps) {
 
   return (
     <nav aria-label="Navigation principale" className="rail">
-      {/* Logo neutre en attendant le vrai (décision du 8 nov. 2026). */}
-      <Link to={PATHS.accueil} className="rail__logo" aria-label="ResTeaM · accueil" title="ResTeaM" />
+      <Link to={PATHS.accueil} className="rail__logo" aria-label="ResTeaM · accueil" title="ResTeaM">
+        <Logo size={42} />
+      </Link>
 
       {MAIN.map((item) => renderItem(item))}
 

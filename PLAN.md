@@ -137,7 +137,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 |---|---|
 | Temps de travail | Pas de limite par étape |
 | Liste de souhaits (étoile, croix) | Tom n'a pas tranché. Choix retenu : les deux **ouvrent la page du jeu dans Steam** (`steam://store/<id>`), comme Acheter, avec une infobulle « Se gère dans Steam » |
-| Logo | Plus tard. En attendant, un carré neutre sans lettre en haut de la barre |
+| Logo | « Lune à engrenages » (8 nov. 2026), sources dans `assets-src/logo/`. Logo animé en ligne en haut de la barre (`src/components/Logo.tsx`), icône de l'app régénérée |
 | Avatar du profil | En bas de la barre de navigation sur toutes les pages (comme PAGES.md et la maquette 04) |
 | Kayro | On ne s'en occupe pas pour l'instant |
 | Écran | 1440p (2560 × 1440). Fenêtre maximisée par défaut, taille minimale 1280 × 800. Mise en page calée sur les maquettes (1440 px) et qui s'étire proprement jusqu'à 2560 px |
@@ -160,6 +160,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Barre de gauche `src/app/NavRail.tsx` : valeurs de la maquette 01 ; logo neutre sans lettre ; avatar en bas (silhouette tant qu'on n'est pas connecté, liseré lunaire quand le Profil est ouvert). Ctrl+K ouvre la Recherche.
 - Bibliothèque (rail) → Accueil `/` ; `/bibliotheque` (page complète, étape 4) allume aussi Bibliothèque. Magasin et `/jeu/:appId` allument Magasin.
 - Fenêtre : maximisée, minimum 1280 × 800, fond `#09090A` dès l'ouverture, thème sombre. CSP stricte (images Steam autorisées pour la suite).
-- Icône d'app : carré neutre généré depuis `assets-src/logo-neutre.svg` (`npx tauri icon assets-src/logo-neutre.svg`, puis supprimer `icons/android` et `icons/ios`).
+- Icône d'app : `npx tauri icon assets-src/logo/resteam-logo-1024.png`, puis copier `assets-src/logo/resteam-logo.ico` sur `src-tauri/icons/icon.ico` et supprimer `icons/android` et `icons/ios`.
 - Construire l'exe : `npm run build:exe` (ferme l'ancienne version ouverte, compile, met à jour le raccourci `ResTeaM` du Bureau) → `src-tauri/target/release/ResTeaM.exe`. Installateur NSIS : `npm run build:installer`.
-- Kit resynchronisé : `kit/pages-autonomes/` (maquettes ouvrables sans canevas, servies par la config `maquettes` de `.claude/launch.json`) et `kit/captures/` (rendus attendus). Comparaison mesurée : barre et fond identiques à la page 01. Seul écart voulu : logo neutre au lieu du « R » des maquettes.
+- Kit resynchronisé : `kit/pages-autonomes/` (maquettes ouvrables sans canevas, servies par la config `maquettes` de `.claude/launch.json`) et `kit/captures/` (rendus attendus). Comparaison mesurée : barre et fond identiques à la page 01. Seul écart voulu : le logo « Lune à engrenages » à la place du carré « R » des maquettes.
+- À faire en 2a (LISEZ-MOI du logo) : grand logo animé sur l'écran de connexion / chargement (`<Logo size={…} />`), et option « Animer le logo » dans les Paramètres, activée par défaut. Pour la désactiver, il suffit de poser `data-logo-anime="off"` sur `<html>` (le CSS est déjà prêt).

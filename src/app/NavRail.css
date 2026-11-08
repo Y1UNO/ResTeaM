@@ -18,20 +18,17 @@
   user-select: none;
 }
 
-/* Logo neutre : carré sans lettre. */
+/* Logo « Lune à engrenages », à la place du carré de la maquette (42 px). */
 .rail__logo {
   flex: 0 0 auto;
   width: 42px;
   height: 42px;
   border-radius: var(--radius-logo);
-  background: rgba(242, 242, 243, 0.92);
   margin-bottom: 22px;
-  transition:
-    box-shadow var(--dur-fast) ease,
-    transform var(--dur-fast) var(--ease);
+  transition: transform var(--dur-fast) var(--ease);
 }
 .rail__logo:hover {
-  box-shadow: 0 0 18px var(--halo-2);
+  transform: scale(1.06);
 }
 .rail__logo:active {
   transform: scale(0.96);

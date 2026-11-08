@@ -1,0 +1,65 @@
+/*
+ * Animation du logo (reprise de assets-src/logo/resteam-logo-anime.svg).
+ * Rapport de vitesse réaliste : 12, 8 et 6 dents → 24 s, 16 s, 12 s.
+ * Les origines de rotation sont en unités du viewBox 200×200.
+ */
+.rt-logo {
+  display: block;
+  overflow: visible;
+}
+
+.rt-logo .rt-gear-big {
+  transform-origin: 110px 96px;
+  animation: rt-cw 24s linear infinite;
+}
+.rt-logo .rt-gear-medium {
+  transform-origin: 139.5px 71.2px;
+  animation: rt-ccw 16s linear infinite;
+}
+.rt-logo .rt-gear-small {
+  transform-origin: 137px 114.9px;
+  animation: rt-ccw 12s linear infinite;
+}
+.rt-logo .rt-moon {
+  filter: drop-shadow(0 0 10px rgba(63, 224, 138, 0.45));
+  animation: rt-glow 6s ease-in-out infinite;
+}
+
+@keyframes rt-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rt-ccw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes rt-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(63, 224, 138, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(63, 224, 138, 0.6));
+  }
+}
+
+/*
+ * Logo figé : « réduire les animations » de Windows, ou option « Animer le logo »
+ * désactivée dans les Paramètres (étape 2a : attribut data-logo-anime="off" sur <html>).
+ */
+@media (prefers-reduced-motion: reduce) {
+  .rt-logo .rt-gear-big,
+  .rt-logo .rt-gear-medium,
+  .rt-logo .rt-gear-small,
+  .rt-logo .rt-moon {
+    animation: none;
+  }
+}
+:root[data-logo-anime="off"] .rt-logo .rt-gear-big,
+:root[data-logo-anime="off"] .rt-logo .rt-gear-medium,
+:root[data-logo-anime="off"] .rt-logo .rt-gear-small,
+:root[data-logo-anime="off"] .rt-logo .rt-moon {
+  animation: none;
+}

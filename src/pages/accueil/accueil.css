@@ -666,3 +666,11 @@
   border-color: rgba(238, 242, 255, 0.4);
   color: var(--text-1);
 }
+
+/*
+ * Image du jeu plus présente (demande de Tom, 8 nov. 2026) : la fumée et la bande
+ * noire du bas descendent, l'image ne se fond dans le noir que sur les ~150 derniers px.
+ */
+.accueil .hero .smoke--hero {
+  bottom: -190px;
+}

@@ -28,7 +28,7 @@ type HeroBackdropProps = {
 };
 
 /**
- * Fond du hero de la maquette 01 : image du jeu floutée, dégradé noir
+ * Fond du hero : image du jeu nette (sans flou, décision de Tom), dégradé noir
  * de gauche à droite pour la lisibilité, fumée monochrome en bas.
  * L'image est préchargée : le fondu ne démarre qu'une fois qu'elle est prête.
  */
@@ -51,7 +51,7 @@ export function HeroBackdrop({ image, repli = placeholderArt(PLACEHOLDER_TINT), 
 
   const afficheImage = image && pret === image && !rate;
   const enAttente = image && !afficheImage && !rate;
-  const background = afficheImage ? `url("${image}") center / cover no-repeat` : repli;
+  const background = afficheImage ? `url("${image}") center 30% / cover no-repeat` : repli;
 
   return (
     <>

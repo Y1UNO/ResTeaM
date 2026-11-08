@@ -145,6 +145,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 | Git | Dépôt local créé, branche `main` |
 | Fenêtre | **Sans cadre Windows** (comme Steam) : bande invisible en haut pour déplacer la fenêtre, boutons Réduire / Agrandir / Fermer dessinés dans la DA (`src/app/TitleBar.tsx`) |
 | Accès aux Paramètres | **Clic sur le logo → menu → Paramètres** (`src/app/LogoMenu.tsx`). « Se déconnecter » s'ajoutera dans ce menu en 2a |
+| Fond des jeux (hero) | **Image du jeu nette, sans flou** : c'est l'affiche du jeu qui met l'app en valeur. Voile sombre à gauche pour le texte, fumée et bande noire réduites en bas (fondu sur ~150 px). Écart voulu par rapport à DA.md (« image floutée ») |
 | Clé API | Tom la saisit lui-même dans l'app (Paramètres). Elle n'est jamais écrite dans le code, le dépôt, la mémoire ou une conversation |
 
 ### Encore ouvert

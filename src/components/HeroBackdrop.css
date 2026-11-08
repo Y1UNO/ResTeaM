@@ -1,7 +1,13 @@
+/*
+ * Image du jeu en fond du hero, NETTE (décision de Tom, 8 nov. 2026 : pas de flou,
+ * c'est l'affiche du jeu qui met l'app en valeur). Le voile sombre à gauche garde
+ * le texte lisible, la fumée fond l'image dans le bas de page.
+ */
 .hero-backdrop__art {
   position: absolute;
-  inset: -40px;
-  filter: blur(28px) saturate(1.1);
+  inset: 0;
+  background-size: cover;
+  background-position: center 30%;
   animation: hero-zoom-in var(--dur-3) var(--ease) both;
 }
 
@@ -10,8 +16,8 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(9, 9, 10, 0.95) 0%,
-    rgba(9, 9, 10, 0.6) 45%,
-    rgba(9, 9, 10, 0.25) 100%
+    rgba(9, 9, 10, 0.92) 0%,
+    rgba(9, 9, 10, 0.55) 45%,
+    rgba(9, 9, 10, 0.1) 100%
   );
 }

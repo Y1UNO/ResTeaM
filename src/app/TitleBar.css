@@ -1,0 +1,60 @@
+/*
+ * Barre de titre invisible (fenêtre sans cadre, comme Steam) : aucun fond,
+ * le hero et la fumée montent jusqu'en haut de la fenêtre.
+ */
+.titlebar {
+  position: fixed;
+  z-index: 40;
+  top: 0;
+  left: var(--rail-w);
+  right: 0;
+  height: var(--titlebar-h);
+  display: flex;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Bande de déplacement de la fenêtre (double-clic = agrandir / restaurer). */
+.titlebar__drag {
+  flex: 1;
+  pointer-events: auto;
+}
+
+.titlebar__controls {
+  display: flex;
+  pointer-events: auto;
+}
+
+.titlebar__btn {
+  width: 46px;
+  height: var(--titlebar-h);
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: default;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.titlebar__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-1);
+}
+.titlebar__btn:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+/* Fermer : rouge de Windows au survol, le seul endroit où on garde cette couleur. */
+.titlebar__btn--close:hover {
+  background: #c42b1c;
+  color: #fff;
+}
+.titlebar__btn--close:active {
+  background: #a3261a;
+}
+.titlebar__btn:focus-visible {
+  outline-offset: -2px;
+}

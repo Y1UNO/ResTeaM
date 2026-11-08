@@ -18,6 +18,7 @@ export const router = createHashRouter([
       { path: PATHS.recherche, element: <EmptyPage title="Recherche" step="8" /> },
       { path: PATHS.telechargements, element: <EmptyPage title="Téléchargements" step="8" /> },
       { path: PATHS.profil, element: <EmptyPage title="Profil" step="6" /> },
+      { path: PATHS.parametres, element: <EmptyPage title="Paramètres" step="2a" /> },
       { path: "*", element: <Navigate to={PATHS.accueil} replace /> },
     ],
   },

@@ -143,6 +143,9 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 | Écran | 1440p (2560 × 1440). Fenêtre maximisée par défaut, taille minimale 1280 × 800. Mise en page calée sur les maquettes (1440 px) et qui s'étire proprement jusqu'à 2560 px |
 | Kit | Copié dans `kit/` (référence de design, versionnée) |
 | Git | Dépôt local créé, branche `main` |
+| Fenêtre | **Sans cadre Windows** (comme Steam) : bande invisible en haut pour déplacer la fenêtre, boutons Réduire / Agrandir / Fermer dessinés dans la DA (`src/app/TitleBar.tsx`) |
+| Accès aux Paramètres | **Clic sur le logo → menu → Paramètres** (`src/app/LogoMenu.tsx`). « Se déconnecter » s'ajoutera dans ce menu en 2a |
+| Clé API | Tom la saisit lui-même dans l'app (Paramètres). Elle n'est jamais écrite dans le code, le dépôt, la mémoire ou une conversation |
 
 ### Encore ouvert
 
@@ -203,6 +206,8 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Clé fausse : message clair, rien ne plante.
 - Couper Internet : l'avatar en cache s'affiche, avec un drapeau « hors ligne ».
 
-### À décider avant de commencer
+### Décidé
 
-- **Accès aux Paramètres** : icône engrenage dans le groupe du bas de la barre, ou menu au clic sur l'avatar.
+- **Accès aux Paramètres** : clic sur le logo, puis Paramètres (menu déjà en place). Ajouter « Se déconnecter » dans ce menu.
+- La barre de titre est invisible : sur l'écran Connexion (sans barre de gauche), garder les boutons de fenêtre et la bande de déplacement (`<TitleBar />`).
+- Étape 3 : le panneau Amis de la maquette est à `top: 24px` ; le descendre sous les boutons de fenêtre (32 px).

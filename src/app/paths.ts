@@ -9,4 +9,5 @@ export const PATHS = {
   telechargements: "/telechargements",
   profil: "/profil",
   jeu: "/jeu/:appId",
+  parametres: "/parametres",
 } as const;

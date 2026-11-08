@@ -21,6 +21,8 @@
         "minHeight": 800,
         "center": true,
         "maximized": true,
+        "decorations": false,
+        "shadow": true,
         "theme": "Dark",
         "backgroundColor": "#09090A"
       }

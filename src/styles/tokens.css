@@ -80,6 +80,7 @@
 
   /* Mise en page (maquettes calées sur 1440 px) */
   --rail-w: 84px;
+  --titlebar-h: 32px; /* bande invisible du haut : déplacer la fenêtre + boutons */
   --page-left: 140px;
   --page-right: 64px;
   --hero-right: 128px;

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   IconCharts,
   IconDownloads,
@@ -9,7 +9,7 @@ import {
   IconStore,
   IconWishlist,
 } from "../components/icons";
-import { Logo } from "../components/Logo";
+import { LogoMenu } from "./LogoMenu";
 import { PATHS } from "./paths";
 import "./NavRail.css";
 
@@ -88,9 +88,7 @@ export function NavRail({ avatarUrl, personaName }: NavRailProps) {
 
   return (
     <nav aria-label="Navigation principale" className="rail">
-      <Link to={PATHS.accueil} className="rail__logo" aria-label="ResTeaM · accueil" title="ResTeaM">
-        <Logo size={42} />
-      </Link>
+      <LogoMenu />
 
       {MAIN.map((item) => renderItem(item))}
 

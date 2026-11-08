@@ -1,0 +1,96 @@
+.logo-menu {
+  position: relative;
+  flex: 0 0 auto;
+  margin-bottom: 22px;
+}
+
+/* Le bouton garde la place exacte du logo de la maquette (42 px). */
+.logo-menu .rail__logo {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.logo-menu .rail__logo.is-open {
+  transform: scale(1.06);
+}
+
+/* Panneau en verre fumé, à droite du logo. */
+.logo-menu__panel {
+  position: absolute;
+  z-index: 50;
+  top: -6px;
+  left: 58px;
+  min-width: 210px;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-panel);
+  backdrop-filter: blur(var(--blur-lg));
+  border: 1px solid var(--line-active);
+  box-shadow:
+    var(--shadow-2),
+    0 0 30px rgba(238, 242, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transform-origin: 0 24px;
+}
+.logo-menu__panel.is-open {
+  animation: logo-menu-in 0.32s var(--ease-out-soft) both;
+}
+.logo-menu__panel.is-closing {
+  animation: logo-menu-out 0.22s ease both;
+}
+
+@keyframes logo-menu-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes logo-menu-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+}
+
+.logo-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.logo-menu__item:hover,
+.logo-menu__item:focus-visible {
+  background: var(--fill-active);
+  color: var(--text-1);
+}
+.logo-menu__item:focus-visible {
+  outline: none;
+}
+.logo-menu__item.is-current {
+  color: var(--text-1);
+}

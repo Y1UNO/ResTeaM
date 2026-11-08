@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { NavRail } from "./NavRail";
+import { TitleBar } from "./TitleBar";
 import { PATHS } from "./paths";
 import "./Layout.css";
 
@@ -28,6 +29,7 @@ export function Layout() {
 
   return (
     <div className="app">
+      <TitleBar />
       <NavRail />
       <main className="app__main">
         <div key={pathname} className="app__page">

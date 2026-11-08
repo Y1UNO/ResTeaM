@@ -246,7 +246,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - **Palette** (`src/lib/couleurs.ts`) : l'image est réduite à 48 × 16 sur un canvas (les en-têtes CORS de Steam l'autorisent). Les pixels trop sombres ou trop gris sont écartés, puis on garde 3 teintes dominantes (24 seaux de 15°), recalées en lueur. Cache en mémoire et en localStorage. Repli : teintes tirées du nom.
 - **Ambiance** (`src/pages/accueil/Ambiance.tsx`) :
   - `Lueurs` : 3 taches floues et animées aux couleurs de la palette, en transition douce d'un jeu à l'autre, qui se fondent dans le noir sous le ruban ;
-  - `Affiche` : largeur `min(74 %, 1900 px)` à droite, masque de fondu à gauche et en bas, brume teintée et brume grise ;
+  - `Affiche` : de 12 % de la largeur jusqu'au bord droit, et 200 px sous le hero (derrière les jaquettes du ruban). Fondu sur 15 % à gauche et sur le dernier quart en bas. Brume teintée et grise très légère, animée par `brume-respire` (28 px et une respiration d'opacité, 28 à 34 s) ;
   - le voile du texte se fond vers le bas, et le hero de l'accueil est en `overflow: visible` (pas de couture).
 - **Suivi d'installation** :
   - `SuiviInstallation.tsx` gère l'attente de Steam (barre indéterminée), puis le téléchargement (%, octets, vitesse lissée, temps restant) et la pause, avec un lien « Ouvrir dans Steam » (`steam://open/downloads`) ;

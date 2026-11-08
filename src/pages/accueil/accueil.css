@@ -891,3 +891,47 @@
   -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
 }
+
+/*
+ * Retouche de Tom (8 nov. 2026, traits rouges sur la capture) : affiche agrandie
+ * vers la gauche (fondu autour de 20 % de la largeur) et vers le bas (fondu
+ * derrière les jaquettes du ruban). Brume allégée, à peine animée.
+ */
+.accueil .affiche {
+  left: 12%;
+  width: auto;
+  bottom: -200px;
+}
+.accueil .affiche__image {
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, #000 15%),
+    linear-gradient(to bottom, #000 74%, transparent 100%);
+  mask-image:
+    linear-gradient(to right, transparent 0%, #000 15%),
+    linear-gradient(to bottom, #000 74%, transparent 100%);
+}
+.accueil .affiche__brume--gauche {
+  left: -4%;
+  width: 22%;
+  background: rgba(var(--c1), 0.11);
+  animation: brume-respire 28s ease-in-out infinite;
+}
+.accueil .affiche__brume--bas {
+  bottom: -6%;
+  height: 26%;
+  background: rgba(150, 156, 170, 0.055);
+  animation: brume-respire 34s ease-in-out infinite reverse;
+}
+
+/* Mouvement à peine perceptible : quelques dizaines de pixels et une respiration d'opacité. */
+@keyframes brume-respire {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(28px, -10px) scale(1.06, 0.97);
+    opacity: 0.75;
+  }
+}

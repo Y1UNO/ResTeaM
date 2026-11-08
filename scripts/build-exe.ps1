@@ -28,7 +28,9 @@ $shell = New-Object -ComObject WScript.Shell
 $raccourci = $shell.CreateShortcut($lnk)
 $raccourci.TargetPath = $exe
 $raccourci.WorkingDirectory = Split-Path -Parent $exe
-$raccourci.IconLocation = "$exe,0"
+# Icône explicite (fichier .ico du logo) : Windows ne réutilise pas une vieille icône en cache.
+$icone = Join-Path $racine 'src-tauri\icons\icon.ico'
+$raccourci.IconLocation = "$icone,0"
 $raccourci.Description = 'ResTeaM — vitrine pour Steam (dernière version construite)'
 $raccourci.Save()
 

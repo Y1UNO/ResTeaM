@@ -46,20 +46,27 @@
 }
 
 /*
- * Logo figé : « réduire les animations » de Windows, ou option « Animer le logo »
- * désactivée dans les Paramètres (étape 2a : attribut data-logo-anime="off" sur <html>).
+ * Le logo tourne toujours : pas d'option pour couper l'animation (décision de Tom,
+ * 8 nov. 2026). Il échappe donc aussi à la règle globale « réduire les animations »
+ * de styles/animations.css.
  */
 @media (prefers-reduced-motion: reduce) {
+  .rt-logo .rt-gear-big {
+    animation-duration: 24s !important;
+  }
+  .rt-logo .rt-gear-medium {
+    animation-duration: 16s !important;
+  }
+  .rt-logo .rt-gear-small {
+    animation-duration: 12s !important;
+  }
+  .rt-logo .rt-moon {
+    animation-duration: 6s !important;
+  }
   .rt-logo .rt-gear-big,
   .rt-logo .rt-gear-medium,
   .rt-logo .rt-gear-small,
   .rt-logo .rt-moon {
-    animation: none;
+    animation-iteration-count: infinite !important;
   }
-}
-:root[data-logo-anime="off"] .rt-logo .rt-gear-big,
-:root[data-logo-anime="off"] .rt-logo .rt-gear-medium,
-:root[data-logo-anime="off"] .rt-logo .rt-gear-small,
-:root[data-logo-anime="off"] .rt-logo .rt-moon {
-  animation: none;
 }

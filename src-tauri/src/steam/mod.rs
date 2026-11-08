@@ -1,5 +1,8 @@
 pub mod auth;
 pub mod bibliotheque;
+pub mod images;
+pub mod liens;
 pub mod local;
+pub mod notes;
 pub mod vdf;
 pub mod webapi;

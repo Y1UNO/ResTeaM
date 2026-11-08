@@ -34,13 +34,23 @@ export function date(secondes: number): string {
   return (d.getFullYear() === new Date().getFullYear() ? jourMois : jourMoisAnnee).format(d);
 }
 
-/** « à l’instant », « il y a 7 min », « il y a 46 h », « il y a 4 j », puis la date. */
-export function ilYA(secondes: number): string {
+/**
+ * « à l’instant », « il y a 7 min », « il y a 46 h », « il y a 4 j », puis la date.
+ * `long` : « il y a 3 jours », « il y a 5 heures » (en-têtes).
+ */
+export function ilYA(secondes: number, long = false): string {
   const ecart = Math.max(0, Date.now() / 1000 - secondes);
+  const pluriel = (n: number, mot: string) => `il y a ${n} ${mot}${n > 1 ? "s" : ""}`;
   if (ecart < 60) return "à l’instant";
   if (ecart < 3600) return `il y a ${Math.floor(ecart / 60)} min`;
-  if (ecart < 48 * 3600) return `il y a ${Math.floor(ecart / 3600)} h`;
-  if (ecart < 30 * 86400) return `il y a ${Math.floor(ecart / 86400)} j`;
+  if (ecart < 48 * 3600) {
+    const h = Math.floor(ecart / 3600);
+    return long ? pluriel(h, "heure") : `il y a ${h} h`;
+  }
+  if (ecart < 30 * 86400) {
+    const j = Math.floor(ecart / 86400);
+    return long ? pluriel(j, "jour") : `il y a ${j} j`;
+  }
   return date(secondes);
 }
 

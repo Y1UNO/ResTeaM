@@ -89,3 +89,25 @@ export function useActusJeu(appId: number | null) {
     staleTime: 10 * 60_000,
   });
 }
+
+// ——— Étape 3 ———
+
+/** Images de plusieurs jeux (une semaine de cache côté Rust). */
+export function useImages(appIds: number[]) {
+  const cle = [...appIds].sort((a, b) => a - b).join(",");
+  return useQuery({
+    queryKey: ["images", cle],
+    queryFn: () => api.imagesJeux(appIds),
+    enabled: appIds.length > 0,
+    staleTime: Infinity,
+  });
+}
+
+export function usePatchNotes(appId: number | null) {
+  return useQuery({
+    queryKey: ["patch-notes", appId],
+    queryFn: () => api.patchNotes(appId as number),
+    enabled: appId != null,
+    staleTime: 10 * 60_000,
+  });
+}

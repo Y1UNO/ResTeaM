@@ -144,3 +144,30 @@ export type Actu = {
   officielle: boolean;
   patch: boolean;
 };
+
+// ——— Étape 3 ———
+
+export type ImagesJeu = { jaquette: string | null; hero: string | null; banniere: string | null };
+
+export type CategorieNotes = "nouveau" | "equilibrage" | "performances" | "correctifs" | "autre";
+export type ElementNotes = { texte: string; sous: string[] };
+export type SectionNotes = { categorie: CategorieNotes; elements: ElementNotes[] };
+export type PatchNotes = {
+  id: string;
+  titre: string;
+  url: string;
+  date: number;
+  version: string | null;
+  patch: boolean;
+  sections: SectionNotes[];
+};
+
+/** Actions `steam://` : le Rust construit et vérifie le lien. */
+export type ActionSteam =
+  | { type: "jouer"; appId: number }
+  | { type: "installer"; appId: number }
+  | { type: "magasin"; appId: number }
+  | { type: "rejoindreLobby"; appId: number; lobby: string; steamId: string }
+  | { type: "rejoindreServeur"; adresse: string }
+  | { type: "amis" }
+  | { type: "page"; url: string };

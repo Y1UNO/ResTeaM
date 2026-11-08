@@ -213,6 +213,31 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - **page de test provisoire** `/donnees` (menu du logo → « Données Steam (test) »), à retirer quand les vrais écrans seront faits.
 - **Tests** : `cargo test` lance 16 tests, plus 4 ignorés par défaut qui touchent au réseau ou à ce PC. `cargo test donnees_reelles -- --ignored --nocapture` interroge le vrai compte avec la clé enregistrée et n'affiche que des nombres. Résultat : 81 jeux, niveau 11, 6 badges, 24 amis.
 
+### Étape 3 — Accueil réel et patch notes (8 novembre 2026)
+
+- **Images** (`steam/images.rs`) : `IStoreBrowseService/GetItems` (sans clé) donne les vraies adresses `library_capsule` / `library_hero` / `header`, avec empreinte pour les jeux récents. Repli sur les adresses classiques `…/steam/apps/<id>/library_600x900.jpg`. Cache d'une semaine par jeu (`Cache::frais` / `Cache::ranger`).
+- **Liens** (`steam/liens.rs`) : le front envoie une action (`jouer`, `installer`, `magasin`, `rejoindreLobby`, `rejoindreServeur`, `amis`, `page`). Le Rust construit et valide le lien `steam://` : chiffres, IP:port, pages HTTPS des domaines Steam uniquement.
+- **Patch notes** (`steam/notes.rs`) :
+  - nettoyage BBCode et HTML (images et vidéos retirées, entités décodées) ;
+  - sous-listes rattachées à leur point ;
+  - sous-titres détectés (« Enemies: », « MAP CHANGE ») et puces tapées à la main retirées ;
+  - tri par mots-clés FR/EN, avec la priorité Correctifs > Performances > Équilibrage > Nouveau, et le titre de section en repli ;
+  - les paragraphes d'intro sont écartés quand l'annonce a de vraies listes ;
+  - version extraite du titre.
+  - Choix de l'annonce : la plus récente étiquetée `patchnotes`, sinon la plus récente.
+- **Commandes** : `images_jeux(appIds)`, `steam_lien(action)`, `patch_notes(appId)`.
+- **Front** :
+  - `src/pages/Accueil.tsx` et `src/pages/accueil/` : `Hero`, `PanneauPatchNotes`, `Ruban`, `PanneauAmis`, `accueil.css` (animations de la maquette : entrée, sortie et retour de la jaquette, dépliage et repliage du panneau) ;
+  - composants `JaugeHeures` et `Croissant` ;
+  - `HeroBackdrop` précharge l'image et utilise un dégradé teinté d'après le nom en repli ;
+  - `lib/images.ts` et `lib/notesVues.ts` (badge « Nouveau patch » : date de la dernière ouverture des notes, en localStorage).
+- **Ruban** : les 8 derniers jeux lancés (sinon les plus joués), sans les jeux masqués. Un clic met le jeu en vedette.
+- **Mise en page** : hauteur du hero `clamp(680px, 63vh, 900px)`, pour s'étirer sur l'écran 1440p. Interligne par défaut, comme les maquettes : mesuré au pixel près contre `01-accueil.html` à 1440 × 1080. Panneau Amis à `top: 40px`, sous les boutons de fenêtre.
+- **Reste à faire** :
+  - onglet Magasin de l'accueil (étape 5) ;
+  - Rejoindre ne s'affiche que si Steam donne `lobbysteamid` + `gameid`, ou `gameserverip` ;
+  - « Tous les jeux » et « Fiche du jeu » mènent encore à des pages vides (étapes 4 et 5).
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

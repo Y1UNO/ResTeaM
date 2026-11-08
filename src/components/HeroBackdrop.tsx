@@ -1,9 +1,10 @@
+import { useEffect, useState } from "react";
 import { Smoke } from "./Smoke";
 import "./HeroBackdrop.css";
 
 /**
  * Teinte de remplacement de la maquette 01 (jeu en vedette « Hades II »).
- * À l'étape 3, elle est remplacée par la vraie image `library_hero` floutée.
+ * Utilisée seulement tant qu'aucune image n'est disponible.
  */
 export const PLACEHOLDER_TINT = "#2E8A6E";
 
@@ -18,24 +19,50 @@ export function placeholderArt(hex: string) {
 }
 
 type HeroBackdropProps = {
-  /** URL de l'image du jeu. Sans image, on affiche le dégradé de remplacement. */
-  image?: string;
-  tint?: string;
+  /** URL de l'image du jeu (`library_hero`). */
+  image?: string | null;
+  /** Fond à afficher si l'image manque ou ne charge pas. */
+  repli?: string;
   /** Change à chaque nouveau jeu en vedette pour rejouer le fondu + zoom. */
-  artKey?: string;
+  artKey?: string | number;
 };
 
 /**
  * Fond du hero de la maquette 01 : image du jeu floutée, dégradé noir
  * de gauche à droite pour la lisibilité, fumée monochrome en bas.
+ * L'image est préchargée : le fondu ne démarre qu'une fois qu'elle est prête.
  */
-export function HeroBackdrop({ image, tint = PLACEHOLDER_TINT, artKey }: HeroBackdropProps) {
-  const background = image
-    ? `url("${image}") center / cover no-repeat`
-    : placeholderArt(tint);
+export function HeroBackdrop({ image, repli = placeholderArt(PLACEHOLDER_TINT), artKey }: HeroBackdropProps) {
+  const [pret, setPret] = useState<string | null>(null);
+  const [rate, setRate] = useState(false);
+
+  useEffect(() => {
+    setRate(false);
+    if (!image) return;
+    let annule = false;
+    const img = new Image();
+    img.onload = () => !annule && setPret(image);
+    img.onerror = () => !annule && setRate(true);
+    img.src = image;
+    return () => {
+      annule = true;
+    };
+  }, [image]);
+
+  const afficheImage = image && pret === image && !rate;
+  const enAttente = image && !afficheImage && !rate;
+  const background = afficheImage ? `url("${image}") center / cover no-repeat` : repli;
+
   return (
     <>
-      <div key={artKey} aria-hidden="true" className="hero-backdrop__art" style={{ background }} />
+      {!enAttente && (
+        <div
+          key={`${artKey ?? ""}-${afficheImage ? "img" : "repli"}`}
+          aria-hidden="true"
+          className="hero-backdrop__art"
+          style={{ background }}
+        />
+      )}
       <div aria-hidden="true" className="hero-backdrop__shade" />
       <Smoke variant="hero" />
     </>

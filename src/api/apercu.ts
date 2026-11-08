@@ -208,6 +208,43 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
           patch: i < 2,
         })),
       );
+    case "images_jeux":
+      // Vide : le front utilise les adresses classiques du CDN Steam (vraies images).
+      return {};
+    case "steam_lien":
+      return null;
+    case "patch_notes":
+      return enveloppe({
+        id: "1",
+        titre: "Mise à jour majeure",
+        url: "https://store.steampowered.com/news/app/1145350",
+        date: maintenant() - 3 * 86400,
+        version: "1.2",
+        patch: true,
+        sections: [
+          {
+            categorie: "nouveau",
+            elements: [
+              { texte: "Ici s’affichent les ajouts du patch, récupérés depuis les actus Steam du jeu.", sous: [] },
+              { texte: "Chaque ligne de l’annonce devient un point lisible, avec la mise en forme du thème.", sous: [] },
+            ],
+          },
+          {
+            categorie: "equilibrage",
+            elements: [
+              { texte: "Buffed Axebot:", sous: ["Hammer Uppercut damage increased from 12 → 14", "Gains +10 Max HP on respawn"] },
+              { texte: "Les valeurs modifiées peuvent être mises en évidence.", sous: [] },
+            ],
+          },
+          {
+            categorie: "correctifs",
+            elements: [
+              { texte: "Liste des bugs corrigés.", sous: [] },
+              { texte: "Améliorations de performances et de stabilité.", sous: [] },
+            ],
+          },
+        ],
+      });
     default:
       return undefined;
   }

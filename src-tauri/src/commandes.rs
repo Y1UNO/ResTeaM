@@ -1,5 +1,6 @@
 //! Commandes exposées au front (`invoke`). Toutes renvoient `{ code, message }` en cas d'erreur.
 
+use std::collections::HashMap;
 use std::sync::Mutex;
 
 use tauri::{AppHandle, State};
@@ -12,6 +13,9 @@ use crate::secrets;
 use crate::session::{self, Session};
 use crate::steam::auth;
 use crate::steam::bibliotheque::{self, Bibliotheque};
+use crate::steam::images::{self, ImagesJeu};
+use crate::steam::liens::{self, ActionSteam};
+use crate::steam::notes::{self, PatchNotes};
 use crate::steam::local::{self, Collections, DossierBibliotheque, JeuInstalle};
 use crate::steam::webapi::{Actu, JeuPossede, ListeAmis, NiveauBadges, SuccesJeu};
 use crate::steam::webapi::{ClientSteam, Joueur};
@@ -236,4 +240,61 @@ pub async fn succes_jeu(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32) -
 #[tauri::command]
 pub async fn actus_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<Vec<Actu>>> {
     etat.cache.avec_cache(&format!("actus:{app_id}"), TTL_ACTUS, || etat.steam.actus(app_id)).await
+}
+
+// ——— Étape 3 : accueil ———
+
+const TTL_IMAGES: i64 = 7 * 24 * 60 * 60;
+
+/// Adresses des images (jaquette, hero, bannière) de plusieurs jeux.
+/// Cache d'une semaine par jeu ; sans réseau, adresses classiques.
+#[tauri::command]
+pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resultat<HashMap<u32, ImagesJeu>> {
+    let mut resultat = HashMap::new();
+    let mut manquants = Vec::new();
+    for id in app_ids.into_iter().take(200) {
+        match etat.cache.frais::<ImagesJeu>(&format!("images:{id}"))? {
+            Some(i) => {
+                resultat.insert(id, i);
+            }
+            None => manquants.push(id),
+        }
+    }
+    if !manquants.is_empty() {
+        match etat.steam.images(&manquants).await {
+            Ok(trouvees) => {
+                for (id, i) in trouvees {
+                    etat.cache.ranger(&format!("images:{id}"), &i, TTL_IMAGES)?;
+                    resultat.insert(id, i);
+                }
+            }
+            Err(e) if e.est_passagere() => {
+                for id in manquants {
+                    resultat.insert(id, images::adresses_classiques(id));
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    Ok(resultat)
+}
+
+/// Ouvre un lien `steam://` construit et vérifié côté Rust (jouer, installer, rejoindre…).
+#[tauri::command]
+pub fn steam_lien(app: AppHandle, action: ActionSteam) -> Resultat<()> {
+    let lien = liens::construire(&action).ok_or_else(|| Erreur::Interne("lien Steam refusé".into()))?;
+    app.opener()
+        .open_url(lien, None::<&str>)
+        .map_err(|_| Erreur::Interne("impossible d'ouvrir Steam".into()))
+}
+
+/// Dernières patch notes d'un jeu, nettoyées et triées par catégorie.
+#[tauri::command]
+pub async fn patch_notes(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<Option<PatchNotes>>> {
+    let actus = etat.cache.avec_cache(&format!("actus:{app_id}"), TTL_ACTUS, || etat.steam.actus(app_id)).await?;
+    Ok(Donnee {
+        donnees: notes::depuis_actus(&actus.donnees),
+        hors_ligne: actus.hors_ligne,
+        recupere_le: actus.recupere_le,
+    })
 }

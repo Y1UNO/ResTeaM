@@ -84,5 +84,5 @@
   --page-left: 140px;
   --page-right: 64px;
   --hero-right: 128px;
-  --hero-h: 680px;
+  --hero-h: clamp(680px, 63vh, 900px); /* 680 px sur la maquette (1080 px de haut) */
 }

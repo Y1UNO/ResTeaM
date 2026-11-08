@@ -96,6 +96,19 @@ impl Cache {
         Ok(())
     }
 
+    /// Valeur encore fraîche, sans rien recharger.
+    pub fn frais<T: DeserializeOwned>(&self, cle: &str) -> Resultat<Option<T>> {
+        Ok(self
+            .lire(cle)?
+            .filter(|e| e.expire_le > maintenant())
+            .and_then(|e| serde_json::from_str(&e.json).ok()))
+    }
+
+    /// Range une valeur pour `ttl_secondes`.
+    pub fn ranger<T: Serialize>(&self, cle: &str, valeur: &T, ttl_secondes: i64) -> Resultat<()> {
+        self.ecrire(cle, &serde_json::to_string(valeur)?, ttl_secondes)
+    }
+
     pub fn vider(&self) -> Resultat<()> {
         self.verrou()?.execute("DELETE FROM cache", [])?;
         Ok(())

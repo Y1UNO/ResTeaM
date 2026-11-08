@@ -21,7 +21,7 @@ body {
   color: var(--text-1);
   font-family: var(--font-text);
   font-size: var(--fs-body);
-  line-height: 1.4;
+  line-height: normal; /* comme les maquettes */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;

@@ -1,10 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
   estErreurApp,
+  type ActionSteam,
   type Actu,
   type Bibliotheque,
   type Collections,
   type Donnee,
+  type ImagesJeu,
   type ErreurApp,
   type InfosSteamLocal,
   type JeuInstalle,
@@ -12,6 +14,7 @@ import {
   type Joueur,
   type ListeAmis,
   type NiveauBadges,
+  type PatchNotes,
   type Session,
   type SuccesJeu,
 } from "./types";
@@ -58,4 +61,9 @@ export const api = {
   amis: () => appeler<Donnee<ListeAmis>>("amis"),
   succesJeu: (appId: number) => appeler<Donnee<SuccesJeu | null>>("succes_jeu", { appId }),
   actusJeu: (appId: number) => appeler<Donnee<Actu[]>>("actus_jeu", { appId }),
+
+  // Accueil
+  imagesJeux: (appIds: number[]) => appeler<Record<string, ImagesJeu>>("images_jeux", { appIds }),
+  patchNotes: (appId: number) => appeler<Donnee<PatchNotes | null>>("patch_notes", { appId }),
+  steamLien: (action: ActionSteam) => appeler<void>("steam_lien", { action }),
 };

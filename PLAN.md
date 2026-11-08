@@ -301,7 +301,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - L'accueil et la bibliothèque ouvrent ce centre ; `FenetreInstallation.tsx` et `SuiviInstallation.tsx` sont supprimés.
 - **Écart avec le design** : pas de bouton Pause. Steam ne peut pas être mis en pause depuis une autre app ; il est remplacé par « Ouvrir dans Steam ».
 
-### Étape 5 — Magasin, fiche jeu, désinstallation, file Steam, bibliothèque fluide (9 novembre 2026)
+### Étape 5 — Magasin, fiche jeu, désinstallation, file Steam, bibliothèque fluide (9 novembre 2026) — validée par Tom dans l'exe
 
 - **Bibliothèque plus fluide** (demande de Tom) :
   - tuiles en jaquette 600×900 (`jaquettePetite`) au lieu de 1200×1800 ;

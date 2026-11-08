@@ -289,7 +289,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - pendant le téléchargement, une liane pousse le long de la barre, avec un engrenage qui tourne à sa pointe ;
   - **pas encore intégré dans l'app** : en attente de l'avis de Tom.
 
-### Étape 4 bis — Design d'installation de Tom intégré (9 novembre 2026)
+### Étape 4 bis — Design d'installation de Tom intégré (9 novembre 2026) — validée par Tom dans l'exe
 
 - Source : le design Claude Design de Tom (`ResTeaM_installation.zip` : choix, téléchargement, pastille, prêt à jouer).
 - **Centre d'installation global** (`src/installation/`), monté dans `Layout` : il reste visible sur toutes les pages.

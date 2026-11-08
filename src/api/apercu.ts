@@ -220,7 +220,14 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         })),
       );
     case "niveau_badges":
-      return enveloppe({ niveau: 11, xp: 1130, xpNiveauActuel: 1100, xpPourSuivant: 70, badges: new Array(6).fill(0).map((_, i) => ({ id: i, appId: null, niveau: 1, xp: 100, obtenuLe: maintenant(), rarete: 1000 })) });
+      return enveloppe({ niveau: 11, xp: 1130, xpNiveauActuel: 1100, xpPourSuivant: 70, badges: [
+          { id: 1, appId: null, niveau: 7, xp: 350, obtenuLe: maintenant() - 86400 * 40, rarete: 0 },
+          { id: 13, appId: null, niveau: 130, xp: 228, obtenuLe: maintenant() - 86400 * 9, rarete: 0 },
+          { id: 1, appId: 1145350, niveau: 2, xp: 200, obtenuLe: maintenant() - 86400 * 20, rarete: 0 },
+          { id: 1, appId: 391540, niveau: 1, xp: 100, obtenuLe: maintenant() - 86400 * 200, rarete: 0 },
+          { id: 2, appId: null, niveau: 1, xp: 100, obtenuLe: maintenant() - 86400 * 300, rarete: 0 },
+          { id: 17, appId: null, niveau: 3, xp: 75, obtenuLe: maintenant() - 86400 * 60, rarete: 0 },
+        ] });
     case "amis":
       return enveloppe({
         prive: false,

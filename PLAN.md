@@ -341,6 +341,20 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - **Pas fait** : « N amis possèdent ce jeu » (un appel par ami, à voir à l'étape 8) et l'état réel de la liste de souhaits (étape 7).
 - **Tests** : 34 tests Rust, dont la suppression dans une fausse bibliothèque et les garde-fous sur les noms de dossier. Vérifié dans l'aperçu : fiche, comparaison, désinstallation, magasin, installation en attente d'un jeu. **À vérifier dans l'exe** : vraie désinstallation, vraie installation pendant un jeu, masquage de la fenêtre Steam.
 
+### Étape 6 — Profil, corbeille sur l'accueil (9 novembre 2026)
+
+- **Accueil** : une corbeille à côté de « Fiche du jeu » (demande de Tom) ouvre la même confirmation de désinstallation que la fiche. Elle est grisée si une désinstallation est déjà prévue.
+- **Profil** (`src/pages/profil/`, maquette 04) :
+  - avatar Steam, avec le croissant de niveau qui sert de jauge d'XP vers le niveau suivant, une pluie lunaire et des étoiles qui scintillent ;
+  - pseudo, nom, pays (en français) et statut ;
+  - 4 chiffres : jeux, heures des 2 dernières semaines, amis, badges ;
+  - « Modifier dans Steam » (page `edit/info` du profil) ;
+  - **rangs de temps de jeu** : les 10 paliers avec le nombre de jeux dans chacun. Le plus haut rang atteint est ouvert par défaut. Un clic sur un rang affiche ses jeux, qui mènent chacun à leur fiche ;
+  - **activité récente** : jaquette, heures, date de la dernière partie, rang et croissant des succès ;
+  - **badges** : niveau, nom (Années de service, Collectionneur de jeux, badges de jeux), date dans l'infobulle. L'API ne donne pas les images des badges.
+- La teinte du fond vient des couleurs de l'avatar.
+- Écart avec la maquette : « ces 2 semaines » au lieu de « ces 15 jours », parce que l'API de Steam compte sur 2 semaines.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

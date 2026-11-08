@@ -9,6 +9,7 @@ import { DonneesTest } from "../pages/DonneesTest";
 import { Bibliotheque } from "../pages/Bibliotheque";
 import { Fiche } from "../pages/fiche/Fiche";
 import { Magasin } from "../pages/Magasin";
+import { Profil } from "../pages/profil/Profil";
 import { Connexion } from "../ecrans/Connexion";
 import { CleApi } from "../ecrans/CleApi";
 import { Chargement } from "../ecrans/Chargement";
@@ -40,7 +41,7 @@ export const router = createHashRouter([
       { path: PATHS.souhaits, element: <EmptyPage title="Liste de souhaits" step="7" /> },
       { path: PATHS.recherche, element: <EmptyPage title="Recherche" step="8" /> },
       { path: PATHS.telechargements, element: <EmptyPage title="Téléchargements" step="8" /> },
-      { path: PATHS.profil, element: <EmptyPage title="Profil" step="6" /> },
+      { path: PATHS.profil, element: <Profil /> },
       { path: PATHS.parametres, element: <Parametres /> },
       { path: PATHS.donnees, element: <DonneesTest /> },
       { path: "*", element: <Navigate to={PATHS.accueil} replace /> },

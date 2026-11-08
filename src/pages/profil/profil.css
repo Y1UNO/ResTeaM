@@ -1,0 +1,509 @@
+/* Profil — valeurs de kit/design/04-profil.dc.html. */
+.profil {
+  position: relative;
+  min-height: 100vh;
+  overflow: clip;
+}
+/* Teinte tirée de l'avatar (la maquette utilise un bleu-vert). */
+.profil__fond {
+  position: absolute;
+  inset: -40px -40px auto -40px;
+  height: 580px;
+  background:
+    radial-gradient(ellipse at 70% 30%, color-mix(in srgb, var(--profil-c1) 65%, transparent), transparent 58%),
+    radial-gradient(ellipse at 92% 75%, color-mix(in srgb, var(--profil-c2) 35%, transparent), transparent 55%),
+    var(--bg-deep);
+  transition: background 0.8s ease;
+  animation: profil-fond 0.9s ease both;
+}
+@keyframes profil-fond {
+  from {
+    opacity: 0;
+  }
+}
+.profil__voile {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 540px;
+  background: linear-gradient(90deg, rgba(9, 9, 10, 0.9) 0%, rgba(9, 9, 10, 0.45) 55%, rgba(9, 9, 10, 0.2) 100%);
+}
+.profil .profil__fumee {
+  top: 220px;
+  bottom: auto;
+}
+.profil__contenu {
+  position: relative;
+  z-index: 1;
+  padding: 64px var(--page-right) 72px var(--page-left);
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+/* ——— En-tête ——— */
+.profil__haut {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  flex-wrap: wrap;
+  animation: rise-in 0.7s var(--ease) both;
+}
+.profil__avatar {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  flex: 0 0 auto;
+}
+.profil__avatar img,
+.profil__avatar-vide {
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(238, 242, 255, 0.7);
+  box-shadow:
+    0 0 30px rgba(238, 242, 255, 0.15),
+    0 30px 60px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(160deg, #3a5a7a, #1a2230);
+}
+.profil__identite {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.profil__nom {
+  font-family: var(--font-display);
+  font-size: var(--fs-page-title);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -2px;
+  overflow-wrap: anywhere;
+}
+.profil__sous-titre {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.profil__statut {
+  color: var(--text-4);
+}
+.profil__statut.is-en-ligne {
+  color: var(--accent);
+}
+.profil__chiffres {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.profil-chiffre {
+  padding: 12px 18px 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(var(--blur-md));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.profil-chiffre__icone {
+  filter: drop-shadow(0 0 6px rgba(238, 242, 255, 0.45));
+}
+.profil-chiffre__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.profil-chiffre__texte strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.profil-chiffre__texte span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.profil__modifier {
+  align-self: flex-start;
+}
+
+/* ——— Croissant de niveau + pluie lunaire ——— */
+.lune-niveau {
+  position: absolute;
+  right: -26px;
+  bottom: -14px;
+  width: 96px;
+  height: 96px;
+}
+.lune-niveau__pluie {
+  position: absolute;
+  left: 6px;
+  top: 70px;
+  width: 70px;
+  height: 90px;
+  pointer-events: none;
+}
+.lune-niveau__goutte {
+  position: absolute;
+  top: 0;
+  width: 1.5px;
+  height: 12px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(238, 242, 255, 0), rgba(238, 242, 255, 0.95));
+  box-shadow: 0 0 6px rgba(238, 242, 255, 0.6);
+  animation-name: lune-pluie;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+}
+.lune-niveau__goutte.is-point {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+@keyframes lune-pluie {
+  0% {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(80px);
+    opacity: 0;
+  }
+}
+.lune-niveau__disque {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: rgba(9, 9, 10, 0.85);
+  backdrop-filter: blur(6px);
+}
+.lune-niveau__svg {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 0 10px rgba(238, 242, 255, 0.35));
+}
+.lune-niveau__arc {
+  animation: lune-arc 1.2s var(--ease) 0.3s both;
+}
+@keyframes lune-arc {
+  from {
+    stroke-dasharray: 0 999;
+  }
+}
+.lune-niveau__etoile {
+  animation: lune-scintille 3.2s ease-in-out infinite;
+}
+.lune-niveau__etoile.is-2 {
+  animation-delay: 1.4s;
+}
+@keyframes lune-scintille {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.lune-niveau__texte {
+  position: absolute;
+  left: 34px;
+  top: 17px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.lune-niveau__texte strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+.lune-niveau__texte span {
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  color: var(--text-3);
+}
+
+/* ——— Sections ——— */
+.profil__section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: rise-in 0.7s var(--ease) 0.15s both;
+}
+.profil__entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.profil__titre {
+  font-family: var(--font-display);
+  font-size: 26px;
+}
+.profil__compte {
+  font-size: 18px;
+  color: var(--text-4);
+}
+.profil__indice {
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+/* Rangs. */
+.profil-rangs {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 8px;
+}
+.profil-rang {
+  padding: 14px 8px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-1);
+  background: var(--surface-1);
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  animation: rise-in 0.5s var(--ease) both;
+  transition:
+    transform var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease;
+}
+.profil-rang:hover {
+  transform: translateY(-3px);
+}
+.profil-rang.is-lointain:not(.a-des-jeux) {
+  opacity: 0.45;
+}
+.profil-rang.is-actif {
+  background: rgba(238, 242, 255, 0.1);
+  border-color: rgba(238, 242, 255, 0.5);
+}
+.profil-rang__anneau {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(238, 242, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+}
+.profil-rang:not(.is-lointain) .profil-rang__anneau {
+  border-color: var(--accent);
+}
+.profil-rang.a-des-jeux .profil-rang__anneau {
+  box-shadow: 0 0 14px rgba(238, 242, 255, 0.3);
+}
+.profil-rang__nom {
+  font-size: 13px;
+  font-weight: 600;
+}
+.profil-rang__seuil {
+  font-size: 11px;
+  color: var(--text-4);
+}
+.profil-rang__nombre {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5a5a60;
+}
+.profil-rang.a-des-jeux .profil-rang__nombre {
+  color: var(--accent);
+}
+.profil-rangs__jeux {
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: var(--surface-1);
+  border: 1px solid var(--line-1);
+  display: flex;
+  align-items: center;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  min-height: 40px;
+  animation: profil-rang-jeux 0.4s ease both;
+}
+@keyframes profil-rang-jeux {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.profil-rangs__libelle {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.profil-puce {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line-2);
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+.profil-puce:hover {
+  border-color: rgba(238, 242, 255, 0.35);
+  transform: translateY(-2px);
+}
+.profil-puce__icone {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #18181b center / cover no-repeat;
+}
+.profil-puce__nom {
+  font-size: 14px;
+  font-weight: 600;
+}
+.profil-puce__h {
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+/* Activité récente. */
+.profil-activite {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.profil-carte {
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+  border: 1px solid var(--line-1);
+  overflow: hidden;
+  display: flex;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: rise-in 0.55s var(--ease) both;
+  transition:
+    transform var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.profil-carte:hover {
+  transform: translateY(-4px);
+  border-color: rgba(238, 242, 255, 0.3);
+}
+.profil-carte__art {
+  position: relative;
+  flex: 0 0 110px;
+  min-height: 140px;
+  background: #18181b;
+}
+.profil-carte__art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profil-carte__corps {
+  flex: 1;
+  min-width: 0;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.profil-carte__texte {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.profil-carte__nom {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.profil-carte__meta {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.profil-carte__rang {
+  font-size: 12px;
+  color: var(--text-kicker);
+}
+
+/* Badges. */
+.profil-badges {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.profil-badge {
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  animation: rise-in 0.5s var(--ease) both;
+}
+.profil-badge__disque {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(238, 242, 255, 0.16), transparent 60%),
+    var(--surface-2);
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+.profil-badge:hover .profil-badge__disque {
+  transform: translateY(-3px) rotate(-4deg);
+  box-shadow: 0 0 22px rgba(238, 242, 255, 0.2);
+}
+.profil-badge.is-jeu .profil-badge__disque {
+  border-color: color-mix(in srgb, var(--profil-c1) 60%, rgba(238, 242, 255, 0.2));
+}
+.profil-badge__niveau {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+.profil-badge__nom {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.profil-badge__detail {
+  font-size: 11px;
+  color: var(--text-4);
+}

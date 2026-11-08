@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/commandes";
-import { usePatchNotes, useSuccesJeu } from "../../api/requetes";
+import { useFileSteam, usePatchNotes, useSuccesJeu } from "../../api/requetes";
 import type { ImagesJeu, JeuBibliotheque } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
 import { JaugeHeures } from "../../components/JaugeHeures";
@@ -11,6 +11,8 @@ import { marquerNotesVues, notesVuesLe } from "../../lib/notesVues";
 import { Affiche } from "./Ambiance";
 import { PanneauPatchNotes } from "./PanneauPatchNotes";
 import { useInstallation } from "../../installation/store";
+import { FenetreDesinstallation } from "../../installation/Desinstallation";
+import { usePalette } from "../../lib/couleurs";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
 
@@ -34,12 +36,17 @@ export function Hero({ jeu, images }: Props) {
   const [jaquetteRatee, setJaquetteRatee] = useState(false);
   const installation = useInstallation();
   const suivi = installation.jeu?.appId === jeu.appId;
+  const file = useFileSteam().data;
+  const aSupprimer = !!file?.desinstallations.includes(jeu.appId);
+  const [desinstaller, setDesinstaller] = useState(false);
+  const teinte = usePalette(images.hero, jeu.nom)[0];
   const minuterie = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     setEtat("repos");
     setLancement(false);
     setJaquetteRatee(false);
+    setDesinstaller(false);
     return () => window.clearTimeout(minuterie.current);
   }, [jeu.appId]);
 
@@ -155,6 +162,20 @@ export function Hero({ jeu, images }: Props) {
             <button type="button" className="btn btn--secondaire" onClick={() => navigate(`/jeu/${jeu.appId}`)}>
               Fiche du jeu
             </button>
+            {inst && (
+              <button
+                type="button"
+                className="btn btn--secondaire hero__corbeille"
+                onClick={() => setDesinstaller(true)}
+                disabled={aSupprimer}
+                aria-label={aSupprimer ? `${jeu.nom} : désinstallation prévue` : `Désinstaller ${jeu.nom}`}
+                title={aSupprimer ? "Désinstallation prévue" : "Désinstaller"}
+              >
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -181,6 +202,19 @@ export function Hero({ jeu, images }: Props) {
           {n && <span className="jaquette-hero__indice">Clique pour lire les notes</span>}
         </button>
       </div>
+
+      {desinstaller && inst && (
+        <FenetreDesinstallation
+          appId={jeu.appId}
+          nom={jeu.nom}
+          jaquette={images.jaquette}
+          poids={inst.taille}
+          dossier={inst.dossier}
+          teinte={teinte}
+          jeuEnCours={file?.jeuEnCours ?? null}
+          onFermer={() => setDesinstaller(false)}
+        />
+      )}
 
       {n && (etat === "ouvert" || etat === "fermeture") && (
         <PanneauPatchNotes

@@ -211,7 +211,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - `src/lib/format.ts` : heures, tailles, dates relatives et statut, en français ;
   - hooks dans `src/api/requetes.ts` ;
   - **page de test provisoire** `/donnees` (menu du logo → « Données Steam (test) »), à retirer quand les vrais écrans seront faits.
-- **Tests** : `cargo test` lance 20 tests. `cargo test donnees_reelles -- --ignored --nocapture` interroge le vrai compte avec la clé enregistrée et n'affiche que des nombres. Résultat : 81 jeux, niveau 11, 6 badges, 24 amis.
+- **Tests** : `cargo test` lance 16 tests, plus 4 ignorés par défaut qui touchent au réseau ou à ce PC. `cargo test donnees_reelles -- --ignored --nocapture` interroge le vrai compte avec la clé enregistrée et n'affiche que des nombres. Résultat : 81 jeux, niveau 11, 6 badges, 24 amis.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

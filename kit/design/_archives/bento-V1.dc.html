@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>C · Bento éditorial</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#111111}
+a{color:#FF9A66}a:hover{color:#FFC2A3}
+</style>
+</helmet>
+<div style="min-height: 1080px; background: #111111; color: #F4EFE8; font-family: Inter, sans-serif; padding: 28px 40px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+
+<header style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap; border-bottom: 1px solid #2A2724; padding-bottom: 20px">
+<div style="font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 26px; letter-spacing: -1px">KAYRO/STORE</div>
+<nav aria-label="Navigation principale" style="display: flex; gap: 24px; font-size: 13px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase">
+<a href="#" style="color: #F4EFE8; text-decoration: none; border-bottom: 2px solid {{accent}}; padding-bottom: 4px">Magasin</a>
+<a href="#" style="color: #A39C93; text-decoration: none">Bibliothèque</a>
+<a href="#" style="color: #A39C93; text-decoration: none">Classements</a>
+<a href="#" style="color: #A39C93; text-decoration: none">Souhaits (16)</a>
+</nav>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #4A4540; height: 40px; width: 300px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A39C93" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg><span style="position: absolute; left: -9999px">Rechercher</span><input placeholder="Chercher dans le magasin" style="flex: 1; background: none; border: none; color: #F4EFE8; font: inherit; font-size: 15px; outline: none"></label>
+</header>
+
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; gap: 16px">
+
+<article style="grid-column: span 2; grid-row: span 3; border-radius: 6px; background: #1F2A22; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 32px">
+<div aria-hidden="true" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #2D3D31; font-family: 'Bricolage Grotesque'; font-size: 96px; font-weight: 800">KEY ART</div>
+<div style="position: relative; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: {{accent}}">N°1 · À la une</span>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque'; font-size: 84px; line-height: 0.9; font-weight: 800; letter-spacing: -3px">DELTA<br>FORCE</h1>
+<p style="margin: 0; max-width: 420px; color: #D9D2C8; font-size: 16px; line-height: 1.5">2e anniversaire. FPS coop free-to-play, recommandé d'après tes jeux.</p>
+<div style="display: flex; gap: 10px"><button style="height: 50px; padding: 0 24px; border-radius: 4px; border: none; background: {{accent}}; color: #111111; font: inherit; font-weight: 700">Jouer gratuitement</button><button style="height: 50px; padding: 0 20px; border-radius: 4px; border: 1px solid #F4EFE8; background: none; color: #F4EFE8; font: inherit; font-weight: 600">Voir la fiche</button></div>
+</div>
+</article>
+
+<section aria-labelledby="top-c" style="grid-column: span 1; grid-row: span 2; border-radius: 6px; background: #1A1817; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+<h2 id="top-c" style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #A39C93">Meilleures ventes</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px">
+<li style="display: flex; gap: 14px; align-items: baseline"><span style="font-family: 'Bricolage Grotesque'; font-size: 28px; font-weight: 800; color: {{accent}}; width: 22px">1</span><span style="font-weight: 600">AION 2</span></li>
+<li style="display: flex; gap: 14px; align-items: baseline"><span style="font-family: 'Bricolage Grotesque'; font-size: 28px; font-weight: 800; color: #5C5650; width: 22px">2</span><span>Call of Duty: MW4</span></li>
+<li style="display: flex; gap: 14px; align-items: baseline"><span style="font-family: 'Bricolage Grotesque'; font-size: 28px; font-weight: 800; color: #5C5650; width: 22px">3</span><span>Football Manager 27</span></li>
+<li style="display: flex; gap: 14px; align-items: baseline"><span style="font-family: 'Bricolage Grotesque'; font-size: 28px; font-weight: 800; color: #5C5650; width: 22px">4</span><span>Moon Sweepers</span></li>
+<li style="display: flex; gap: 14px; align-items: baseline"><span style="font-family: 'Bricolage Grotesque'; font-size: 28px; font-weight: 800; color: #5C5650; width: 22px">5</span><span>Queen's Domain</span></li>
+</ol>
+<a href="#" style="margin-top: auto; font-size: 14px">Top 100</a>
+</section>
+
+<section aria-labelledby="amis-c" style="grid-column: span 1; grid-row: span 2; border-radius: 6px; background: #1A1817; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+<h2 id="amis-c" style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #A39C93">Amis en jeu</h2>
+<div style="display: flex; gap: 12px; align-items: center"><div style="width: 40px; height: 40px; border-radius: 4px; background: #3B2F45"></div><div style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 600">Meguru Bachira</span><span style="font-size: 13px; color: #8FD9A8">Apex Legends</span></div></div>
+<button style="height: 40px; border-radius: 4px; border: 1px solid #3A3531; background: none; color: #F4EFE8; font: inherit; font-size: 14px; font-weight: 600">Rejoindre la partie</button>
+<div style="display: flex; gap: 12px; align-items: center"><div style="width: 40px; height: 40px; border-radius: 4px; background: #2F3B45"></div><div style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 600">Tututemobile</span><span style="font-size: 13px; color: #8FD9A8">Hades II</span></div></div>
+<a href="#" style="margin-top: auto; font-size: 14px">24 contacts</a>
+</section>
+
+<section aria-label="En ligne maintenant" style="grid-column: span 2; border-radius: 6px; background: {{accent}}; color: #111111; padding: 22px 26px; display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase">Joueurs en ligne maintenant</span><span style="font-family: 'Bricolage Grotesque'; font-size: 64px; font-weight: 800; letter-spacing: -2px; line-height: 1">41 409 320</span></div>
+<span style="font-size: 14px; font-weight: 600">Pic : 42,3 M</span>
+</section>
+
+<article style="grid-column: span 1; grid-row: span 2; border-radius: 6px; background: #2A2340; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; gap: 8px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #CFC6F0">Offre du week-end</span><span style="font-family: 'Bricolage Grotesque'; font-size: 34px; font-weight: 800; line-height: 1">Retro Rewind</span><span style="display: flex; gap: 10px; align-items: center"><span style="padding: 4px 8px; border-radius: 3px; background: {{accent}}; color: #111111; font-weight: 700">−30 %</span><span style="font-weight: 600">13,93 €</span></span></article>
+<article style="grid-column: span 1; grid-row: span 2; border-radius: 6px; background: #3A3320; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; gap: 8px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #F0E4B8">Offre du jour</span><span style="font-family: 'Bricolage Grotesque'; font-size: 34px; font-weight: 800; line-height: 1">Walk of Life</span><span style="display: flex; gap: 10px; align-items: center"><span style="padding: 4px 8px; border-radius: 3px; background: {{accent}}; color: #111111; font-weight: 700">−50 %</span><span style="font-weight: 600">9,75 €</span></span></article>
+<article style="grid-column: span 2; border-radius: 6px; background: #1E3340; display: flex; align-items: flex-end; justify-content: space-between; padding: 20px"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #BFE3F2">Offre du jour</span><span style="font-family: 'Bricolage Grotesque'; font-size: 34px; font-weight: 800; line-height: 1">Carry the Glass</span></div><span style="display: flex; gap: 10px; align-items: center"><span style="padding: 4px 8px; border-radius: 3px; background: {{accent}}; color: #111111; font-weight: 700">−50 %</span><span style="font-weight: 600">2,49 €</span></span></article>
+<article style="grid-column: span 2; border-radius: 6px; background: #34241E; display: flex; align-items: flex-end; justify-content: space-between; padding: 20px"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #F2CDBF">Dans ta liste de souhaits</span><span style="font-family: 'Bricolage Grotesque'; font-size: 34px; font-weight: 800; line-height: 1">Town to City</span></div><span style="display: flex; gap: 10px; align-items: center"><span style="padding: 4px 8px; border-radius: 3px; background: {{accent}}; color: #111111; font-weight: 700">−32 %</span><span style="font-weight: 600">19,57 €</span></span></article>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#FF8A4C"},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#FF8A4C' };
+}
+}
+</script>
+</body>
+</html>

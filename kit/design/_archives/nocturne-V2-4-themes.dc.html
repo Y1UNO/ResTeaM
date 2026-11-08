@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Nocturne · interactif</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#070707}
+a{color:inherit}a:hover{opacity:.85}
+@keyframes s1{0%{transform:translate(0,0) rotate(0deg) scale(1)}33%{transform:translate(180px,60px) rotate(12deg) scale(1.2,.85)}66%{transform:translate(60px,140px) rotate(-8deg) scale(.9,1.15)}100%{transform:translate(0,0) rotate(0deg) scale(1)}}
+@keyframes s2{0%{transform:translate(0,0) rotate(0deg) scale(1.1)}50%{transform:translate(-220px,-90px) rotate(-15deg) scale(.85,1.2)}100%{transform:translate(0,0) rotate(0deg) scale(1.1)}}
+@keyframes s3{0%{transform:translate(0,0) scale(1)}50%{transform:translate(140px,-120px) scale(1.3,.8)}100%{transform:translate(0,0) scale(1)}}
+@keyframes w{0%{transform:translateX(-160px) rotate(-6deg);opacity:0}30%{opacity:.9}70%{opacity:.7}100%{transform:translateX(260px) rotate(4deg);opacity:0}}
+@keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
+.smk1{animation:s1 34s ease-in-out infinite, pulse 9s ease-in-out infinite}
+.smk2{animation:s2 41s ease-in-out infinite, pulse 12s ease-in-out infinite}
+.smk3{animation:s3 29s ease-in-out infinite}
+.wet1{animation:w 14s ease-in-out infinite}
+.wet2{animation:w 19s ease-in-out infinite 5s}
+.wet3{animation:w 16s ease-in-out infinite 9s}
+.card{transition:transform .25s ease, box-shadow .25s ease}
+.card:hover{transform:translateY(-6px)}
+.spot{transition:background .5s ease}
+</style>
+</helmet>
+<div style="position: relative; min-height: 1080px; overflow: hidden; background: {{t.bg}}; color: {{t.text}}; font-family: Inter, sans-serif">
+
+<div aria-hidden="true" style="position: absolute; inset: -200px; filter: blur(70px) saturate(1.3); pointer-events: none">
+<div class="smk1" style="position: absolute; top: 5%; left: 0; width: 70%; height: 40%; border-radius: 50%; background: {{smoke.a}}"></div>
+<div class="smk2" style="position: absolute; top: 35%; right: 0; width: 65%; height: 45%; border-radius: 50%; background: {{smoke.b}}"></div>
+<div class="smk3" style="position: absolute; bottom: 0; left: 20%; width: 60%; height: 35%; border-radius: 50%; background: {{smoke.c}}"></div>
+</div>
+<div aria-hidden="true" style="position: absolute; inset: -100px; filter: blur(18px); mix-blend-mode: screen; pointer-events: none">
+<div class="wet2" style="position: absolute; top: 6%; right: 6%; width: 560px; height: 30px; border-radius: 50%; background: {{smoke.sheen}}"></div>
+<div class="wet1" style="position: absolute; top: 22%; left: 15%; width: 520px; height: 26px; border-radius: 50%; background: {{smoke.sheen}}"></div>
+<div class="wet2" style="position: absolute; top: 58%; left: 48%; width: 640px; height: 32px; border-radius: 50%; background: {{smoke.sheen}}"></div>
+<div class="wet3" style="position: absolute; top: 80%; left: 8%; width: 420px; height: 22px; border-radius: 50%; background: {{smoke.sheen}}"></div>
+</div>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0) 30%, rgba(0,0,0,.82) 100%); pointer-events: none"></div>
+
+<div style="position: relative; display: flex; flex-wrap: wrap; min-height: 1080px">
+
+<nav aria-label="Navigation principale" style="flex: 0 0 96px; display: flex; flex-direction: column; align-items: center; padding: 26px 0; gap: 12px; background: rgba(0,0,0,.35); border-right: 1px solid {{t.line}}; backdrop-filter: blur(18px)">
+<div style="width: 46px; height: 46px; border-radius: 15px; background: {{t.glow}}; color: {{t.onAccent}}; font-family: 'Space Grotesk'; font-weight: 700; font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 28px {{t.glowSoft}}, 0 10px 24px rgba(0,0,0,.6); margin-bottom: 18px">K</div>
+<button aria-label="Magasin" onClick="{{ goStore }}" style="width: 54px; height: 54px; border-radius: 17px; border: 1px solid {{navStore.border}}; background: {{navStore.bg}}; color: {{navStore.color}}; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v11h16V9"></path><path d="M9 20v-6h6v6"></path></svg></button>
+<button aria-label="Bibliothèque" onClick="{{ goLib }}" style="width: 54px; height: 54px; border-radius: 17px; border: 1px solid {{navLib.border}}; background: {{navLib.bg}}; color: {{navLib.color}}; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></button>
+<button aria-label="Classements" style="width: 54px; height: 54px; border-radius: 17px; border: 1px solid transparent; background: transparent; color: {{t.muted}}; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"></path></svg></button>
+<button aria-label="Liste de souhaits" style="width: 54px; height: 54px; border-radius: 17px; border: 1px solid transparent; background: transparent; color: {{t.muted}}; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg></button>
+<div style="flex: 1"></div>
+<span style="font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: {{t.muted}}">Thème</span>
+<sc-for list="{{ themeList }}" as="th" hint-placeholder-count="4">
+<button aria-label="{{th.label}}" title="{{th.label}}" onClick="{{ th.pick }}" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid {{th.ring}}; background: {{th.swatch}}; box-shadow: 0 0 14px {{th.halo}}; cursor: pointer; padding: 0"></button>
+</sc-for>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 28px 36px 48px; display: flex; flex-direction: column; gap: 34px">
+<header style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+<h1 style="margin: 0; font-family: 'Space Grotesk'; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 4px 24px rgba(0,0,0,.8)">{{viewTitle}}</h1>
+<span style="font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid {{t.line}}; color: {{t.muted}}">Thème {{t.name}}</span>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,.45); border: 1px solid {{t.line}}; border-radius: 15px; padding: 0 14px; height: 46px; width: 320px; box-shadow: inset 0 2px 10px rgba(0,0,0,.6)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg><span style="position: absolute; left: -9999px">Rechercher</span><input placeholder="Rechercher un jeu, un tag, un studio…" style="flex: 1; background: none; border: none; color: inherit; font: inherit; font-size: 14px; outline: none"></label>
+</header>
+
+<sc-if value="{{ isStore }}" hint-placeholder-val="{{ true }}">
+<section aria-label="À la une" style="position: relative; height: 460px; border-radius: 30px; overflow: hidden; background: {{t.deep}}; border: 1px solid {{t.line}}; box-shadow: 0 30px 80px rgba(0,0,0,.75), 0 0 60px {{t.glowFaint}}; display: flex; align-items: flex-end">
+<div aria-hidden="true" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.06); font-family: 'Space Grotesk'; font-size: 130px; font-weight: 700; letter-spacing: -4px">KEY ART</div>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, {{t.glowSoft}}, rgba(0,0,0,0) 45%)"></div>
+<div style="position: relative; width: 100%; padding: 40px; display: flex; align-items: flex-end; gap: 32px; flex-wrap: wrap; background: linear-gradient(0deg, rgba(0,0,0,.92), rgba(0,0,0,0))">
+<div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: {{t.glow2}}">Populaire · Recommandé pour toi</span>
+<h2 style="margin: 0; font-family: 'Space Grotesk'; font-size: 68px; line-height: 1; letter-spacing: -2px; text-shadow: 0 0 40px {{t.glowSoft}}, 0 8px 30px rgba(0,0,0,.9)">Delta Force</h2>
+<p style="margin: 0; max-width: 520px; color: {{t.muted}}; font-size: 16px; line-height: 1.5">2e anniversaire. Recommandé parce que tes jeux ont les tags Coop, Multijoueur et 1re personne.</p>
+</div>
+<div style="display: flex; gap: 10px">
+<button style="height: 54px; padding: 0 22px; border-radius: 17px; border: 1px solid {{t.line}}; background: rgba(0,0,0,.5); color: inherit; font: inherit; font-weight: 600">Voir la fiche</button>
+<button style="height: 54px; padding: 0 28px; border-radius: 17px; border: none; background: {{t.glow}}; color: {{t.onAccent}}; font: inherit; font-weight: 700; box-shadow: 0 0 30px {{t.glowSoft}}, 0 12px 26px rgba(0,0,0,.7)">Jouer gratuitement</button>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="promo-n" style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><h2 id="promo-n" style="margin: 0; font-family: 'Space Grotesk'; font-size: 22px">Promos du moment</h2><span style="font-size: 13px; color: {{t.muted}}">Tout voir</span></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px">
+<sc-for list="{{ promos }}" as="g" hint-placeholder-count="4">
+<article class="card" onMouseEnter="{{ g.enter }}" onMouseLeave="{{ leave }}" style="display: flex; flex-direction: column; gap: 12px">
+<div style="aspect-ratio: 3/4; border-radius: 20px; background: {{g.tint}}; border: 1px solid {{t.line}}; box-shadow: {{g.shadow}}; display: flex; align-items: flex-end; padding: 16px; font-family: 'Space Grotesk'; font-weight: 700; font-size: 21px; color: rgba(255,255,255,.85)">{{g.title}}</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+<div style="display: flex; flex-direction: column"><span style="font-weight: 600">{{g.title}}</span><span style="font-size: 13px; color: {{t.muted}}"><s>{{g.old}}</s> {{g.price}}</span></div>
+<button onClick="{{ g.buy }}" style="height: 40px; padding: 0 14px; border-radius: 12px; border: none; background: {{t.glow}}; color: {{t.onAccent}}; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer">{{g.disc}}</button>
+</div>
+</article>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isLib }}" hint-placeholder-val="{{ false }}">
+<section aria-labelledby="recent-n" style="display: flex; flex-direction: column; gap: 16px">
+<h2 id="recent-n" style="margin: 0; font-family: 'Space Grotesk'; font-size: 22px">Repris récemment</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 20px">
+<sc-for list="{{ library }}" as="g" hint-placeholder-count="8">
+<article class="card" onMouseEnter="{{ g.enter }}" onMouseLeave="{{ leave }}" style="display: flex; flex-direction: column; gap: 10px">
+<div style="position: relative; aspect-ratio: 3/4; border-radius: 20px; background: {{g.tint}}; border: 1px solid {{t.line}}; box-shadow: {{g.shadow}}; display: flex; flex-direction: column; justify-content: flex-end; padding: 14px; gap: 10px">
+<span style="font-family: 'Space Grotesk'; font-weight: 700; font-size: 20px; color: rgba(255,255,255,.88)">{{g.title}}</span>
+<button style="height: 40px; border-radius: 12px; border: none; background: {{t.glow}}; color: {{t.onAccent}}; font: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"></path></svg>Jouer</button>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 13px; color: {{t.muted}}"><span>{{g.hours}}</span><span>{{g.ach}}</span></div>
+</article>
+</sc-for>
+</div>
+</section>
+</sc-if>
+</main>
+
+<aside aria-label="Amis" style="flex: 1 1 280px; max-width: 320px; padding: 28px 22px; display: flex; flex-direction: column; gap: 18px; background: rgba(0,0,0,.35); border-left: 1px solid {{t.line}}; backdrop-filter: blur(18px)">
+<div style="display: flex; align-items: center; gap: 12px"><div style="width: 46px; height: 46px; border-radius: 15px; background: {{t.deep}}; border: 2px solid {{t.glow}}; box-shadow: 0 0 18px {{t.glowSoft}}"></div><div style="display: flex; flex-direction: column"><span style="font-weight: 600">Greedy-Mommy</span><span style="font-size: 13px; color: {{t.glow2}}">En ligne · Niveau 11</span></div></div>
+<h2 style="margin: 6px 0 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: {{t.muted}}">En jeu · 2</h2>
+<div style="background: rgba(0,0,0,.4); border: 1px solid {{t.line}}; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 14px 30px rgba(0,0,0,.55)">
+<div style="display: flex; gap: 10px; align-items: center"><div style="width: 38px; height: 38px; border-radius: 12px; background: #3A2A4A"></div><div style="display: flex; flex-direction: column; flex: 1"><span style="font-weight: 600; font-size: 14px">Meguru Bachira</span><span style="font-size: 12px; color: {{t.glow2}}">Apex Legends · lobby ouvert</span></div></div>
+<button style="height: 40px; border-radius: 12px; border: 1px solid {{t.glow}}; background: rgba(0,0,0,.3); color: {{t.glow2}}; font: inherit; font-size: 13px; font-weight: 700">Rejoindre</button>
+</div>
+<div style="background: rgba(0,0,0,.4); border: 1px solid {{t.line}}; border-radius: 18px; padding: 14px; display: flex; gap: 10px; align-items: center"><div style="width: 38px; height: 38px; border-radius: 12px; background: #2A3A4A"></div><div style="display: flex; flex-direction: column; flex: 1"><span style="font-weight: 600; font-size: 14px">Tututemobile</span><span style="font-size: 12px; color: {{t.glow2}}">Hades II</span></div></div>
+<h2 style="margin: 6px 0 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: {{t.muted}}">Hors ligne · 22</h2>
+<div style="display: flex; flex-direction: column; gap: 14px; color: {{t.muted}}; font-size: 14px">
+<div style="display: flex; gap: 10px; align-items: center"><div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,.06)"></div><span style="flex: 1">AtoxXy</span><span style="font-size: 12px">il y a 7 j</span></div>
+<div style="display: flex; gap: 10px; align-items: center"><div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,.06)"></div><span style="flex: 1">Furios-KL</span><span style="font-size: 12px">il y a 46 h</span></div>
+<div style="display: flex; gap: 10px; align-items: center"><div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,.06)"></div><span style="flex: 1">Vengeance</span><span style="font-size: 12px">il y a 4 j</span></div>
+</div>
+<div style="flex: 1"></div>
+<button style="height: 46px; border-radius: 15px; border: 1px dashed {{t.line}}; background: none; color: {{t.muted}}; font: inherit; font-size: 14px">+ Ajouter un ami</button>
+</aside>
+</div>
+
+<sc-if value="{{ buyOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 5">
+<div role="dialog" aria-labelledby="buy-title" style="width: 440px; padding: 30px; border-radius: 26px; background: {{t.bg}}; border: 1px solid {{t.line}}; box-shadow: 0 40px 100px rgba(0,0,0,.9), 0 0 60px {{t.glowFaint}}; display: flex; flex-direction: column; gap: 16px">
+<div style="width: 48px; height: 48px; border-radius: 15px; background: {{t.deep}}; color: {{t.glow2}}; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg></div>
+<h2 id="buy-title" style="margin: 0; font-family: 'Space Grotesk'; font-size: 24px">Acheter {{buyTitle}}</h2>
+<p style="margin: 0; color: {{t.muted}}; line-height: 1.55">Pour ta sécurité, le paiement se fait directement sur Steam. On ouvre la page du jeu dans ton client Steam, rien n'est payé ici.</p>
+<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px">
+<button onClick="{{ closeBuy }}" style="height: 48px; padding: 0 20px; border-radius: 14px; border: 1px solid {{t.line}}; background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer">Annuler</button>
+<button onClick="{{ closeBuy }}" style="height: 48px; padding: 0 22px; border-radius: 14px; border: none; background: {{t.glow}}; color: {{t.onAccent}}; font: inherit; font-weight: 700; cursor: pointer">Ouvrir dans Steam</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["braise","lune","rune","pourpre"],"default":"braise"},"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+constructor(p) { super(p); this.state = { theme: null, view: 'store', mx: 60, my: 30, hover: null, buy: null }; this.raf = 0; }
+rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; }
+renderVals() {
+const T = {
+braise: { name: 'Orange sombre', bg: '#060302', glow: '#FF6A00', glow2: '#FFC27A', deep: '#2A0E02', text: '#F7EDE4', muted: '#BFA898', onAccent: '#120701', sA: '#5A1F02', sB: '#FF6A00', sC: '#2A0C02', sheen: '#FFE2B8', sAa: .9, sBa: .32, sCa: .9, sh: .85 },
+lune: { name: 'Clair de lune', bg: '#05070C', glow: '#F2F6FF', glow2: '#FFFFFF', deep: '#1A2132', text: '#F5F7FC', muted: '#AEB6C6', onAccent: '#0A0D14', sA: '#1E2738', sB: '#E8EEFF', sC: '#121826', sheen: '#FFFFFF', sAa: .95, sBa: .3, sCa: .95, sh: .9 },
+rune: { name: 'Vert runique', bg: '#020D0C', glow: '#14F0B0', glow2: '#5FE0F0', deep: '#064038', text: '#E4F8F3', muted: '#95BDB5', onAccent: '#02110D', sA: '#0A6A55', sB: '#14F0B0', sC: '#0E5A6E', sheen: '#9AF8FF', sAa: .85, sBa: .3, sCa: .5, sh: .6 },
+pourpre: { name: 'Rosé pourpre', bg: '#070104', glow: '#E8336A', glow2: '#FFA8C6', deep: '#33041A', text: '#F9EAF0', muted: '#C29AAA', onAccent: '#14030A', sA: '#4A0418', sB: '#8E0C36', sC: '#2A0530', sheen: '#FF9EC2', sAa: .95, sBa: .55, sCa: .9, sh: .85 }
+};
+const key = this.state.theme || this.props.theme || 'braise';
+const b = T[key];
+const t = Object.assign({}, b, { line: this.rgba(b.glow, .16), glowSoft: this.rgba(b.glow, .45), glowFaint: this.rgba(b.glow, .18) });
+const smoke = { a: this.rgba(b.sA, b.sAa), b: this.rgba(b.sB, b.sBa), c: this.rgba(b.sC, b.sCa), sheen: this.rgba(b.sheen, b.sh) };
+const navOn = { bg: this.rgba(b.glow, .14), border: this.rgba(b.glow, .4), color: b.glow2 };
+const navOff = { bg: 'transparent', border: 'transparent', color: b.muted };
+const isStore = this.state.view === 'store';
+const themeList = Object.keys(T).map((k) => ({ label: 'Thème ' + T[k].name, swatch: T[k].glow, halo: k === key ? this.rgba(T[k].glow, .7) : 'transparent', ring: k === key ? '#FFFFFF' : 'rgba(255,255,255,.15)', pick: () => this.setState({ theme: k }) }));
+const shadowFor = (tint) => '0 22px 44px rgba(0,0,0,.75), 0 0 0 1px rgba(0,0,0,.4), 0 0 36px ' + this.rgba(tint, .25);
+const mk = (g) => Object.assign({}, g, { shadow: shadowFor(g.tint), enter: () => {}, buy: () => this.setState({ buy: g.title }) });
+const promos = [
+{ title: 'Retro Rewind', old: '19,90 €', price: '13,93 €', disc: '−30 %', tint: '#4A2E7A' },
+{ title: 'Walk of Life', old: '19,50 €', price: '9,75 €', disc: '−50 %', tint: '#7A6A22' },
+{ title: 'Carry the Glass', old: '4,99 €', price: '2,49 €', disc: '−50 %', tint: '#1F5A78' },
+{ title: 'Town to City', old: '28,99 €', price: '19,57 €', disc: '−32 %', tint: '#7A3A22' }
+].map(mk);
+const library = [
+{ title: 'Hades II', hours: '48 h', ach: '18/50 succès', tint: '#1E5A4A' },
+{ title: 'Undertale', hours: '7,3 h', ach: 'Aucun succès', tint: '#3A1010' },
+{ title: 'Hogwarts Legacy', hours: '20 h', ach: '6/45 succès', tint: '#3A3220' },
+{ title: 'Clair Obscur', hours: 'Installé', ach: '—', tint: '#4A3A2A' },
+{ title: 'Elden Ring', hours: 'Installé', ach: '—', tint: '#4A4220' },
+{ title: 'Slay the Spire 2', hours: 'Bêta publique', ach: '—', tint: '#2A4A3A' },
+{ title: 'Apex Legends', hours: 'Installé', ach: '—', tint: '#6A1A1A' },
+{ title: 'Satisfactory', hours: 'Installé', ach: '—', tint: '#6A4A12' }
+].map(mk);
+return {
+t, smoke, themeList, promos, library,
+isStore, isLib: !isStore, viewTitle: isStore ? 'Magasin' : 'Bibliothèque',
+navStore: isStore ? navOn : navOff, navLib: isStore ? navOff : navOn,
+goStore: () => this.setState({ view: 'store' }), goLib: () => this.setState({ view: 'lib' }),
+leave: () => this.setState({ hover: null }),
+buyOpen: !!this.state.buy, buyTitle: this.state.buy || '', closeBuy: () => this.setState({ buy: null })
+};
+}
+}
+</script>
+</body>
+</html>

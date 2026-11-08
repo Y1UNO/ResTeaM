@@ -1,0 +1,150 @@
+# ResTeaM — Plan (étape 0)
+
+> Écrit le 8 novembre 2026, après lecture complète de `ResTeaM_kit` (docs, 6 maquettes, captures).
+> Ce fichier sert de mémoire entre les conversations : chaque étape commence par le relire.
+
+## 1. Résumé du projet
+
+1. ResTeaM est une app Windows qui sert de **vitrine** à Steam : elle s'appuie sur le compte et le client Steam, sans les remplacer.
+2. On y retrouve l'usage quotidien : bibliothèque, Jouer / Installer, magasin, fiche d'un jeu, liste de souhaits, classements, profil, amis en ligne et patch notes.
+3. Tout passe par Steam : connexion OpenID (sans mot de passe), Web API avec la clé de l'utilisateur, endpoints publics du magasin, lecture des fichiers locaux de Steam et liens `steam://`.
+4. Aucun paiement dans l'app : **Acheter** affiche un popup de sécurité, puis ouvre `steam://store/<id>`.
+5. Volontairement absents : chat, partie communauté, paiement, téléchargement sans Steam.
+6. Direction artistique « Nocturne · Clair de lune » :
+   - fond `#09090A` ;
+   - une seule couleur d'accent, `#EEF2FF`, réservée aux interactions ;
+   - polices Space Grotesk et Inter ;
+   - verre fumé et fumée monochrome.
+7. Éléments signature :
+   - hero avec l'image du jeu floutée ;
+   - jaquette inclinée en 3D qui se déplie en patch notes ;
+   - croissants de lune pour les succès et le niveau ;
+   - jauge d'heures à 9 paliers ;
+   - pluie lunaire sur le profil.
+8. Système de rangs par jeu, de Novice à Éternel (0 h → 10 000 h). Il apparaît dans le hero, sur les jaquettes et dans le profil.
+9. Les patch notes viennent de `GetNewsForApp`. On les nettoie, puis on les trie automatiquement en Nouveau, Équilibrage, Performances, Correctifs et Autre.
+10. Stack : Tauri 2 + React + TypeScript, comme Kayro. On avance une étape par conversation et tu vérifies chaque étape dans l'exe de production.
+
+## 2. Architecture proposée
+
+### Principe clé : tout le réseau passe par Rust
+
+Le WebView n'appelle **jamais** Steam directement. Trois raisons :
+- `store.steampowered.com` ne renvoie pas d'en-têtes CORS, donc les appels depuis le WebView seraient bloqués ;
+- la clé API ne doit jamais se retrouver dans le JavaScript ;
+- le cache et le respect des quotas sont plus simples à gérer à un seul endroit.
+
+Le React appelle des commandes Tauri typées. Rust fait les requêtes (`reqwest`), gère le cache et renvoie du JSON propre.
+
+### Dossiers
+
+```
+Vitrine Steam/
+├── PLAN.md                 ← ce fichier
+├── kit/                    ← copie de ResTeaM_kit (référence de design)
+├── src-tauri/
+│   └── src/
+│       ├── lib.rs, main.rs
+│       ├── commands.rs     ← commandes exposées au front
+│       ├── secrets.rs      ← clé API dans le Gestionnaire d'identifiants Windows (crate keyring)
+│       ├── cache.rs        ← SQLite (rusqlite) : clé, JSON, date d'expiration
+│       └── steam/
+│           ├── auth.rs     ← OpenID : serveur local 127.0.0.1 + navigateur système + vérification
+│           ├── webapi.rs   ← ISteamUser, IPlayerService, ISteamUserStats, ISteamNews…
+│           ├── store.rs    ← appdetails, featured, appreviews, liste de souhaits, classements
+│           ├── news.rs     ← nettoyage BBCode/HTML + tri des patch notes (tests unitaires)
+│           ├── local.rs    ← libraryfolders.vdf, appmanifest_*.acf, collections et favoris
+│           └── links.rs    ← construction et validation stricte des liens steam://
+└── src/
+    ├── styles/             ← tokens.css (couleurs, rayons, ombres de DA.md), animations.css
+    ├── app/                ← routes, Layout (barre de gauche, fond fumé, dock Amis)
+    ├── pages/              ← Accueil, Bibliothèque, FicheJeu, Profil, Souhaits,
+    │                         Classements, Connexion, Paramètres, Téléchargements
+    ├── components/         ← Croissant, JaugeRangs, BadgeRang, PanneauPatchNotes,
+    │                         PopupAchat, Jaquette, Ruban, Smoke…
+    ├── api/                ← appels invoke() typés + hooks TanStack Query
+    └── lib/                ← rangs.ts, format.ts (nombres et dates en français)
+```
+
+### Gestion d'état
+
+- **Données Steam** : TanStack Query. Il gère le chargement, les erreurs, le rafraîchissement et l'invalidation.
+- **État de l'interface et session** : Zustand. Il gère le SteamID, l'onglet en cours et les préférences.
+- **Routage** : React Router.
+
+### Cache (côté Rust, SQLite dans le dossier de données de l'app)
+
+| Donnée | Durée de vie |
+|---|---|
+| Amis, statuts | 60 s |
+| Joué récemment, actus | 15–30 min |
+| Bibliothèque (GetOwnedGames) | 1 h |
+| Fiches magasin, avis | 24 h |
+| Schéma des succès | 7 jours |
+
+- En cas d'erreur réseau, on renvoie la dernière valeur en cache avec un drapeau « hors ligne ».
+- Images : URL du CDN Steam (`library_600x900`, `library_hero`, `header`), mises en cache par le WebView. Si une image manque (fréquent pour `library_600x900`), on affiche le dégradé de la maquette.
+
+### Ce qui est confirmé sur ton PC
+
+- Node 24, npm 11, Rust 1.99 et Git sont installés.
+- Steam est dans `C:\Program Files (x86)\Steam`. `libraryfolders.vdf` et les `appmanifest` sont lisibles.
+- **Les favoris et les collections sont lisibles localement** dans `userdata/<id>/config/cloudstorage/cloud-storage-namespace-1.json` (`user-collections.favorite`, `user-collections.uc-…`). La Web API ne les fournit pas, mais on peut quand même faire les filtres Favoris et Collections.
+
+## 3. Points techniques à connaître (limites de Steam)
+
+- **Liste de souhaits** :
+  - on peut la **lire** via `IWishlistService/GetWishlist` (public) ;
+  - on ne peut **pas** y ajouter ni en retirer un jeu sans une session web Steam (cookies), que l'app ne doit pas manipuler ;
+  - conséquence : l'étoile de la fiche et la croix de retrait ouvrent la page du jeu dans Steam ;
+  - variante : on masque la croix.
+- **Rejoindre** : il n'apparaît que si `GetPlayerSummaries` renvoie `lobbysteamid` ou `gameserverip`, ce qui est rare en pratique. Le bouton sera donc souvent absent, ce qui est normal.
+- **Classements** :
+  - Meilleures ventes : `IStoreTopSellersService/GetWeeklyTopSellers` ;
+  - Les plus joués : `ISteamChartsService/GetMostPlayedGames` ;
+  - **à vérifier à l'étape 7** : le total « En ligne maintenant », le pic et la courbe 24 h n'ont pas d'API officielle évidente. Solution de repli : chiffre seul, ou courbe construite par l'app au fil des heures.
+- **Configuration requise vs ton PC** :
+  - Steam renvoie les exigences en HTML libre ;
+  - comparaison fiable : OS, mémoire vive, espace disque ;
+  - comparaison indicative seulement : processeur et carte graphique.
+- **Téléchargements** : pas d'API. On lit l'état et la progression dans les `appmanifest` (`StateFlags`, `BytesDownloaded`/`BytesToDownload`).
+- **Badge « Nouveau patch »** : il s'affiche si la dernière actu du jeu est plus récente que ta dernière ouverture des notes (date gardée localement).
+- **Profil** : avec ta propre clé, l'API renvoie tes données même si le profil est privé. Pour un ami au profil privé, on affiche un état vide propre.
+
+## 4. Découpage en étapes
+
+On garde les étapes de `PROMPTS.md`, avec trois ajustements :
+- l'étape 2 est coupée en deux ;
+- les écrans non dessinés sont placés aux étapes où on en a besoin ;
+- chaque étape se termine par un exe de production à tester.
+
+| # | Contenu | Vérification dans l'exe |
+|---|---|---|
+| 1 | Projet Tauri 2 + React + TS, tokens de DA, polices embarquées (pas de Google Fonts en ligne), fond fumé, barre de gauche, routage vers des pages vides | La barre et le fond sont identiques à la maquette 01 |
+| 2a | Écran Connexion (à dessiner dans la DA), OpenID, page Paramètres avec saisie de la clé API (Gestionnaire d'identifiants Windows), client Web API, cache SQLite | Connexion réussie, pseudo et avatar affichés |
+| 2b | Lecture locale : jeux installés, collections, favoris, progression des téléchargements. Commandes Bibliothèque, Succès, Niveau, Badges, Amis, Actus | Données réelles visibles dans une page de test |
+| 3 | Accueil V3 avec les vraies données + patch notes animées et triées | Jouer lance bien le jeu |
+| 4 | Bibliothèque complète | Filtres, collections, Jouer/Installer |
+| 5 | Onglet Magasin de l'accueil, fiche d'un jeu, popup d'achat, comparaison de config | « Ouvrir dans Steam » ouvre la bonne page |
+| 6 | Profil | Croissant de niveau, rangs cliquables |
+| 7 | Liste de souhaits + Classements | Promos et classements réels |
+| 8 | Amis (Rejoindre, Ajouter), page Téléchargements, états vides, erreurs réseau, toutes les animations de fermeture | Mode hors ligne propre |
+| 9 | Audit de sécurité | Rapport + corrections |
+
+## 5. Décisions (8 novembre 2026)
+
+| Sujet | Décision |
+|---|---|
+| Temps de travail | Pas de limite par étape |
+| Liste de souhaits (étoile, croix) | Tom n'a pas tranché. Choix retenu : les deux **ouvrent la page du jeu dans Steam** (`steam://store/<id>`), comme Acheter, avec une infobulle « Se gère dans Steam » |
+| Logo | Plus tard. En attendant, un carré neutre sans lettre en haut de la barre |
+| Avatar du profil | En bas de la barre de navigation sur toutes les pages (comme PAGES.md et la maquette 04) |
+| Kayro | On ne s'en occupe pas pour l'instant |
+| Écran | 1440p (2560 × 1440). Fenêtre maximisée par défaut, taille minimale 1280 × 800. Mise en page calée sur les maquettes (1440 px) et qui s'étire proprement jusqu'à 2560 px |
+| Kit | Copié dans `kit/` (référence de design, versionnée) |
+| Git | Dépôt local créé, branche `main` |
+
+### Encore ouvert
+
+- **Clé Steam Web API** : à avoir pour l'étape 2a (steamcommunity.com/dev/apikey).
+- **GitHub** : pousser le dépôt sous YIUNO ou rester en local ?

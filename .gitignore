@@ -1,0 +1,19 @@
+# Dépendances et builds
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# Secrets et environnement local (la clé API ne doit jamais être commitée)
+.env
+.env.*
+*.local
+
+# Éditeurs et système
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
+Thumbs.db
+Desktop.ini
+.DS_Store

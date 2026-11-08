@@ -168,7 +168,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Kit resynchronisé : `kit/pages-autonomes/` (maquettes ouvrables sans canevas, servies par la config `maquettes` de `.claude/launch.json`) et `kit/captures/` (rendus attendus). Comparaison mesurée : barre et fond identiques à la page 01. Seul écart voulu : le logo « Lune à engrenages » à la place du carré « R » des maquettes.
 - À faire en 2a : grand logo animé sur l'écran de connexion / chargement (`<Logo size={…} />`). Pas d'option « Animer le logo » (refusée par Tom).
 
-### Étape 2a — Connexion, clé API, client Web API, cache (8 novembre 2026)
+### Étape 2a — Connexion, clé API, client Web API, cache (8 novembre 2026) — validée par Tom dans l'exe
 
 - **Rust** (`src-tauri/src/`) :
   - `erreur.rs` : erreurs `{ code, message }` en français, sans URL ni clé ;
@@ -191,7 +191,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - vrai avatar en bas de la barre.
 - **Piège corrigé** : les conteneurs avec de la fumée qui déborde utilisent `overflow: clip`, pas `hidden`. Sinon, le focus d'un champ fait défiler le contenu.
 
-## 7. Plan détaillé — étape 2a (fait, voir le journal) (connexion, clé API, client Web API, cache)
+## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.
 

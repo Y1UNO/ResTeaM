@@ -274,6 +274,21 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - **Non vérifié** : Steam réécrit-il `BytesDownloaded` pendant le téléchargement ? En secours, si la valeur reste figée plus de 15 s, la progression est estimée d'après les octets reçus par la carte réseau (affichée avec « ≈ »).
 - **Piège** : Steam relancé depuis un processus garde ses poignées stdout/stderr. D'où `Stdio::null()` au lancement.
 
+### Étape 4 (en avance) — Bibliothèque, favoris au ruban (8 novembre 2026)
+
+- **Ruban de l'accueil** : onglets « Reprendre » (8 derniers jeux lancés) et « Favoris » (favoris Steam, du plus récemment joué au moins récent). Une dernière carte « Tous les jeux » (icône à quatre fenêtres rondes) ouvre `/bibliotheque`.
+- **Bibliothèque** (`src/pages/Bibliotheque.tsx`, maquette 03) :
+  - recherche en direct ;
+  - filtres Tous, Installés, Favoris, Récents (14 jours), puis un filtre par collection Steam statique ;
+  - tris A → Z, Temps de jeu, Dernière partie ;
+  - jaquettes 3:4 avec rang romain et étoile de favori, nom, heures et état ;
+  - un seul bouton au survol : Jouer, Installer (fenêtre d'installation de ResTeaM) ou En cours ;
+  - un clic sur la jaquette ouvre `/jeu/:id` (fiche, étape 5).
+- **Visuel proposé** (Artifact « ResTeaM — Fenêtre d'installation », https://claude.ai/artifact/A6CQ7vnyucaZDve49MkpRf) :
+  - lianes et petits engrenages aux couleurs du logo autour de la fenêtre, lueur teintée par la couleur du jeu ;
+  - pendant le téléchargement, une liane pousse le long de la barre, avec un engrenage qui tourne à sa pointe ;
+  - **pas encore intégré dans l'app** : en attente de l'avis de Tom.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

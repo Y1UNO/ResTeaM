@@ -1209,3 +1209,105 @@
   color: var(--text-1);
   font-weight: 600;
 }
+
+/* ——— Ruban : onglets Reprendre / Favoris et carte « Tous les jeux » ——— */
+.ruban__onglets {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(var(--blur-md));
+}
+.ruban__onglet {
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.ruban__onglet:hover {
+  color: var(--text-1);
+}
+.ruban__onglet.is-actif {
+  background: rgba(238, 242, 255, 0.14);
+  color: var(--text-1);
+}
+.ruban__piste {
+  animation: rise-in 0.45s var(--ease-out-soft) both;
+}
+.ruban__vide {
+  align-self: center;
+  margin: 0;
+  padding: 40px 8px;
+  color: var(--text-3);
+  font-size: 14px;
+}
+/* Carte « Tous les jeux » : même gabarit qu'une jaquette, en verre fumé. */
+.rib--tous {
+  height: 272px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: var(--surface-2);
+  backdrop-filter: blur(var(--blur-md));
+  border-style: dashed;
+  border-color: rgba(238, 242, 255, 0.18);
+  box-shadow: none;
+}
+.rib--tous:hover {
+  border-style: solid;
+  border-color: rgba(238, 242, 255, 0.5);
+  box-shadow: 0 0 26px var(--halo-1);
+}
+/* Quatre fenêtres rondes. */
+.rib__tous-icone {
+  display: grid;
+  grid-template-columns: repeat(2, 26px);
+  gap: 8px;
+}
+.rib__tous-icone span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: rgba(238, 242, 255, 0.08);
+  box-shadow: 0 0 12px var(--halo-2);
+  transition: transform var(--dur-1) var(--ease);
+}
+.rib--tous:hover .rib__tous-icone span:nth-child(1) {
+  transform: translate(-3px, -3px);
+}
+.rib--tous:hover .rib__tous-icone span:nth-child(2) {
+  transform: translate(3px, -3px);
+}
+.rib--tous:hover .rib__tous-icone span:nth-child(3) {
+  transform: translate(-3px, 3px);
+}
+.rib--tous:hover .rib__tous-icone span:nth-child(4) {
+  transform: translate(3px, 3px);
+}
+.rib__tous-texte {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rib__tous-texte strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+.rib__tous-texte span {
+  font-size: 12px;
+  color: var(--text-3);
+}

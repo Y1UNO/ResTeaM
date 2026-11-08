@@ -5,28 +5,56 @@ import { heures } from "../../lib/format";
 import { degradeJaquette, imagesDe } from "../../lib/images";
 import { PATHS } from "../../app/paths";
 
+export type OngletRuban = "reprendre" | "favoris";
+
 type Props = {
   jeux: JeuBibliotheque[];
   images?: Record<string, ImagesJeu>;
   choisi: number;
   onChoisir: (i: number) => void;
   total: number;
+  onglet: OngletRuban;
+  onOnglet: (o: OngletRuban) => void;
+  nombreFavoris: number;
 };
 
-/** Ruban « Reprendre là où tu t'es arrêté » (maquette 01). La jaquette choisie est ~10 % plus grande. */
-export function Ruban({ jeux, images, choisi, onChoisir, total }: Props) {
+/**
+ * Ruban du bas de l'accueil (maquette 01) : « Reprendre » ou « Favoris », la jaquette
+ * choisie est ~10 % plus grande, et une dernière carte ouvre toute la bibliothèque.
+ */
+export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet, nombreFavoris }: Props) {
   const navigate = useNavigate();
+  const onglets: { id: OngletRuban; libelle: string }[] = [
+    { id: "reprendre", libelle: "Reprendre" },
+    { id: "favoris", libelle: `Favoris${nombreFavoris ? ` · ${nombreFavoris}` : ""}` },
+  ];
   return (
     <section aria-labelledby="ruban-titre" className="ruban">
       <div className="ruban__entete">
         <h2 id="ruban-titre" className="ruban__titre">
-          Reprendre là où tu t’es arrêté
+          {onglet === "favoris" ? "Tes favoris" : "Reprendre là où tu t’es arrêté"}
         </h2>
-        <button type="button" className="ruban__lien" onClick={() => navigate(PATHS.bibliotheque)}>
-          Tous les jeux ({total}) →
-        </button>
+        <div className="ruban__onglets" role="tablist" aria-label="Jeux du ruban">
+          {onglets.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              role="tab"
+              aria-selected={onglet === o.id}
+              className={`ruban__onglet${onglet === o.id ? " is-actif" : ""}`}
+              onClick={() => onOnglet(o.id)}
+            >
+              {o.libelle}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="ruban__piste">
+      <div key={onglet} className="ruban__piste">
+        {jeux.length === 0 && (
+          <p className="ruban__vide">
+            {onglet === "favoris" ? "Aucun favori : ajoute-en dans Steam (étoile sur un jeu)." : "Aucun jeu lancé récemment."}
+          </p>
+        )}
         {jeux.map((j, i) => (
           <CarteRuban
             key={j.appId}
@@ -36,6 +64,23 @@ export function Ruban({ jeux, images, choisi, onChoisir, total }: Props) {
             onClick={() => onChoisir(i)}
           />
         ))}
+        <button
+          type="button"
+          className="rib rib--tous"
+          onClick={() => navigate(PATHS.bibliotheque)}
+          aria-label={`Tous les jeux (${total})`}
+        >
+          <span className="rib__tous-icone" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="rib__tous-texte">
+            <strong>Tous les jeux</strong>
+            <span>{total} sur Steam</span>
+          </span>
+        </button>
       </div>
     </section>
   );

@@ -8,7 +8,7 @@ import { imagesDe } from "../lib/images";
 import { Lueurs } from "./accueil/Ambiance";
 import { Hero } from "./accueil/Hero";
 import { PanneauAmis } from "./accueil/PanneauAmis";
-import { Ruban } from "./accueil/Ruban";
+import { Ruban, type OngletRuban } from "./accueil/Ruban";
 import "./pages.css";
 import "./accueil/accueil.css";
 
@@ -32,12 +32,21 @@ export function Accueil() {
   // Installation lancée depuis l'app : appId + heure du clic.
   const [attente, setAttente] = useState<{ appId: number; depuis: number } | null>(null);
 
+  const [onglet, setOnglet] = useState<OngletRuban>("reprendre");
+  const favoris = useMemo(
+    () =>
+      (b?.jeux ?? [])
+        .filter((j) => j.favori && !j.cache)
+        .sort((x, y) => y.dernierLancement - x.dernierLancement || x.nom.localeCompare(y.nom)),
+    [b],
+  );
   const base = useMemo(() => {
+    if (onglet === "favoris") return favoris;
     const visibles = (b?.jeux ?? []).filter((j) => !j.cache);
     const lances = visibles.filter((j) => j.dernierLancement > 0).sort((x, y) => y.dernierLancement - x.dernierLancement);
     const liste = lances.length > 0 ? lances : [...visibles].sort((x, y) => y.minutesTotal - x.minutesTotal);
     return liste.slice(0, NB_RUBAN);
-  }, [b]);
+  }, [b, onglet, favoris]);
 
   // Lecture du disque : toutes les 2 s tant qu'un téléchargement est en cours ou attendu.
   const telechargeAvant = base.some(enCours);
@@ -120,8 +129,20 @@ export function Accueil() {
         </section>
       )}
 
-      {jeux.length > 0 && (
-        <Ruban jeux={jeux} images={images.data} choisi={choisi} onChoisir={setChoisi} total={b?.jeux.length ?? 0} />
+      {b && b.jeux.length > 0 && (
+        <Ruban
+          jeux={jeux}
+          images={images.data}
+          choisi={choisi}
+          onChoisir={setChoisi}
+          total={b?.jeux.length ?? 0}
+          onglet={onglet}
+          onOnglet={(o) => {
+            setOnglet(o);
+            setChoisi(0);
+          }}
+          nombreFavoris={favoris.length}
+        />
       )}
 
       <PanneauAmis />

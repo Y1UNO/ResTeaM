@@ -191,7 +191,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - vrai avatar en bas de la barre.
 - **Piège corrigé** : les conteneurs avec de la fumée qui déborde utilisent `overflow: clip`, pas `hidden`. Sinon, le focus d'un champ fait défiler le contenu.
 
-### Étape 2b — Lecture locale et données du compte (8 novembre 2026)
+### Étape 2b — Lecture locale et données du compte (8 novembre 2026) — validée par Tom dans l'exe
 
 - **Lecture locale** :
   - `steam/vdf.rs` : parseur KeyValues avec tests ;

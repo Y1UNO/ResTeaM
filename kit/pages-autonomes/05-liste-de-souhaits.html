@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Liste de souhaits</title>
+<script>
+/* ResTeaM — mini runtime autonome pour les maquettes .dc.html
+   Remplace le runtime du canevas : interprète {{…}}, <sc-for>, <sc-if>, les événements onClick/onMouseEnter/…
+   et la classe Component (state / setState / renderVals). Aucune dépendance. */
+(function () {
+  class DCLogic {
+    constructor(props) { this.props = props || {}; this.state = {}; }
+    setState(p) {
+      const patch = typeof p === 'function' ? p(this.state, this.props) : p;
+      this.state = Object.assign({}, this.state, patch);
+      this.__schedule && this.__schedule();
+    }
+    forceUpdate() { this.__schedule && this.__schedule(); }
+  }
+  window.DCLogic = DCLogic;
+
+  const HOLE = /\{\{\s*([^}]+?)\s*\}\}/g;
+  const ONLY = /^\s*\{\{\s*([^}]+?)\s*\}\}\s*$/;
+  const EVENTS = { onclick: 'click', onmouseenter: 'mouseenter', onmouseleave: 'mouseleave', oninput: 'input', onchange: 'change', onmousemove: 'mousemove', onkeydown: 'keydown' };
+
+  function lookup(path, scope) {
+    path = path.trim();
+    if (path === 'true') return true;
+    if (path === 'false') return false;
+    if (path === 'null') return null;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
+    if (/^'.*'$|^".*"$/.test(path)) return path.slice(1, -1);
+    let v = scope;
+    for (const k of path.split('.')) { if (v == null) return undefined; v = v[k]; }
+    return v;
+  }
+  const str = (v) => (v == null ? '' : String(v));
+  const interp = (s, scope) => s.replace(HOLE, (_, p) => str(lookup(p, scope)));
+
+  function build(node, scope, out) {
+    if (node.nodeType === 3) { out.push(document.createTextNode(interp(node.nodeValue, scope))); return; }
+    if (node.nodeType !== 1) return;
+    const tag = node.localName;
+    if (tag === 'sc-for') {
+      const m = (node.getAttribute('list') || '').match(ONLY);
+      const list = m ? lookup(m[1], scope) : [];
+      const as = node.getAttribute('as') || 'item';
+      (list || []).forEach((item, i) => {
+        const s = Object.create(scope); s[as] = item; s.$index = i;
+        node.childNodes.forEach((c) => build(c, s, out));
+      });
+      return;
+    }
+    if (tag === 'sc-if') {
+      const m = (node.getAttribute('value') || '').match(ONLY);
+      if (m && lookup(m[1], scope)) node.childNodes.forEach((c) => build(c, scope, out));
+      return;
+    }
+    if (tag === 'dc-import' || tag === 'helmet') return;
+    const el = node.cloneNode(false);
+    el.__h = {};
+    for (const a of Array.from(node.attributes)) {
+      const name = a.name;
+      if (name.startsWith('hint-')) { el.removeAttribute(name); continue; }
+      if (EVENTS[name]) {
+        el.removeAttribute(name);
+        const m = a.value.match(ONLY);
+        const fn = m ? lookup(m[1], scope) : null;
+        if (typeof fn === 'function') el.__h[EVENTS[name]] = fn;
+        continue;
+      }
+      if (a.value.indexOf('{{') !== -1) {
+        const m = a.value.match(ONLY);
+        const v = m ? lookup(m[1], scope) : interp(a.value, scope);
+        if (v === false || v == null) el.removeAttribute(name); else el.setAttribute(name, str(v));
+      }
+    }
+    const kids = [];
+    const src = node.localName === 'template' ? node.content : node;
+    src.childNodes.forEach((c) => build(c, scope, kids));
+    kids.forEach((k) => el.appendChild(k));
+    out.push(el);
+  }
+
+  function bind(el) {
+    if (el.nodeType !== 1 || el.__bound) return;
+    el.__bound = true;
+    ['click', 'mouseenter', 'mouseleave', 'input', 'change', 'mousemove', 'keydown'].forEach((t) => {
+      el.addEventListener(t, (e) => { const f = el.__h && el.__h[t]; if (f) f(e); });
+    });
+  }
+  function bindAll(el) { if (el.nodeType !== 1) return; bind(el); el.querySelectorAll('*').forEach(bind); }
+
+  function morph(a, b) {
+    if (a.nodeType !== b.nodeType || (a.nodeType === 1 && a.namespaceURI + a.localName !== b.namespaceURI + b.localName)) {
+      bindAll(b); a.replaceWith(b); return;
+    }
+    if (a.nodeType === 3) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    if (a.nodeType !== 1) return;
+    for (const at of Array.from(a.attributes)) if (!b.hasAttribute(at.name)) a.removeAttribute(at.name);
+    for (const at of Array.from(b.attributes)) if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value);
+    a.__h = b.__h;
+    if (a.localName === 'input' && document.activeElement !== a && b.hasAttribute('value')) a.value = b.getAttribute('value');
+    morphChildren(a, b);
+  }
+  function morphChildren(a, b) {
+    const ak = Array.from(a.childNodes), bk = Array.from(b.childNodes);
+    for (let i = 0; i < bk.length; i++) {
+      if (i < ak.length) morph(ak[i], bk[i]); else { bindAll(bk[i]); a.appendChild(bk[i]); }
+    }
+    for (let i = bk.length; i < ak.length; i++) ak[i].remove();
+  }
+
+  function boot() {
+    const host = document.querySelector('x-dc');
+    if (!host) return;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = host.innerHTML;
+    host.innerHTML = '';
+    host.style.display = 'block';
+    const helmet = tpl.content.querySelector('helmet');
+    if (helmet) { Array.from(helmet.childNodes).forEach((n) => document.head.appendChild(n.cloneNode(true))); helmet.remove(); }
+    const script = document.querySelector('script[data-dc-script]');
+    let props = {};
+    try {
+      const defs = JSON.parse(script.getAttribute('data-props') || '{}');
+      Object.keys(defs).forEach((k) => { if (k[0] !== '$' && defs[k] && 'default' in defs[k]) props[k] = defs[k].default; });
+    } catch (e) { console.warn('data-props', e); }
+    const Component = new Function('DCLogic', script.textContent + '\nreturn Component;')(DCLogic);
+    const comp = new Component(props);
+    let queued = false;
+    const render = () => {
+      queued = false;
+      const out = [];
+      const vals = comp.renderVals();
+      tpl.content.childNodes.forEach((c) => build(c, vals, out));
+      const next = document.createElement('div');
+      out.forEach((n) => next.appendChild(n));
+      if (!host.__first) {
+        host.__first = true;
+        Array.from(next.childNodes).forEach((n) => { bindAll(n); host.appendChild(n); });
+      } else {
+        morphChildren(host, next);
+      }
+    };
+    comp.__schedule = () => { if (!queued) { queued = true; requestAnimationFrame(render); } };
+    render();
+    if (comp.componentDidMount) comp.componentDidMount();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#09090A}
+a{color:#E6E9F2}
+@keyframes m1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(160px,-30px) scale(1.25,.85)}}
+@keyframes m2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-200px,20px) scale(.85,1.2)}}
+.mk1{animation:m1 30s ease-in-out infinite}.mk2{animation:m2 38s ease-in-out infinite}
+@keyframes lA{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes lB{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wA{animation:lA .45s cubic-bezier(.2,.8,.2,1) both}.wB{animation:lB .45s cubic-bezier(.2,.8,.2,1) both}
+.row{transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease}
+.row:hover{transform:translateX(4px);border-color:rgba(238,242,255,.28);box-shadow:0 20px 40px rgba(0,0,0,.6)}
+.x{opacity:.45;transition:opacity .2s ease}.row:hover .x{opacity:1}
+</style>
+</helmet>
+<div style="position: relative; min-height: 1300px; background: #09090A; color: #F2F2F3; font-family: Inter, sans-serif; overflow: hidden">
+<div aria-hidden="true" style="position: absolute; left: -10%; right: -10%; top: -160px; height: 480px; filter: blur(60px); pointer-events: none">
+<div class="mk1" style="position: absolute; left: 0; top: 60px; width: 60%; height: 260px; border-radius: 50%; background: rgba(46,48,58,.7)"></div>
+<div class="mk2" style="position: absolute; right: 0; top: 40px; width: 65%; height: 280px; border-radius: 50%; background: rgba(30,32,40,.85)"></div>
+</div>
+<nav aria-label="Navigation principale" style="position: absolute; z-index: 3; left: 0; top: 0; bottom: 0; width: 84px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 0; background: linear-gradient(90deg, rgba(9,9,10,.55) 0%, rgba(9,9,10,0) 100%); box-shadow: inset -1px 0 0 rgba(238,242,255,.12), 6px 0 18px -10px rgba(238,242,255,.12)">
+<div style="width: 42px; height: 42px; border-radius: 13px; background: rgba(242,242,243,.92); color: #09090A; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-weight: 700; font-size: 19px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px">R</div>
+<button aria-label="Bibliothèque" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></button>
+<button aria-label="Magasin" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v11h16V9"></path><path d="M9 20v-6h6v6"></path></svg></button>
+<button aria-label="Classements" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"></path></svg></button>
+<button aria-label="Liste de souhaits" style="position: relative; width: 52px; height: 52px; border-radius: 16px; border: none; background: rgba(255,255,255,.08); color: #F2F2F3; display: flex; align-items: center; justify-content: center"><span aria-hidden="true" style="position: absolute; left: -16px; top: 14px; width: 4px; height: 24px; border-radius: 0 4px 4px 0; background: #EEF2FF"></span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg></button>
+</nav>
+<main style="position: relative; z-index: 1; padding: 40px 64px 72px 140px; display: flex; flex-direction: column; gap: 28px; max-width: 1240px">
+<header style="display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 64px; line-height: 1; font-weight: 700; letter-spacing: -2px">Liste de souhaits</h1><span style="font-size: 15px; color: #A3A3A8">{{countText}}</span></div>
+<div style="flex: 1"></div>
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.1)">
+<sc-for list="{{ sorts }}" as="s" hint-placeholder-count="3">
+<button onClick="{{ s.pick }}" aria-pressed="{{s.on}}" style="height: 36px; padding: 0 16px; border-radius: 999px; border: none; background: {{s.bg}}; color: {{s.color}}; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">{{s.label}}</button>
+</sc-for>
+</div>
+</header>
+
+<sc-if value="{{ hasDeals }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 20px; background: rgba(238,242,255,.06); border: 1px solid rgba(238,242,255,.18)">
+<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.6" style="filter: drop-shadow(0 0 6px rgba(238,242,255,.5))"><path d="M3 12V4h8l10 10-8 8z" fill="rgba(238,242,255,.12)"></path><circle cx="7.5" cy="8.5" r="1.4" fill="#EEF2FF" stroke="none"></circle></svg>
+<span style="font-size: 15px"><strong>{{dealCount}}</strong> de tes souhaits sont en promo en ce moment</span>
+</div>
+</sc-if>
+
+<sc-for list="{{ listKey }}" as="lk" hint-placeholder-count="1">
+<div class="{{lk.cls}}" style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{ items }}" as="g" hint-placeholder-count="6">
+<article class="row" style="display: flex; align-items: center; gap: 22px; padding: 12px 18px 12px 12px; border-radius: 22px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.08)">
+<div style="flex: 0 0 220px; aspect-ratio: 16/9; border-radius: 14px; background: {{g.art}}; display: flex; align-items: flex-end; padding: 10px; box-sizing: border-box"><sc-if value="{{ g.demo }}" hint-placeholder-val="{{ false }}"><span style="padding: 4px 9px; border-radius: 999px; background: rgba(9,9,10,.7); font-size: 11px; font-weight: 600">Démo dispo</span></sc-if></div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 22px; font-weight: 700">{{g.title}}</h2>
+<span style="font-size: 13px; color: #A3A3A8">{{g.date}} · {{g.rating}}</span>
+<span style="font-size: 12px; color: #8E8E94">{{g.tags}}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<sc-if value="{{ g.onSale }}" hint-placeholder-val="{{ false }}"><span style="padding: 6px 10px; border-radius: 10px; background: #EEF2FF; color: #0A0D14; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-weight: 700; font-size: 15px">{{g.disc}}</span></sc-if>
+<div style="display: flex; flex-direction: column; align-items: flex-end; min-width: 76px"><sc-if value="{{ g.onSale }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8E8E94; text-decoration: line-through">{{g.old}}</span></sc-if><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 22px; font-weight: 700">{{g.price}}</span></div>
+<button style="height: 46px; padding: 0 20px; border-radius: 14px; border: {{g.btnLine}}; background: {{g.btnBg}}; color: {{g.btnColor}}; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Acheter</button>
+<button class="x" aria-label="Retirer {{g.title}} de la liste" onClick="{{ g.remove }}" style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(238,242,255,.14); background: none; color: #C9C9CE; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+</article>
+</sc-for>
+</div>
+</sc-for>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+constructor(p) { super(p); this.state = { sort: 'mine', removed: [], flip: false }; }
+renderVals() {
+const all = [
+{ title: 'Town to City', date: 'Sorti le 26 mai 2026', rating: 'Extrêmement positives', tags: 'Construction de villes · Réconfortant · Voxel', price: 19.57, old: 28.99, disc: '−32 %', demo: true, tint: '#9A4A2A' },
+{ title: 'Solarpunk', date: 'Sorti le 8 juin 2026', rating: 'Très positives', tags: 'Survie · Coop · Construction de bases', price: 22.99, tint: '#3A8A6A' },
+{ title: 'Palworld', date: 'Sorti le 10 juil. 2026', rating: 'Extrêmement positives', tags: 'Monde ouvert · Survie · Multijoueur', price: 28.99, tint: '#3A6A9A' },
+{ title: 'Resident Evil Requiem', date: 'Sorti le 27 févr. 2026', rating: 'Très positives', tags: 'Horreur · Survie · Action', price: 69.99, demo: true, tint: '#7A1A1A' },
+{ title: 'Cairn', date: 'Sorti le 29 janv. 2026', rating: 'Extrêmement positives', tags: 'Exploration · Stylisé · Aventure', price: 26.99, old: 29.99, disc: '−10 %', tint: '#9A5A2A' },
+{ title: 'Subnautica 2', date: 'Sorti le 14 mai 2026', rating: 'Très positives', tags: 'Survie · Exploration · Sous-marin', price: null, tint: '#1A5A7A' }
+];
+const eur = (n) => n == null ? '[prix]' : n.toFixed(2).replace('.', ',') + ' €';
+let list = all.filter((g) => this.state.removed.indexOf(g.title) === -1);
+if (this.state.sort === 'deals') list = list.slice().sort((a, b) => (b.old ? 1 : 0) - (a.old ? 1 : 0));
+if (this.state.sort === 'price') list = list.slice().sort((a, b) => (a.price == null ? 999 : a.price) - (b.price == null ? 999 : b.price));
+const items = list.map((g) => {
+const sale = !!g.old;
+return {
+title: g.title, date: g.date, rating: g.rating, tags: g.tags, demo: !!g.demo,
+art: 'linear-gradient(150deg, ' + g.tint + ' 0%, #121214 100%)',
+onSale: sale, disc: g.disc || '', old: eur(g.old), price: eur(g.price),
+btnBg: sale ? '#EEF2FF' : 'rgba(255,255,255,.04)', btnColor: sale ? '#0A0D14' : '#F2F2F3', btnLine: sale ? 'none' : '1px solid rgba(238,242,255,.18)',
+remove: () => this.setState({ removed: this.state.removed.concat([g.title]) })
+};
+});
+const S = [['mine', 'Mon ordre'], ['deals', 'Promos d’abord'], ['price', 'Prix']];
+const deals = list.filter((g) => g.old).length;
+return {
+items, hasDeals: deals > 0, dealCount: deals + (deals > 1 ? ' jeux' : ' jeu'),
+countText: (16 - this.state.removed.length) + ' jeux · aperçu de ' + list.length,
+listKey: [{ cls: this.state.flip ? 'wB' : 'wA' }],
+sorts: S.map((s) => { const on = this.state.sort === s[0]; return { label: s[1], on: on ? 'true' : 'false', bg: on ? 'rgba(238,242,255,.14)' : 'transparent', color: on ? '#F2F2F3' : '#A3A3A8', pick: () => this.setState({ sort: s[0], flip: !this.state.flip }) }; })
+};
+}
+}
+</script>
+</body>
+</html>

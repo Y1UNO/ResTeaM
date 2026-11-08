@@ -4,8 +4,27 @@
     {
       "name": "apercu-build",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "preview", "--", "--port", "4173", "--strictPort"],
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "4173",
+        "--strictPort"
+      ],
       "port": 4173
+    },
+    {
+      "name": "maquettes",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "kit/pages-autonomes",
+        "--port",
+        "4174",
+        "--strictPort"
+      ],
+      "port": 4174
     }
   ]
 }

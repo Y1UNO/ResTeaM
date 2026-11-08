@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Profil</title>
+<script>
+/* ResTeaM — mini runtime autonome pour les maquettes .dc.html
+   Remplace le runtime du canevas : interprète {{…}}, <sc-for>, <sc-if>, les événements onClick/onMouseEnter/…
+   et la classe Component (state / setState / renderVals). Aucune dépendance. */
+(function () {
+  class DCLogic {
+    constructor(props) { this.props = props || {}; this.state = {}; }
+    setState(p) {
+      const patch = typeof p === 'function' ? p(this.state, this.props) : p;
+      this.state = Object.assign({}, this.state, patch);
+      this.__schedule && this.__schedule();
+    }
+    forceUpdate() { this.__schedule && this.__schedule(); }
+  }
+  window.DCLogic = DCLogic;
+
+  const HOLE = /\{\{\s*([^}]+?)\s*\}\}/g;
+  const ONLY = /^\s*\{\{\s*([^}]+?)\s*\}\}\s*$/;
+  const EVENTS = { onclick: 'click', onmouseenter: 'mouseenter', onmouseleave: 'mouseleave', oninput: 'input', onchange: 'change', onmousemove: 'mousemove', onkeydown: 'keydown' };
+
+  function lookup(path, scope) {
+    path = path.trim();
+    if (path === 'true') return true;
+    if (path === 'false') return false;
+    if (path === 'null') return null;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
+    if (/^'.*'$|^".*"$/.test(path)) return path.slice(1, -1);
+    let v = scope;
+    for (const k of path.split('.')) { if (v == null) return undefined; v = v[k]; }
+    return v;
+  }
+  const str = (v) => (v == null ? '' : String(v));
+  const interp = (s, scope) => s.replace(HOLE, (_, p) => str(lookup(p, scope)));
+
+  function build(node, scope, out) {
+    if (node.nodeType === 3) { out.push(document.createTextNode(interp(node.nodeValue, scope))); return; }
+    if (node.nodeType !== 1) return;
+    const tag = node.localName;
+    if (tag === 'sc-for') {
+      const m = (node.getAttribute('list') || '').match(ONLY);
+      const list = m ? lookup(m[1], scope) : [];
+      const as = node.getAttribute('as') || 'item';
+      (list || []).forEach((item, i) => {
+        const s = Object.create(scope); s[as] = item; s.$index = i;
+        node.childNodes.forEach((c) => build(c, s, out));
+      });
+      return;
+    }
+    if (tag === 'sc-if') {
+      const m = (node.getAttribute('value') || '').match(ONLY);
+      if (m && lookup(m[1], scope)) node.childNodes.forEach((c) => build(c, scope, out));
+      return;
+    }
+    if (tag === 'dc-import' || tag === 'helmet') return;
+    const el = node.cloneNode(false);
+    el.__h = {};
+    for (const a of Array.from(node.attributes)) {
+      const name = a.name;
+      if (name.startsWith('hint-')) { el.removeAttribute(name); continue; }
+      if (EVENTS[name]) {
+        el.removeAttribute(name);
+        const m = a.value.match(ONLY);
+        const fn = m ? lookup(m[1], scope) : null;
+        if (typeof fn === 'function') el.__h[EVENTS[name]] = fn;
+        continue;
+      }
+      if (a.value.indexOf('{{') !== -1) {
+        const m = a.value.match(ONLY);
+        const v = m ? lookup(m[1], scope) : interp(a.value, scope);
+        if (v === false || v == null) el.removeAttribute(name); else el.setAttribute(name, str(v));
+      }
+    }
+    const kids = [];
+    const src = node.localName === 'template' ? node.content : node;
+    src.childNodes.forEach((c) => build(c, scope, kids));
+    kids.forEach((k) => el.appendChild(k));
+    out.push(el);
+  }
+
+  function bind(el) {
+    if (el.nodeType !== 1 || el.__bound) return;
+    el.__bound = true;
+    ['click', 'mouseenter', 'mouseleave', 'input', 'change', 'mousemove', 'keydown'].forEach((t) => {
+      el.addEventListener(t, (e) => { const f = el.__h && el.__h[t]; if (f) f(e); });
+    });
+  }
+  function bindAll(el) { if (el.nodeType !== 1) return; bind(el); el.querySelectorAll('*').forEach(bind); }
+
+  function morph(a, b) {
+    if (a.nodeType !== b.nodeType || (a.nodeType === 1 && a.namespaceURI + a.localName !== b.namespaceURI + b.localName)) {
+      bindAll(b); a.replaceWith(b); return;
+    }
+    if (a.nodeType === 3) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    if (a.nodeType !== 1) return;
+    for (const at of Array.from(a.attributes)) if (!b.hasAttribute(at.name)) a.removeAttribute(at.name);
+    for (const at of Array.from(b.attributes)) if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value);
+    a.__h = b.__h;
+    if (a.localName === 'input' && document.activeElement !== a && b.hasAttribute('value')) a.value = b.getAttribute('value');
+    morphChildren(a, b);
+  }
+  function morphChildren(a, b) {
+    const ak = Array.from(a.childNodes), bk = Array.from(b.childNodes);
+    for (let i = 0; i < bk.length; i++) {
+      if (i < ak.length) morph(ak[i], bk[i]); else { bindAll(bk[i]); a.appendChild(bk[i]); }
+    }
+    for (let i = bk.length; i < ak.length; i++) ak[i].remove();
+  }
+
+  function boot() {
+    const host = document.querySelector('x-dc');
+    if (!host) return;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = host.innerHTML;
+    host.innerHTML = '';
+    host.style.display = 'block';
+    const helmet = tpl.content.querySelector('helmet');
+    if (helmet) { Array.from(helmet.childNodes).forEach((n) => document.head.appendChild(n.cloneNode(true))); helmet.remove(); }
+    const script = document.querySelector('script[data-dc-script]');
+    let props = {};
+    try {
+      const defs = JSON.parse(script.getAttribute('data-props') || '{}');
+      Object.keys(defs).forEach((k) => { if (k[0] !== '$' && defs[k] && 'default' in defs[k]) props[k] = defs[k].default; });
+    } catch (e) { console.warn('data-props', e); }
+    const Component = new Function('DCLogic', script.textContent + '\nreturn Component;')(DCLogic);
+    const comp = new Component(props);
+    let queued = false;
+    const render = () => {
+      queued = false;
+      const out = [];
+      const vals = comp.renderVals();
+      tpl.content.childNodes.forEach((c) => build(c, vals, out));
+      const next = document.createElement('div');
+      out.forEach((n) => next.appendChild(n));
+      if (!host.__first) {
+        host.__first = true;
+        Array.from(next.childNodes).forEach((n) => { bindAll(n); host.appendChild(n); });
+      } else {
+        morphChildren(host, next);
+      }
+    };
+    comp.__schedule = () => { if (!queued) { queued = true; requestAnimationFrame(render); } };
+    render();
+    if (comp.componentDidMount) comp.componentDidMount();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#09090A}
+a{color:#E6E9F2}
+@keyframes m1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(160px,-30px) scale(1.25,.85)}}
+@keyframes m2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-200px,20px) scale(.85,1.2)}}
+.mk1{animation:m1 30s ease-in-out infinite}.mk2{animation:m2 38s ease-in-out infinite}
+@keyframes inA{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes inB{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.lA{animation:inA .4s ease both}.lB{animation:inB .4s ease both}
+.step{transition:transform .25s ease, border-color .25s ease, background .25s ease}.step:hover{transform:translateY(-3px)}
+@keyframes rain{0%{transform:translateY(-6px);opacity:0}15%{opacity:.95}100%{transform:translateY(80px);opacity:0}}
+.drop{position:absolute;top:0;width:1.5px;height:12px;border-radius:2px;background:linear-gradient(180deg,rgba(238,242,255,0),rgba(238,242,255,.95));box-shadow:0 0 6px rgba(238,242,255,.6);animation-name:rain;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.5,0,.9,.6)}
+.drop.dot{width:3px;height:3px;border-radius:50%;background:#EEF2FF}
+.card{transition:transform .25s ease, border-color .25s ease}.card:hover{transform:translateY(-4px);border-color:rgba(238,242,255,.3)}
+</style>
+</helmet>
+<div style="position: relative; min-height: 1500px; background: #09090A; color: #F2F2F3; font-family: Inter, sans-serif; overflow: hidden">
+
+<div aria-hidden="true" style="position: absolute; inset: -40px -40px auto -40px; height: 560px; background: radial-gradient(ellipse at 70% 30%, rgba(40,110,140,.6), rgba(40,90,120,.15) 55%, #0E0E10 100%); filter: blur(30px)"></div>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 520px; background: linear-gradient(90deg, rgba(9,9,10,.9) 0%, rgba(9,9,10,.45) 55%, rgba(9,9,10,.2) 100%)"></div>
+<div aria-hidden="true" style="position: absolute; left: -10%; right: -10%; top: 220px; height: 420px; filter: blur(50px); pointer-events: none">
+<div class="mk1" style="position: absolute; left: 0; bottom: 60px; width: 60%; height: 260px; border-radius: 50%; background: rgba(46,46,52,.85)"></div>
+<div class="mk2" style="position: absolute; right: 0; bottom: 40px; width: 65%; height: 280px; border-radius: 50%; background: rgba(28,28,32,.95)"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 200px; background: #09090A"></div>
+</div>
+
+<nav aria-label="Navigation principale" style="position: absolute; z-index: 3; left: 0; top: 0; bottom: 0; width: 84px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 0; background: linear-gradient(90deg, rgba(9,9,10,.55) 0%, rgba(9,9,10,0) 100%); box-shadow: inset -1px 0 0 rgba(238,242,255,.12), 6px 0 18px -10px rgba(238,242,255,.12)">
+<div style="width: 42px; height: 42px; border-radius: 13px; background: rgba(242,242,243,.92); color: #09090A; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-weight: 700; font-size: 19px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px">R</div>
+<button aria-label="Bibliothèque" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></button>
+<button aria-label="Magasin" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v11h16V9"></path><path d="M9 20v-6h6v6"></path></svg></button>
+<button aria-label="Classements" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"></path></svg></button>
+<button aria-label="Liste de souhaits" style="width: 52px; height: 52px; border-radius: 16px; border: none; background: transparent; color: #8E8E94; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg></button>
+<div style="flex: 1"></div>
+<button aria-label="Profil" style="position: relative; width: 52px; height: 52px; border-radius: 50%; border: 2px solid #EEF2FF; background: #2C3A4A; padding: 0"><span aria-hidden="true" style="position: absolute; left: -18px; top: 13px; width: 4px; height: 24px; border-radius: 0 4px 4px 0; background: #EEF2FF"></span></button>
+</nav>
+
+<main style="position: relative; z-index: 1; padding: 64px 64px 72px 140px; display: flex; flex-direction: column; gap: 52px">
+
+<section aria-labelledby="p-name" style="display: flex; align-items: center; gap: 36px; flex-wrap: wrap">
+<div style="position: relative; width: 168px; height: 168px; flex: 0 0 auto">
+<div style="width: 168px; height: 168px; border-radius: 50%; background: linear-gradient(160deg, #3A5A7A, #1A2230); border: 2px solid rgba(238,242,255,.7); box-shadow: 0 0 30px rgba(238,242,255,.15), 0 30px 60px rgba(0,0,0,.7)"></div>
+<div title="Niveau Steam 11 · XP vers le niveau 12" style="position: absolute; right: -26px; bottom: -14px; width: 96px; height: 96px">
+<div aria-hidden="true" style="position: absolute; left: 6px; top: 70px; width: 70px; height: 90px; pointer-events: none">
+<span class="drop" style="left: 8px; animation-delay: 0s; animation-duration: 2.4s"></span>
+<span class="drop" style="left: 17px; animation-delay: .9s; animation-duration: 2.9s"></span>
+<span class="drop" style="left: 25px; animation-delay: .3s; animation-duration: 2.2s"></span>
+<span class="drop" style="left: 33px; animation-delay: 1.6s; animation-duration: 2.7s"></span>
+<span class="drop" style="left: 41px; animation-delay: .6s; animation-duration: 2.5s"></span>
+<span class="drop" style="left: 49px; animation-delay: 1.2s; animation-duration: 3.1s"></span>
+<span class="drop" style="left: 56px; animation-delay: 2s; animation-duration: 2.3s"></span>
+<span class="drop dot" style="left: 21px; animation-delay: 1.4s; animation-duration: 3.4s"></span>
+<span class="drop dot" style="left: 45px; animation-delay: .2s; animation-duration: 3.6s"></span>
+</div>
+<div aria-hidden="true" style="position: absolute; inset: 8px; border-radius: 50%; background: rgba(9,9,10,.85); backdrop-filter: blur(6px)"></div>
+<svg aria-hidden="true" width="96" height="96" viewBox="0 0 72 72" style="position: absolute; inset: 0; filter: drop-shadow(0 0 10px rgba(238,242,255,.35))"><defs><linearGradient id="lvG" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#AFC0E8"></stop></linearGradient><mask id="lvM"><rect width="72" height="72" fill="#000"></rect><circle cx="36" cy="36" r="31" fill="#fff"></circle><circle cx="42" cy="30" r="25" fill="#000"></circle></mask></defs><g mask="url(#lvM)"><rect width="72" height="72" fill="rgba(238,242,255,.14)"></rect><circle cx="36" cy="36" r="28" fill="none" stroke="url(#lvG)" stroke-width="18" stroke-dasharray="{{xpDash}}" transform="matrix(-1 0 0 1 72 0) rotate(-104 36 36)"></circle></g><circle cx="58" cy="13" r="1.4" fill="#EEF2FF"></circle><circle cx="64" cy="22" r=".9" fill="#EEF2FF" opacity=".7"></circle></svg>
+<div style="position: absolute; left: 34px; top: 17px; width: 50px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center"><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 24px; font-weight: 700; line-height: 1">11</span><span style="font-size: 8px; letter-spacing: 1.4px; color: #A3A3A8">NIVEAU</span></div>
+</div>
+</div>
+<div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 14px">
+<h1 id="p-name" style="margin: 0; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 64px; line-height: 1; font-weight: 700; letter-spacing: -2px">[TPST] Greedy-Mommy</h1>
+<span style="font-size: 15px; color: #C9C9CE">Tom · France · <span style="color: #EEF2FF">● En ligne</span></span>
+<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px">
+<div style="padding: 12px 18px 12px 14px; border-radius: 18px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.1); backdrop-filter: blur(14px); display: flex; align-items: center; gap: 12px">
+<svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.5" style="filter: drop-shadow(0 0 6px rgba(238,242,255,.45))"><path d="M6.5 7.5h11a4.3 4.3 0 0 1 4.2 5.2l-1 4.4a2.5 2.5 0 0 1-4.3 1.1l-1.8-2.2H9.4l-1.8 2.2a2.5 2.5 0 0 1-4.3-1.1l-1-4.4a4.3 4.3 0 0 1 4.2-5.2z" fill="rgba(238,242,255,.12)"></path><path d="M7.5 10.5v3.4M5.8 12.2h3.4" stroke-linecap="round"></path><circle cx="16" cy="11" r="1" fill="#EEF2FF" stroke="none"></circle><circle cx="18.2" cy="13.2" r="1" fill="#EEF2FF" stroke="none"></circle></svg>
+<div style="display: flex; flex-direction: column; gap: 3px"><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1">130</span><span style="font-size: 12px; color: #A3A3A8">jeux</span></div>
+</div>
+<div style="padding: 12px 18px 12px 14px; border-radius: 18px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.1); backdrop-filter: blur(14px); display: flex; align-items: center; gap: 12px">
+<svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.5" stroke-linecap="round" style="filter: drop-shadow(0 0 6px rgba(238,242,255,.45))"><path d="M6 3h12M6 21h12"></path><path d="M7.5 3c0 5 4.5 6 4.5 9s-4.5 4-4.5 9M16.5 3c0 5-4.5 6-4.5 9s4.5 4 4.5 9" fill="rgba(238,242,255,.1)"></path><path d="M9.3 19.8h5.4L12 16.6z" fill="#EEF2FF" stroke="none"></path><path d="M10.2 7.5h3.6L12 9.6z" fill="#EEF2FF" stroke="none" opacity=".6"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 3px"><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1">11,8 h</span><span style="font-size: 12px; color: #A3A3A8">ces 15 jours</span></div>
+</div>
+<div style="padding: 12px 18px 12px 14px; border-radius: 18px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.1); backdrop-filter: blur(14px); display: flex; align-items: center; gap: 12px">
+<svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.5" style="filter: drop-shadow(0 0 6px rgba(238,242,255,.45))"><circle cx="9" cy="8" r="3.4" fill="rgba(238,242,255,.12)"></circle><path d="M2.8 20c.7-3.6 3.2-5.6 6.2-5.6s5.5 2 6.2 5.6" fill="rgba(238,242,255,.12)" stroke-linecap="round"></path><circle cx="17.2" cy="9" r="2.6"></circle><path d="M16.8 14.4c2.4.1 4.1 1.8 4.6 4.9" stroke-linecap="round"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 3px"><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1">24</span><span style="font-size: 12px; color: #A3A3A8">amis</span></div>
+</div>
+<div style="padding: 12px 18px 12px 14px; border-radius: 18px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.1); backdrop-filter: blur(14px); display: flex; align-items: center; gap: 12px">
+<svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.5" style="filter: drop-shadow(0 0 6px rgba(238,242,255,.45))"><path d="M8 2.5l3 6.5M16 2.5l-3 6.5" stroke-linecap="round"></path><circle cx="12" cy="15" r="6" fill="rgba(238,242,255,.12)"></circle><path d="M12 11.6l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="#EEF2FF" stroke="none"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 3px"><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1">6</span><span style="font-size: 12px; color: #A3A3A8">badges</span></div>
+</div>
+</div>
+</div>
+<button style="align-self: flex-start; height: 46px; padding: 0 20px; border-radius: 16px; border: 1px solid rgba(238,242,255,.16); background: rgba(18,18,20,.5); color: #F2F2F3; font: inherit; font-size: 14px; font-weight: 600">Modifier dans Steam</button>
+</section>
+
+<section aria-labelledby="ranks-t" style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px"><h2 id="ranks-t" style="margin: 0; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 26px">Tes rangs de temps de jeu</h2><span style="font-size: 13px; color: #8E8E94">Clique un rang pour voir les jeux qui l'ont atteint</span></div>
+<div style="position: relative; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ ranks }}" as="r" hint-placeholder-count="10">
+<button class="step" onClick="{{ r.pick }}" aria-pressed="{{r.on}}" style="padding: 14px 8px 12px; border-radius: 18px; border: 1px solid {{r.line}}; background: {{r.bg}}; color: inherit; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; opacity: {{r.op}}">
+<span style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid {{r.ring}}; box-shadow: {{r.glow}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 13px; font-weight: 700">{{r.num}}</span>
+<span style="font-size: 13px; font-weight: 600">{{r.name}}</span>
+<span style="font-size: 11px; color: #8E8E94">{{r.th}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{r.countC}}">{{r.count}}</span>
+</button>
+</sc-for>
+</div>
+<sc-for list="{{ rankKey }}" as="rk" hint-placeholder-count="1">
+<div class="{{rk.cls}}" style="padding: 18px 20px; border-radius: 20px; background: rgba(18,18,20,.55); border: 1px solid rgba(238,242,255,.08); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-height: 40px">
+<span style="font-size: 14px; color: #A3A3A8">{{rankLabel}}</span>
+<sc-for list="{{ rankGames }}" as="g" hint-placeholder-count="2">
+<span style="display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid rgba(238,242,255,.1)"><span style="width: 28px; height: 28px; border-radius: 50%; background: {{g.art}}"></span><span style="font-size: 14px; font-weight: 600">{{g.title}}</span><span style="font-size: 13px; color: #8E8E94">{{g.h}}</span></span>
+</sc-for>
+</div>
+</sc-for>
+</section>
+
+<section aria-labelledby="act-t" style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><h2 id="act-t" style="margin: 0; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 26px">Activité récente</h2><span style="font-size: 14px; color: #A3A3A8">11,8 h ces 15 derniers jours</span></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px">
+<sc-for list="{{ recent }}" as="g" hint-placeholder-count="3">
+<article class="card" style="border-radius: 22px; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.08); overflow: hidden; display: flex">
+<div style="flex: 0 0 110px; background: {{g.art}}"></div>
+<div style="flex: 1; padding: 18px; display: flex; align-items: center; gap: 14px">
+<div style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 19px; font-weight: 700">{{g.title}}</span><span style="font-size: 13px; color: #A3A3A8">{{g.h}} · {{g.last}}</span><span style="font-size: 12px; color: #CFCFD4">Rang {{g.rank}}</span></div>
+<sc-if value="{{ g.hasAch }}" hint-placeholder-val="{{ true }}">
+<div style="position: relative; width: 64px; height: 64px; flex: 0 0 auto">
+<svg aria-hidden="true" width="64" height="64" viewBox="0 0 72 72"><defs><mask id="{{g.mid}}"><rect width="72" height="72" fill="#000"></rect><circle cx="36" cy="36" r="33" fill="#fff"></circle><circle cx="41" cy="31" r="26.5" fill="#000"></circle></mask></defs><g mask="url(#{{g.mid}})"><rect width="72" height="72" fill="rgba(255,255,255,.1)"></rect><circle cx="36" cy="36" r="29" fill="none" stroke="#EEF2FF" stroke-width="18" stroke-dasharray="{{g.dash}}" transform="matrix(-1 0 0 1 72 0) rotate(-107 36 36)"></circle></g></svg>
+<span style="position: absolute; left: 17px; top: 11px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 12px; font-weight: 700">{{g.ach}}</span>
+</div>
+</sc-if>
+</div>
+</article>
+</sc-for>
+</div>
+</section>
+
+<section aria-labelledby="badge-t" style="display: flex; flex-direction: column; gap: 18px">
+<h2 id="badge-t" style="margin: 0; font-family: 'Space Grotesk', 'Inter Display', Inter, sans-serif, 'Inter Display', Inter, sans-serif; font-size: 26px">Badges <span style="font-size: 18px; color: #8E8E94">6</span></h2>
+<div style="display: flex; gap: 16px; flex-wrap: wrap">
+<sc-for list="{{ badges }}" as="b" hint-placeholder-count="6">
+<div title="{{b}}" style="width: 76px; height: 76px; border-radius: 50%; background: rgba(18,18,20,.6); border: 1px solid rgba(238,242,255,.14); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #8E8E94; text-align: center">badge</div>
+</sc-for>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+constructor(p) { super(p); this.state = { rank: 1, flip: false }; }
+renderVals() {
+const T = [0, 10, 50, 100, 250, 500, 1000, 2000, 5000, 10000];
+const N = ['Novice', 'Éveillé', 'Initié', 'Habitué', 'Vétéran', 'Expert', 'Maître', 'Légende', 'Mythe', 'Éternel'];
+const R = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
+const games = [
+{ title: 'Hades II', h: 48, tint: '#2E8A6E', last: 'joué le 7 nov.', ach: [18, 50] },
+{ title: 'Hogwarts Legacy', h: 20, tint: '#8A7240', last: 'joué le 6 nov.', ach: [6, 45] },
+{ title: 'Undertale', h: 7.3, tint: '#8A2020', last: 'joué le 8 nov.', ach: null }
+];
+const rankOf = (h) => T.filter((x) => x > 0 && h >= x).length;
+const art = (hex) => 'linear-gradient(160deg, ' + hex + ' 0%, #121214 100%)';
+const fmt = (n) => String(n).replace('.', ',') + ' h';
+const ranks = T.map((x, i) => {
+const n = games.filter((g) => rankOf(g.h) === i).length;
+const on = this.state.rank === i;
+const reached = games.some((g) => rankOf(g.h) >= i);
+return {
+num: R[i], name: N[i], th: x === 0 ? '< 10 h' : (x >= 1000 ? (x / 1000) + ' 000 h' : x + ' h'),
+count: n ? n + (n > 1 ? ' jeux' : ' jeu') : '—', countC: n ? '#EEF2FF' : '#5A5A60',
+on: on ? 'true' : 'false', op: reached || n ? 1 : .45,
+bg: on ? 'rgba(238,242,255,.1)' : 'rgba(18,18,20,.55)', line: on ? 'rgba(238,242,255,.5)' : 'rgba(238,242,255,.08)',
+ring: n || reached ? '#EEF2FF' : 'rgba(238,242,255,.2)', glow: n ? '0 0 14px rgba(238,242,255,.3)' : 'none',
+pick: () => this.setState({ rank: i, flip: !this.state.flip })
+};
+});
+const inRank = games.filter((g) => rankOf(g.h) === this.state.rank);
+const rankGames = inRank.map((g) => ({ title: g.title, h: fmt(g.h), art: art(g.tint) }));
+const rankLabel = 'Rang ' + R[this.state.rank] + ' · ' + N[this.state.rank] + (inRank.length ? ' :' : ' : aucun jeu pour l’instant');
+const recent = games.map((g, i) => ({
+title: g.title, h: fmt(g.h), last: g.last, art: art(g.tint), rank: R[rankOf(g.h)] + ' · ' + N[rankOf(g.h)],
+hasAch: !!g.ach, ach: g.ach ? g.ach[0] + '/' + g.ach[1] : '', mid: 'pm' + i,
+dash: g.ach ? (156 * g.ach[0] / g.ach[1]).toFixed(1) + ' 999' : '0 999'
+}));
+return {
+ranks, rankGames, rankLabel, recent,
+rankKey: [{ cls: this.state.flip ? 'lB' : 'lA' }],
+xpDash: (152 * 0.62).toFixed(1) + ' 999',
+stats: [{ big: '130', small: 'jeux' }, { big: '11,8 h', small: 'ces 15 jours' }, { big: '24', small: 'amis' }, { big: '6', small: 'badges' }],
+badges: ['Badge 1', 'Badge 2', 'Badge 3', 'Badge 4', 'Badge 5', 'Badge 6']
+};
+}
+}
+</script>
+</body>
+</html>

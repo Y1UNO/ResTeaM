@@ -161,4 +161,5 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Bibliothèque (rail) → Accueil `/` ; `/bibliotheque` (page complète, étape 4) allume aussi Bibliothèque. Magasin et `/jeu/:appId` allument Magasin.
 - Fenêtre : maximisée, minimum 1280 × 800, fond `#09090A` dès l'ouverture, thème sombre. CSP stricte (images Steam autorisées pour la suite).
 - Icône d'app : carré neutre généré depuis `assets-src/logo-neutre.svg` (`npx tauri icon assets-src/logo-neutre.svg`, puis supprimer `icons/android` et `icons/ios`).
-- Construire l'exe : `npm run build:exe` → `src-tauri/target/release/ResTeaM.exe`. Installateur NSIS : `npm run build:installer`.
+- Construire l'exe : `npm run build:exe` (ferme l'ancienne version ouverte, compile, met à jour le raccourci `ResTeaM` du Bureau) → `src-tauri/target/release/ResTeaM.exe`. Installateur NSIS : `npm run build:installer`.
+- Kit resynchronisé : `kit/pages-autonomes/` (maquettes ouvrables sans canevas, servies par la config `maquettes` de `.claude/launch.json`) et `kit/captures/` (rendus attendus). Comparaison mesurée : barre et fond identiques à la page 01. Seul écart voulu : logo neutre au lieu du « R » des maquettes.

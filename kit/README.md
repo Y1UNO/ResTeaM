@@ -32,7 +32,9 @@ ResTeaM_kit/
 ├── PAGES.md               ← chaque écran en détail + interactions
 ├── FONCTIONNALITES.md     ← API, liens steam://, rangs d'heures, tri des patch notes
 ├── PROMPTS.md             ← étapes de travail pour Claude Code, une conversation à la fois
-├── design/                ← les maquettes validées (source HTML/CSS/JS)
+├── captures/              ← SCREENS de chaque page (et des états : patch notes, amis, popup achat…)
+├── pages-autonomes/       ← CODE de chaque page, ouvrable directement dans un navigateur (double-clic)
+├── design/                ← les mêmes maquettes en format source du canevas
 │   ├── 01-accueil-reference-V3.dc.html   ← POINT D'ANCRAGE de toute la DA
 │   ├── 02-fiche-jeu.dc.html
 │   ├── 03-bibliotheque.dc.html
@@ -46,6 +48,8 @@ ResTeaM_kit/
 ```
 
 ## Lire les maquettes
+
+**Le plus simple : `pages-autonomes/`.** Chaque page est un fichier HTML unique qui s'ouvre par double-clic dans Chrome ou Edge, avec toutes les interactions (patch notes, amis, filtres, popup d'achat…). Un petit runtime JavaScript intégré en haut du fichier interprète la maquette ; il sert uniquement à l'aperçu et n'est pas à reprendre dans l'app. **`captures/`** montre le rendu attendu de chaque page et de ses états.
 
 Les fichiers `design/*.dc.html` sont des maquettes interactives faites sur un canevas de design. Ils contiennent **tout le visuel en clair** : la mise en page et les styles sont en `style="…"` inline, les animations dans le bloc `<style>` du `<helmet>`, et la logique d'interaction dans la classe `Component` en bas de chaque fichier (états, clics, données d'exemple).
 

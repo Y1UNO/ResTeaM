@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useJoueurMoi } from "../api/requetes";
+import { useJeuxInstalles, useJoueurMoi } from "../api/requetes";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   IconCharts,
@@ -66,6 +66,9 @@ export function NavRail() {
   const personaName = joueur.data?.donnees.pseudo;
   const [avatarCasse, setAvatarCasse] = useState(false);
   useEffect(() => setAvatarCasse(false), [avatarUrl]);
+  // Point lumineux sur « Téléchargements » quand Steam télécharge (lecture du disque partagée).
+  const installes = useJeuxInstalles();
+  const telechargementActif = !!installes.data?.some((j) => j.etat === "telechargement");
 
   const renderItem = (item: RailItem, tool = false) => {
     const active = isActive(pathname, item.match);
@@ -81,6 +84,9 @@ export function NavRail() {
       >
         <span aria-hidden="true" className="rail__bar" />
         {item.icon}
+        {item.to === PATHS.telechargements && telechargementActif && (
+          <span className="rail__point" aria-label="Téléchargement en cours" />
+        )}
       </button>
     );
   };

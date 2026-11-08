@@ -19,6 +19,8 @@ pub enum ActionSteam {
     RejoindreServeur { adresse: String },
     /// Liste d'amis du client Steam (pour en ajouter).
     Amis,
+    /// Page Téléchargements du client Steam.
+    Telechargements,
     /// Annonce ou page Steam, ouverte dans le navigateur du client Steam.
     Page { url: String },
 }
@@ -59,6 +61,7 @@ pub fn construire(action: &ActionSteam) -> Option<String> {
             ip_port_valide(adresse).then(|| format!("steam://connect/{adresse}"))
         }
         ActionSteam::Amis => Some("steam://open/friends".into()),
+        ActionSteam::Telechargements => Some("steam://open/downloads".into()),
         ActionSteam::Page { url } => page_autorisee(url).then(|| format!("steam://openurl/{url}")),
     }
 }

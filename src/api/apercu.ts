@@ -92,6 +92,32 @@ const JEUX = [
   { appId: 730, nom: "Counter-Strike 2", minutes: 31500, deux: 0, favori: false },
 ];
 const INSTALLES = [1145350, 391540, 1903340, 2868840];
+/** Installations simulées : appId → heure du clic sur « Installer ». */
+const INSTALLATIONS = new Map<number, number>();
+const TAILLE_SIMULEE = 30_000_000_000;
+
+function installationsSimulees() {
+  return [...INSTALLATIONS].flatMap(([appId, debut]) => {
+    const ecoule = Date.now() - debut;
+    if (ecoule < 4000) return []; // Steam n'a pas encore commencé (fenêtre de choix du disque).
+    const p = Math.min(1, (ecoule - 4000) / 40000);
+    const j = JEUX.find((x) => x.appId === appId);
+    return [
+      {
+        appId,
+        nom: j?.nom ?? String(appId),
+        dossier: "",
+        bibliotheque: String.raw`E:\SteamLibrary`,
+        taille: Math.round(TAILLE_SIMULEE * p),
+        etat: p < 1 ? "telechargement" : "installe",
+        aTelecharger: p < 1 ? TAILLE_SIMULEE : 0,
+        telecharge: p < 1 ? Math.round(TAILLE_SIMULEE * p) : 0,
+        derniereMaj: maintenant(),
+        dernierLancement: 0,
+      },
+    ];
+  });
+}
 
 function donneesApercu(commande: string, args?: Record<string, unknown>): unknown {
   switch (commande) {
@@ -105,7 +131,7 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         ],
       };
     case "jeux_installes":
-      return INSTALLES.map((id, i) => {
+      return [...INSTALLES.map((id, i) => {
         const j = JEUX.find((x) => x.appId === id)!;
         const dl = i === 3;
         return {
@@ -120,7 +146,7 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
           derniereMaj: maintenant() - 86400 * 3,
           dernierLancement: maintenant() - 86400,
         };
-      });
+      }), ...installationsSimulees()];
     case "bibliotheque":
       return enveloppe({
         jeux: JEUX.map((j) => ({
@@ -211,8 +237,11 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     case "images_jeux":
       // Vide : le front utilise les adresses classiques du CDN Steam (vraies images).
       return {};
-    case "steam_lien":
+    case "steam_lien": {
+      const a = args?.action as { type?: string; appId?: number } | undefined;
+      if (a?.type === "installer" && a.appId) INSTALLATIONS.set(a.appId, Date.now());
       return null;
+    }
     case "patch_notes":
       return enveloppe({
         id: "1",

@@ -674,3 +674,220 @@
 .accueil .hero .smoke--hero {
   bottom: -190px;
 }
+
+/* ——— Ambiance : lueurs aux couleurs de l'affiche + affiche nette resserrée ——— */
+
+/* Le hero et le ruban passent au-dessus des lueurs. */
+.accueil > .hero,
+.accueil > .ruban {
+  z-index: 1;
+}
+
+.lueurs {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 auto 0;
+  height: calc(var(--hero-h) + 560px);
+  overflow: clip;
+  pointer-events: none;
+}
+.lueurs__tache {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  will-change: transform;
+  transition: background-color 1.2s ease;
+}
+.lueurs__tache--1 {
+  left: -12%;
+  top: -18%;
+  width: 58%;
+  height: 72%;
+  background: rgba(var(--c1), 0.55);
+  animation: smoke-drift-1 34s ease-in-out infinite;
+}
+.lueurs__tache--2 {
+  left: 2%;
+  top: 52%;
+  width: 52%;
+  height: 50%;
+  background: rgba(var(--c2), 0.38);
+  animation: smoke-drift-2 40s ease-in-out infinite;
+}
+.lueurs__tache--3 {
+  right: -8%;
+  top: 38%;
+  width: 62%;
+  height: 58%;
+  background: rgba(var(--c3), 0.42);
+  animation: smoke-drift-1 46s ease-in-out infinite reverse;
+}
+.lueurs__fond {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(9, 9, 10, 0.2) 0%,
+    rgba(9, 9, 10, 0.35) 45%,
+    rgba(9, 9, 10, 0.75) 78%,
+    var(--bg) 100%
+  );
+}
+
+/* Affiche nette, à droite, fondue à gauche et en bas. */
+.affiche {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(74%, 1900px);
+  pointer-events: none;
+}
+.affiche__image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, #000 34%),
+    linear-gradient(to bottom, #000 58%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent 0%, #000 34%),
+    linear-gradient(to bottom, #000 58%, transparent 100%);
+  mask-composite: intersect;
+  animation: hero-zoom-in var(--dur-3) var(--ease) both;
+}
+/* Brume : nappes floues et lentes à la frontière entre l'affiche et les lueurs. */
+.affiche__brume {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  will-change: transform;
+  transition: background-color 1.2s ease;
+}
+.affiche__brume--gauche {
+  left: -10%;
+  top: 8%;
+  width: 34%;
+  height: 84%;
+  background: rgba(var(--c1), 0.22);
+  animation: smoke-drift-2 36s ease-in-out infinite;
+}
+.affiche__brume--bas {
+  left: 0;
+  right: 0;
+  bottom: -14%;
+  height: 34%;
+  background: rgba(150, 156, 170, 0.1);
+  animation: smoke-drift-1 30s ease-in-out infinite;
+}
+
+/* Voile discret derrière le texte du hero, pour la lisibilité. */
+.hero__voile {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(9, 9, 10, 0.55) 0%, rgba(9, 9, 10, 0.3) 38%, rgba(9, 9, 10, 0) 62%);
+}
+
+/* ——— Suivi d'installation (Steam télécharge, l'app affiche) ——— */
+.suivi {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: rise-in 0.45s var(--ease) both;
+}
+.suivi__haut {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.suivi__haut strong {
+  font-size: 14px;
+}
+.suivi__pct {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.suivi__barre {
+  position: relative;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--fill-track);
+  overflow: hidden;
+}
+.suivi__barre > div {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--halo-4);
+  transition: width 1.8s linear;
+}
+/* En attente de Steam : reflet qui glisse (avancement inconnu). */
+.suivi__barre.is-attente > div {
+  position: absolute;
+  width: 30%;
+  animation: suivi-attente 1.6s var(--ease) infinite;
+}
+@keyframes suivi-attente {
+  from {
+    left: -30%;
+  }
+  to {
+    left: 100%;
+  }
+}
+.suivi__bas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.suivi__lien {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-kicker);
+  cursor: pointer;
+}
+.suivi__lien:hover {
+  color: var(--text-1);
+}
+
+/* Progression sur la jaquette du ruban. */
+.rib__progression {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(9, 9, 10, 0.7);
+  overflow: hidden;
+}
+.rib__progression > div {
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--halo-4);
+  transition: width 1.8s linear;
+}
+
+/* Pas de couture en bas du hero : la brume déborde, le voile se fond vers le bas. */
+.accueil > .hero {
+  overflow: visible;
+}
+.accueil .hero__voile {
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}

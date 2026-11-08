@@ -145,7 +145,8 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 | Git | Dépôt local créé, branche `main` |
 | Fenêtre | **Sans cadre Windows** (comme Steam) : bande invisible en haut pour déplacer la fenêtre, boutons Réduire / Agrandir / Fermer dessinés dans la DA (`src/app/TitleBar.tsx`) |
 | Accès aux Paramètres | **Clic sur le logo → menu → Paramètres** (`src/app/LogoMenu.tsx`). « Se déconnecter » s'ajoutera dans ce menu en 2a |
-| Fond des jeux (hero) | **Image du jeu nette, sans flou** : c'est l'affiche du jeu qui met l'app en valeur. Voile sombre à gauche pour le texte, fumée et bande noire réduites en bas (fondu sur ~150 px). Écart voulu par rapport à DA.md (« image floutée ») |
+| Fond des jeux (hero) | **Affiche nette, resserrée à droite** (visuel `library_hero_2x`, 3840 px), jamais sous la barre de gauche. Bords gauche et bas fondus dans une **brume** douce. Derrière : des **lueurs aux couleurs de l'affiche** (3 teintes extraites de l'image), qui passent sous la barre et continuent sous le ruban. Écart voulu par rapport à DA.md (« image floutée », « fumée jamais colorée ») |
+| Installation | « Installer » ouvre la fenêtre d'installation de Steam (choix du disque **dans Steam** : aucun lien `steam://` ne permet d'imposer un dossier). L'app suit ensuite la progression en lisant l'`appmanifest` toutes les 2 s : pourcentage, vitesse, temps restant |
 | Clé API | Tom la saisit lui-même dans l'app (Paramètres). Elle n'est jamais écrite dans le code, le dépôt, la mémoire ou une conversation |
 
 ### Encore ouvert
@@ -238,6 +239,22 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - onglet Magasin de l'accueil (étape 5) ;
   - Rejoindre ne s'affiche que si Steam donne `lobbysteamid` + `gameid`, ou `gameserverip` ;
   - « Tous les jeux » et « Fiche du jeu » mènent encore à des pages vides (étapes 4 et 5).
+
+### Étape 3 bis — Ambiance aux couleurs de l'affiche et suivi d'installation (8 novembre 2026)
+
+- **Images** : le visuel du hero utilise `library_hero_2x` (3840 × 1240). Avant, `library_hero` (1920 px) étiré sur 2560 px était flou. La clé de cache passe à `images2:`.
+- **Palette** (`src/lib/couleurs.ts`) : l'image est réduite à 48 × 16 sur un canvas (les en-têtes CORS de Steam l'autorisent). Les pixels trop sombres ou trop gris sont écartés, puis on garde 3 teintes dominantes (24 seaux de 15°), recalées en lueur. Cache en mémoire et en localStorage. Repli : teintes tirées du nom.
+- **Ambiance** (`src/pages/accueil/Ambiance.tsx`) :
+  - `Lueurs` : 3 taches floues et animées aux couleurs de la palette, en transition douce d'un jeu à l'autre, qui se fondent dans le noir sous le ruban ;
+  - `Affiche` : largeur `min(74 %, 1900 px)` à droite, masque de fondu à gauche et en bas, brume teintée et brume grise ;
+  - le voile du texte se fond vers le bas, et le hero de l'accueil est en `overflow: visible` (pas de couture).
+- **Suivi d'installation** :
+  - `SuiviInstallation.tsx` gère l'attente de Steam (barre indéterminée), puis le téléchargement (%, octets, vitesse lissée, temps restant) et la pause, avec un lien « Ouvrir dans Steam » (`steam://open/downloads`) ;
+  - l'accueil fusionne l'état du disque dans le ruban (badge %, barre, « En cours ») et rafraîchit la bibliothèque à la fin ;
+  - point qui pulse sur l'icône Téléchargements de la barre ;
+  - `useJeuxInstalles` relit le disque toutes les 2 s tant qu'un téléchargement existe ;
+  - le faux serveur d'aperçu simule une installation (4 s d'attente, puis 40 s de téléchargement).
+- **À vérifier sur un vrai téléchargement** : Steam doit réécrire `BytesDownloaded` assez souvent dans l'`appmanifest`. Sinon, il faudra lire le dossier `steamapps/downloading/<id>`.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

@@ -253,7 +253,7 @@ pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resulta
     let mut resultat = HashMap::new();
     let mut manquants = Vec::new();
     for id in app_ids.into_iter().take(200) {
-        match etat.cache.frais::<ImagesJeu>(&format!("images:{id}"))? {
+        match etat.cache.frais::<ImagesJeu>(&format!("images2:{id}"))? {
             Some(i) => {
                 resultat.insert(id, i);
             }
@@ -264,7 +264,7 @@ pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resulta
         match etat.steam.images(&manquants).await {
             Ok(trouvees) => {
                 for (id, i) in trouvees {
-                    etat.cache.ranger(&format!("images:{id}"), &i, TTL_IMAGES)?;
+                    etat.cache.ranger(&format!("images2:{id}"), &i, TTL_IMAGES)?;
                     resultat.insert(id, i);
                 }
             }

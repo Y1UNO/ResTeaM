@@ -58,7 +58,7 @@ function CarteRuban({
     inst?.etat === "miseAJourRequise"
       ? "Mise à jour"
       : inst?.etat === "telechargement"
-        ? "Téléchargement"
+        ? `${inst.aTelecharger > 0 ? Math.round((inst.telecharge / inst.aTelecharger) * 100) : 0} %`
         : inst?.etat === "enPause"
           ? "En pause"
           : null;
@@ -74,11 +74,18 @@ function CarteRuban({
       <div className="rib__art" style={image ? undefined : { background: degradeJaquette(jeu.nom) }}>
         {image && <img src={jaquette!} alt="" draggable={false} loading="lazy" onError={() => setRatee(true)} />}
         {badge && <span className="rib__badge">{badge}</span>}
+        {(inst?.etat === "telechargement" || inst?.etat === "enPause") && inst.aTelecharger > 0 && (
+          <span className="rib__progression" aria-hidden="true">
+            <div style={{ width: `${Math.min(100, (inst.telecharge / inst.aTelecharger) * 100)}%` }} />
+          </span>
+        )}
         {!image && <span className="rib__titre">{jeu.nom}</span>}
       </div>
       <div className="rib__bas">
         <span>{jeu.minutesTotal > 0 ? heures(jeu.minutesTotal) : "Jamais lancé"}</span>
-        <span className="rib__droite">{inst ? "Jouer" : "Installer"}</span>
+        <span className="rib__droite">
+          {inst?.etat === "telechargement" || inst?.etat === "enPause" ? "En cours" : inst ? "Jouer" : "Installer"}
+        </span>
       </div>
     </button>
   );

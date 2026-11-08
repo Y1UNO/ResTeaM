@@ -28,7 +28,7 @@ pub fn adresses_classiques(app_id: u32) -> ImagesJeu {
     let base = format!("{CDN}steam/apps/{app_id}/");
     ImagesJeu {
         jaquette: Some(format!("{base}library_600x900.jpg")),
-        hero: Some(format!("{base}library_hero.jpg")),
+        hero: Some(format!("{base}library_hero_2x.jpg")),
         banniere: Some(format!("{base}header.jpg")),
     }
 }
@@ -58,6 +58,7 @@ struct Assets {
     library_capsule: Option<String>,
     library_capsule_2x: Option<String>,
     library_hero: Option<String>,
+    library_hero_2x: Option<String>,
     header: Option<String>,
 }
 
@@ -101,7 +102,10 @@ impl ClientSteam {
                         jaquette: adresse(format, &a.library_capsule_2x)
                             .or_else(|| adresse(format, &a.library_capsule))
                             .or(classique.jaquette),
-                        hero: adresse(format, &a.library_hero).or(classique.hero),
+                        // 3840×1240 : net même étiré sur un écran 1440p.
+                        hero: adresse(format, &a.library_hero_2x)
+                            .or_else(|| adresse(format, &a.library_hero))
+                            .or(classique.hero),
                         banniere: adresse(format, &a.header).or(classique.banniere),
                     },
                 );

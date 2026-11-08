@@ -170,4 +170,5 @@ export type ActionSteam =
   | { type: "rejoindreLobby"; appId: number; lobby: string; steamId: string }
   | { type: "rejoindreServeur"; adresse: string }
   | { type: "amis" }
+  | { type: "telechargements" }
   | { type: "page"; url: string };

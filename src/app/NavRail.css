@@ -140,3 +140,24 @@
 .rail__avatar-photo {
   animation: fade-in 0.5s ease both;
 }
+
+/* Téléchargement en cours : petit point lunaire qui pulse sur l'icône. */
+.rail__point {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: rail-pulse 2s ease-in-out infinite;
+}
+@keyframes rail-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(238, 242, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(238, 242, 255, 0);
+  }
+}

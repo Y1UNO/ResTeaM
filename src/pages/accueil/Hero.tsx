@@ -4,12 +4,13 @@ import { api } from "../../api/commandes";
 import { usePatchNotes, useSuccesJeu } from "../../api/requetes";
 import type { ImagesJeu, JeuBibliotheque } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
-import { HeroBackdrop } from "../../components/HeroBackdrop";
 import { JaugeHeures } from "../../components/JaugeHeures";
 import { date, heures, pourcentage } from "../../lib/format";
-import { degradeHero, degradeJaquette } from "../../lib/images";
+import { degradeJaquette } from "../../lib/images";
 import { marquerNotesVues, notesVuesLe } from "../../lib/notesVues";
+import { Affiche } from "./Ambiance";
 import { PanneauPatchNotes } from "./PanneauPatchNotes";
+import { SuiviInstallation } from "./SuiviInstallation";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
 
@@ -21,10 +22,16 @@ function kicker(jeu: JeuBibliotheque): string {
   return ecart < SEMAINE ? "Reprendre · joué cette semaine" : `Reprendre · joué le ${date(jeu.dernierLancement)}`;
 }
 
-type Props = { jeu: JeuBibliotheque; images: ImagesJeu };
+type Props = {
+  jeu: JeuBibliotheque;
+  images: ImagesJeu;
+  /** « Installer » vient d'être cliqué : on attend que Steam commence. */
+  enAttente: boolean;
+  onInstaller: () => void;
+};
 
 /** Hero de la maquette 01 avec le jeu en vedette. */
-export function Hero({ jeu, images }: Props) {
+export function Hero({ jeu, images, enAttente, onInstaller }: Props) {
   const navigate = useNavigate();
   const succes = useSuccesJeu(jeu.appId);
   const notes = usePatchNotes(jeu.appId);
@@ -63,13 +70,22 @@ export function Hero({ jeu, images }: Props) {
   const inst = jeu.installation;
   const jouable = inst && (inst.etat === "installe" || inst.etat === "miseAJourRequise");
   const enTelechargement = inst && (inst.etat === "telechargement" || inst.etat === "enPause");
-  const progression = inst && inst.aTelecharger > 0 ? inst.telecharge / inst.aTelecharger : 0;
 
-  const jouer = () => {
-    void api.steamLien(jouable ? { type: "jouer", appId: jeu.appId } : { type: "installer", appId: jeu.appId });
-    setLancement(true);
-    window.clearTimeout(minuterie.current);
-    minuterie.current = window.setTimeout(() => setLancement(false), 4000);
+  const actionPrincipale = () => {
+    if (enTelechargement || enAttente) {
+      void api.steamLien({ type: "telechargements" });
+      return;
+    }
+    if (jouable) {
+      void api.steamLien({ type: "jouer", appId: jeu.appId });
+      setLancement(true);
+      window.clearTimeout(minuterie.current);
+      minuterie.current = window.setTimeout(() => setLancement(false), 4000);
+      return;
+    }
+    // Steam ouvre sa fenêtre d'installation (choix du disque) ; l'app suit ensuite la progression.
+    void api.steamLien({ type: "installer", appId: jeu.appId });
+    onInstaller();
   };
 
   const s = succes.data?.donnees;
@@ -79,7 +95,8 @@ export function Hero({ jeu, images }: Props) {
 
   return (
     <section aria-label={kicker(jeu)} className="hero">
-      <HeroBackdrop image={images.hero} repli={degradeHero(jeu.nom)} artKey={jeu.appId} />
+      <Affiche url={images.hero} appId={jeu.appId} />
+      <div className="hero__voile" aria-hidden="true" />
 
       <div className="hero__content">
         <div key={`t-${jeu.appId}`} className="hero__text">
@@ -117,16 +134,11 @@ export function Hero({ jeu, images }: Props) {
                   <span className="hero__puce-petit">{inst ? "prêt à jouer" : "pas encore installé"}</span>
                 </>
               )}
-              {enTelechargement && (
-                <div className="hero__barre" title={pourcentage(progression)}>
-                  <div style={{ width: `${progression * 100}%` }} />
-                </div>
-              )}
             </div>
           </div>
 
           <div className="hero__boutons">
-            <button type="button" className="btn btn--principal" onClick={jouer}>
+            <button type="button" className="btn btn--principal" onClick={actionPrincipale}>
               {jouable ? (
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M6 4l14 8-14 8z" />
@@ -136,12 +148,20 @@ export function Hero({ jeu, images }: Props) {
                   <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
                 </svg>
               )}
-              {lancement ? "Ouverture dans Steam…" : jouable ? "Jouer" : enTelechargement ? "Voir le téléchargement" : "Installer"}
+              {lancement
+                ? "Ouverture dans Steam…"
+                : jouable
+                  ? "Jouer"
+                  : enTelechargement || enAttente
+                    ? "Voir dans Steam"
+                    : "Installer"}
             </button>
             <button type="button" className="btn btn--secondaire" onClick={() => navigate(`/jeu/${jeu.appId}`)}>
               Fiche du jeu
             </button>
           </div>
+
+          <SuiviInstallation appId={jeu.appId} installation={inst} enAttente={enAttente && !enTelechargement} />
         </div>
 
         <button

@@ -7,7 +7,7 @@ export function imagesDe(appId: number, toutes?: Record<string, ImagesJeu>): Ima
   const i = toutes?.[String(appId)];
   return {
     jaquette: i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`,
-    hero: i?.hero ?? `${CDN}/${appId}/library_hero.jpg`,
+    hero: i?.hero ?? `${CDN}/${appId}/library_hero_2x.jpg`,
     banniere: i?.banniere ?? `${CDN}/${appId}/header.jpg`,
   };
 }

@@ -42,13 +42,17 @@ export function useSteamLocal() {
   return useQuery({ queryKey: ["steam-local"], queryFn: api.steamLocal, staleTime: 10 * 60_000 });
 }
 
-/** Jeux installés : relu toutes les 3 s si `suivre` (progression des téléchargements). */
+/**
+ * Jeux installés (lecture du disque). Relu toutes les 2 s si `suivre` (installation
+ * qui vient d'être lancée) ou tant qu'un téléchargement apparaît sur le disque.
+ */
 export function useJeuxInstalles(suivre = false) {
   return useQuery({
     queryKey: ["installes"],
     queryFn: api.jeuxInstalles,
     staleTime: 5_000,
-    refetchInterval: suivre ? 3_000 : false,
+    refetchInterval: (q) =>
+      suivre || q.state.data?.some((j) => j.etat === "telechargement" || j.etat === "enPause") ? 2_000 : false,
   });
 }
 

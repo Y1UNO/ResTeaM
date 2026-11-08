@@ -1,0 +1,204 @@
+/* Composants partagés (valeurs des maquettes : boutons du hero, cartes en verre fumé). */
+
+/* ——— Boutons ——— */
+.btn {
+  height: 56px;
+  padding: 0 24px;
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) ease,
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    opacity var(--dur-fast) ease;
+}
+.btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.btn--principal {
+  padding: 0 32px;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: var(--shadow-1);
+}
+.btn--principal:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-1),
+    0 0 26px var(--halo-2);
+}
+.btn--secondaire {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface-2);
+  backdrop-filter: blur(12px);
+  color: var(--text-1);
+}
+.btn--secondaire:not(:disabled):hover {
+  border-color: var(--line-strong);
+  background: rgba(30, 30, 34, 0.7);
+}
+.btn--petit {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.btn--principal.btn--petit {
+  padding: 0 22px;
+  font-size: 14px;
+}
+.btn--lien {
+  height: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-kicker);
+  font-size: 13px;
+  font-weight: 600;
+}
+.btn--lien:hover {
+  color: var(--text-1);
+}
+
+/* ——— Carte en verre fumé ——— */
+.carte {
+  border-radius: 24px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-3);
+  backdrop-filter: blur(var(--blur-md));
+  padding: 24px 26px;
+}
+.carte__titre {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.carte__texte {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* ——— Champ de saisie ——— */
+.champ {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 8px 0 18px;
+  border-radius: var(--radius-lg);
+  background: rgba(9, 9, 10, 0.6);
+  border: 1px solid var(--line-3);
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+.champ:focus-within {
+  border-color: rgba(238, 242, 255, 0.4);
+  box-shadow: 0 0 0 4px rgba(238, 242, 255, 0.06);
+}
+.champ.is-erreur {
+  border-color: rgba(238, 242, 255, 0.55);
+}
+.champ input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--text-1);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+.champ input::placeholder {
+  font-family: var(--font-text);
+  letter-spacing: 0;
+  color: var(--text-4);
+}
+.champ__oeil {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.champ__oeil:hover {
+  background: var(--fill-hover);
+  color: var(--text-1);
+}
+
+/* ——— Message (erreur ou info) : neutre, avec le point d'accent ——— */
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+  animation: rise-in 0.35s var(--ease) both;
+}
+.message::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--halo-4);
+}
+
+/* ——— Rotation douce (attente) ——— */
+@keyframes tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.attente-anneau {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(238, 242, 255, 0.18);
+  border-top-color: var(--accent);
+  animation: tourne 0.9s linear infinite;
+}
+/* Anneau sur fond clair (bouton principal). */
+.attente-anneau--sombre {
+  width: 16px;
+  height: 16px;
+  border-color: rgba(10, 13, 20, 0.2);
+  border-top-color: var(--on-accent);
+}
+
+/* Texte réservé aux lecteurs d'écran. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

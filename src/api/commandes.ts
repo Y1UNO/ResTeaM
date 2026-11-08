@@ -1,0 +1,33 @@
+import { invoke } from "@tauri-apps/api/core";
+import { estErreurApp, type Donnee, type ErreurApp, type Joueur, type Session } from "./types";
+
+/** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
+export const dansTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
+async function appeler<T>(commande: string, args?: Record<string, unknown>): Promise<T> {
+  if (!dansTauri) {
+    // Aperçu dans un navigateur (vérification visuelle) : faux back-end en mémoire.
+    const { apercu } = await import("./apercu");
+    return apercu<T>(commande, args);
+  }
+  try {
+    return await invoke<T>(commande, args);
+  } catch (e) {
+    if (estErreurApp(e)) throw e;
+    const inconnue: ErreurApp = { code: "interne", message: String(e) };
+    throw inconnue;
+  }
+}
+
+/** Appels typés vers le Rust. La clé API n'est jamais lue : on sait seulement si elle existe. */
+export const api = {
+  sessionLire: () => appeler<Session | null>("session_lire"),
+  connexionSteam: () => appeler<Session>("connexion_steam"),
+  connexionAnnuler: () => appeler<void>("connexion_annuler"),
+  deconnexion: () => appeler<void>("deconnexion"),
+  cleEtat: () => appeler<boolean>("cle_etat"),
+  cleEnregistrer: (cle: string) => appeler<void>("cle_enregistrer", { cle }),
+  cleSupprimer: () => appeler<void>("cle_supprimer"),
+  ouvrirPageCleApi: () => appeler<void>("ouvrir_page_cle_api"),
+  joueurMoi: () => appeler<Donnee<Joueur>>("joueur_moi"),
+};

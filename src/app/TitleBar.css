@@ -58,3 +58,8 @@
 .titlebar__btn:focus-visible {
   outline-offset: -2px;
 }
+
+/* Écrans plein cadre (sans barre de gauche). */
+.titlebar--plein {
+  left: 0;
+}

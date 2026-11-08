@@ -10,4 +10,6 @@ export const PATHS = {
   profil: "/profil",
   jeu: "/jeu/:appId",
   parametres: "/parametres",
+  connexion: "/connexion",
+  cleApi: "/cle-api",
 } as const;

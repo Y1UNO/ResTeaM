@@ -94,3 +94,8 @@
 .logo-menu__item.is-current {
   color: var(--text-1);
 }
+.logo-menu__separateur {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--line-1);
+}

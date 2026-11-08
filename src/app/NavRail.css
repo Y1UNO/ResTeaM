@@ -136,3 +136,7 @@
   height: 100%;
   object-fit: cover;
 }
+/* La photo apparaît en fondu quand elle est chargée. */
+.rail__avatar-photo {
+  animation: fade-in 0.5s ease both;
+}

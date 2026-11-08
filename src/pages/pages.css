@@ -2,7 +2,7 @@
 .hero {
   position: relative;
   height: var(--hero-h);
-  overflow: hidden;
+  overflow: clip;
 }
 .hero__content {
   position: relative;

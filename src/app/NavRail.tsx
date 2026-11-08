@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useJoueurMoi } from "../api/requetes";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   IconCharts,
@@ -51,20 +52,20 @@ function isActive(pathname: string, match: string[]) {
   );
 }
 
-type NavRailProps = {
-  /** Avatar Steam (étape 2a). Sans avatar, une silhouette neutre. */
-  avatarUrl?: string;
-  personaName?: string;
-};
-
 /**
  * Barre de navigation transparente à gauche (maquette 01) :
  * pas de fond plein, un dégradé sombre et un fin liseré lumineux.
+ * En bas, l'avatar Steam (silhouette neutre tant qu'il n'est pas chargé).
  */
-export function NavRail({ avatarUrl, personaName }: NavRailProps) {
+export function NavRail() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const profileActive = isActive(pathname, [PATHS.profil]);
+  const joueur = useJoueurMoi();
+  const avatarUrl = joueur.data?.donnees.avatar;
+  const personaName = joueur.data?.donnees.pseudo;
+  const [avatarCasse, setAvatarCasse] = useState(false);
+  useEffect(() => setAvatarCasse(false), [avatarUrl]);
 
   const renderItem = (item: RailItem, tool = false) => {
     const active = isActive(pathname, item.match);
@@ -84,7 +85,8 @@ export function NavRail({ avatarUrl, personaName }: NavRailProps) {
     );
   };
 
-  const profileLabel = personaName ? `Profil · ${personaName}` : "Profil";
+  const profileLabel =
+    (personaName ? `Profil · ${personaName}` : "Profil") + (joueur.data?.horsLigne ? " · hors ligne" : "");
 
   return (
     <nav aria-label="Navigation principale" className="rail">
@@ -106,7 +108,18 @@ export function NavRail({ avatarUrl, personaName }: NavRailProps) {
       >
         <span aria-hidden="true" className="rail__bar rail__bar--avatar" />
         <span className="rail__avatar-img">
-          {avatarUrl ? <img src={avatarUrl} alt="" draggable={false} /> : <IconPerson />}
+          {avatarUrl && !avatarCasse ? (
+            <img
+              key={avatarUrl}
+              className="rail__avatar-photo"
+              src={avatarUrl}
+              alt=""
+              draggable={false}
+              onError={() => setAvatarCasse(true)}
+            />
+          ) : (
+            <IconPerson />
+          )}
         </span>
       </button>
     </nav>

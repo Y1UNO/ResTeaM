@@ -168,7 +168,30 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Kit resynchronisé : `kit/pages-autonomes/` (maquettes ouvrables sans canevas, servies par la config `maquettes` de `.claude/launch.json`) et `kit/captures/` (rendus attendus). Comparaison mesurée : barre et fond identiques à la page 01. Seul écart voulu : le logo « Lune à engrenages » à la place du carré « R » des maquettes.
 - À faire en 2a : grand logo animé sur l'écran de connexion / chargement (`<Logo size={…} />`). Pas d'option « Animer le logo » (refusée par Tom).
 
-## 7. Plan détaillé — étape 2a (connexion, clé API, client Web API, cache)
+### Étape 2a — Connexion, clé API, client Web API, cache (8 novembre 2026)
+
+- **Rust** (`src-tauri/src/`) :
+  - `erreur.rs` : erreurs `{ code, message }` en français, sans URL ni clé ;
+  - `session.rs` : SteamID dans `session.json` ;
+  - `secrets.rs` : clé dans le Gestionnaire d'identifiants Windows (`keyring` v3, service `ResTeaM`) ;
+  - `cache.rs` : SQLite `cache.sqlite`, TTL et repli hors ligne ;
+  - `steam/auth.rs` : OpenID avec serveur `127.0.0.1`, jeton d'état, `check_authentication` et SteamID strict ;
+  - `steam/webapi.rs` : `GetPlayerSummaries` ;
+  - `commandes.rs` : `session_lire`, `connexion_steam`, `connexion_annuler`, `deconnexion`, `cle_etat`, `cle_enregistrer`, `cle_supprimer`, `ouvrir_page_cle_api`, `joueur_moi`.
+- **TLS** : `reqwest` 0.13 avec `native-tls` (Schannel de Windows), pour éviter `aws-lc-rs` qui demande CMake et NASM.
+- **Liens externes** : uniquement via des commandes Rust à adresse fixe. La permission `opener:default` est retirée du front.
+- **Tests** : `cargo test` lance 8 tests. `cargo test -- --ignored` lance un vrai appel à Steam avec une clé factice, qui doit être refusée.
+- **Front** :
+  - `src/api/` : appels typés, TanStack Query, et `apercu.ts` (faux back-end, seulement hors de l'exe, pour vérifier les écrans dans le navigateur) ;
+  - `src/app/session.ts` : Zustand, statut `chargement` / `deconnecte` / `sans-cle` / `pret` ;
+  - `Garde.tsx` ;
+  - écrans `src/ecrans/` : Chargement, Connexion, Clé API ;
+  - page `Parametres.tsx` ;
+  - menu du logo avec Paramètres et Se déconnecter ;
+  - vrai avatar en bas de la barre.
+- **Piège corrigé** : les conteneurs avec de la fumée qui déborde utilisent `overflow: clip`, pas `hidden`. Sinon, le focus d'un champ fait défiler le contenu.
+
+## 7. Plan détaillé — étape 2a (fait, voir le journal) (connexion, clé API, client Web API, cache)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.
 

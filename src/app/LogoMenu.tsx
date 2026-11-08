@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../components/Logo";
-import { IconSettings } from "../components/icons";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "../api/commandes";
+import { IconLogout, IconSettings } from "../components/icons";
+import { useSession } from "./session";
 import { PATHS } from "./paths";
 import "./LogoMenu.css";
 
@@ -9,7 +12,7 @@ type MenuState = "closed" | "open" | "closing";
 
 /**
  * Logo en haut de la barre : un clic ouvre un petit menu en verre fumé
- * (Paramètres pour l'instant ; Se déconnecter arrivera à l'étape 2a).
+ * (Paramètres, Se déconnecter).
  * Ouverture et fermeture animées, jamais de fermeture instantanée.
  */
 export function LogoMenu() {
@@ -18,6 +21,8 @@ export function LogoMenu() {
   const timer = useRef<number | undefined>(undefined);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const client = useQueryClient();
+  const deconnecte = useSession((s) => s.deconnecte);
 
   const open = () => {
     window.clearTimeout(timer.current);
@@ -53,6 +58,13 @@ export function LogoMenu() {
     if (pathname !== to) navigate(to);
   };
 
+  const seDeconnecter = async () => {
+    close();
+    await api.deconnexion().catch(() => {});
+    client.clear();
+    deconnecte();
+  };
+
   const isOpen = state === "open";
 
   return (
@@ -80,6 +92,11 @@ export function LogoMenu() {
           >
             <IconSettings />
             Paramètres
+          </button>
+          <div className="logo-menu__separateur" role="separator" />
+          <button type="button" role="menuitem" className="logo-menu__item" onClick={seDeconnecter}>
+            <IconLogout />
+            Se déconnecter
           </button>
         </div>
       )}

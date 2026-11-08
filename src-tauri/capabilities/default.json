@@ -1,11 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Fenêtre principale : barre de titre dessinée par l'app (fenêtre sans cadre).",
-  "windows": ["main"],
+  "description": "Fenêtre principale : barre de titre dessinée par l'app. Les liens externes passent uniquement par des commandes Rust (adresses fixes).",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
-    "opener:default",
     "core:window:allow-start-dragging",
     "core:window:allow-internal-toggle-maximize",
     "core:window:allow-minimize",

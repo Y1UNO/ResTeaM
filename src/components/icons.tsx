@@ -71,6 +71,15 @@ export function IconSettings({ size = 18 }: IconProps) {
   );
 }
 
+export function IconLogout({ size = 18 }: IconProps) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" {...stroke}>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 8l-4 4 4 4M6 12h10" />
+    </svg>
+  );
+}
+
 /** Silhouette affichée dans l'avatar tant que le compte Steam n'est pas connecté. */
 export function IconPerson({ size = 22 }: IconProps) {
   return (

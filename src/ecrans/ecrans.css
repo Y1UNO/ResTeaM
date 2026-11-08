@@ -1,0 +1,179 @@
+/* Écrans plein cadre : Chargement, Connexion, Clé API. */
+.ecran {
+  position: relative;
+  min-height: 100vh;
+  overflow: clip; /* pas hidden : le focus ne doit pas faire défiler la fumée */
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fumée qui monte du bas de l'écran (variante hero, retournée en fond). */
+.ecran__fumee-bas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 420px;
+  pointer-events: none;
+}
+.ecran__fumee-bas .smoke {
+  bottom: -220px;
+}
+
+.ecran__centre {
+  position: relative;
+  z-index: 1;
+  width: min(560px, calc(100% - 48px));
+  padding: 64px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  animation: page-in var(--dur-2) var(--ease) both;
+}
+.ecran__centre--large {
+  width: min(640px, calc(100% - 48px));
+}
+
+.ecran__logo {
+  margin-bottom: 14px;
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.7));
+}
+.ecran__titre {
+  font-family: var(--font-display);
+  font-size: var(--fs-page-title);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+.ecran__titre--moyen {
+  font-size: 48px;
+  letter-spacing: -1.5px;
+}
+.ecran__texte {
+  margin: 0;
+  max-width: 460px;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.ecran__note {
+  margin: 0;
+  max-width: 420px;
+  color: var(--text-4);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.ecran__actions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Carte d'attente de la connexion Steam. */
+.ecran__attente {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 20px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-3);
+  backdrop-filter: blur(var(--blur-md));
+  text-align: left;
+  animation: rise-in 0.4s var(--ease) both;
+}
+.ecran__attente strong {
+  display: block;
+  font-size: 15px;
+}
+.ecran__attente span {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* Écran Clé API : étapes + formulaire, alignés à gauche dans une carte. */
+.cle__carte {
+  width: 100%;
+  margin-top: 8px;
+  padding: 26px;
+  border-radius: 26px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-3);
+  backdrop-filter: blur(var(--blur-lg));
+  box-shadow: var(--shadow-2);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+.cle__etapes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cle__etape {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.cle__num {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(238, 242, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.cle__etape code {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--text-1);
+}
+.cle__etape .btn {
+  margin-left: auto;
+}
+.cle__formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cle__ligne {
+  display: flex;
+  gap: 10px;
+}
+.cle__ligne .champ {
+  flex: 1;
+}
+.cle__securite {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-4);
+}
+
+/* Chargement : logo seul, qui apparaît en douceur si le démarrage traîne. */
+.chargement__logo {
+  animation: fade-in 0.6s ease 0.25s both;
+}

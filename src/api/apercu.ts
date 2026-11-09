@@ -171,6 +171,8 @@ function installationsSimulees() {
   });
 }
 
+/** Abonnements simulés dans l'aperçu (identifiant → début). */
+const ABONNEMENTS_APERCU = new Map<string, number>();
 const CAPTURES_FACTICES = [
   "ef0f63061d0a0a9a7e46f3b84f125d25330e8f19",
   "c88996aa0af82894a8e50ebb951a503ebce3ab24",
@@ -610,8 +612,17 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     // ——— Communauté ———
     case "workshop_installe":
       return [
-        { appId: 1145350, taille: 9_766_000_000, nombre: 196, majEnAttente: 2 },
-        { appId: 730, taille: 412_000_000, nombre: 53, majEnAttente: 0 },
+        {
+          appId: 1145350,
+          taille: 9_766_000_000,
+          nombre: 196,
+          majEnAttente: 2,
+          ids: [
+            ...Array.from({ length: 196 }, (_, i) => String(3_000_000_000 + i)),
+            ...[...ABONNEMENTS_APERCU].filter(([, debut]) => Date.now() - debut >= 6000).map(([id]) => id),
+          ],
+        },
+        { appId: 730, taille: 412_000_000, nombre: 53, majEnAttente: 0, ids: Array.from({ length: 53 }, (_, i) => String(3_000_000_000 + i)) },
       ];
     case "mods_jeu": {
       const page = Number(args?.page ?? 0);
@@ -640,7 +651,7 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       return enveloppe({
         total,
         objets: Array.from({ length: recherche ? 12 : 30 }, (_, k) => {
-          const o = objetFactice((page - 1) * 30 + k + 7, Number(args?.appId));
+          const o = objetFactice((page - 1) * 30 + k + 192, Number(args?.appId));
           return genre === "videos" ? { ...o, video: "dQw4w9WgXcQ" } : genre === "guides" ? { ...o, titre: `Guide : ${o.titre}` } : o;
         }),
       });
@@ -658,7 +669,33 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       }));
     case "ouvrir_captures":
     case "ouvrir_objet_workshop":
+    case "ouvrir_youtube":
       return null;
+    case "fiche_mod": {
+      const i = Number(String(args?.id ?? "0").slice(-3)) || 0;
+      const o = objetFactice(i, Number(args?.appId));
+      return {
+        objet: {
+          ...o,
+          description: `${o.description} Réglages : vitesse, couleurs, musique. Fonctionne en 1080p, 1440p et 4K.`,
+          galerie: CAPTURES_FACTICES.map((h) => `${CDN_APERCU}/1145350/ss_${h}.1920x1080.jpg?t=1779901265`),
+          youtube: ["dxy1pQRu9Po"],
+        },
+        local: null,
+      };
+    }
+    case "abonner_mod": {
+      const id = String(args?.id);
+      if (args?.abonner) ABONNEMENTS_APERCU.set(id, Date.now());
+      else ABONNEMENTS_APERCU.delete(id);
+      return null;
+    }
+    case "etat_mod": {
+      const debut = ABONNEMENTS_APERCU.get(String(args?.id));
+      if (debut == null) return { installe: false, recu: 0 };
+      const f = Math.min(1, (Date.now() - debut) / 6000);
+      return { installe: f >= 1, recu: Math.round(f * 120_000_000) };
+    }
     case "fil_amis": {
       const recents = [
         [{ appId: 1145350, nom: "Hades II", m: 760 }, { appId: 730, nom: "Counter-Strike 2", m: 120 }],

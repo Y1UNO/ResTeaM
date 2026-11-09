@@ -330,3 +330,8 @@ export function useMesCaptures() {
 export function useFilAmis() {
   return useQuery({ queryKey: ["fil-amis"], queryFn: api.filAmis, staleTime: 2 * 60_000, refetchInterval: 3 * 60_000 });
 }
+
+/** Fiche complète d'un objet du Workshop (galerie HD, vidéo locale si installé). */
+export function useFicheMod(appId: number, id: string) {
+  return useQuery({ queryKey: ["fiche-mod", appId, id], queryFn: () => api.ficheMod(appId, id), staleTime: 10 * 60_000 });
+}

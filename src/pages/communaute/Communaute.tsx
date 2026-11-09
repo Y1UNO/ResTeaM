@@ -10,6 +10,7 @@ import { date, entier, heures, ilYA, taille } from "../../lib/format";
 import { degradeJaquette, imagesDe } from "../../lib/images";
 import { viaCache } from "../../lib/imageLocale";
 import "../pages.css";
+import { FenetreObjet, SuiviWorkshop, useIdsInstalles, useProgression } from "./FenetreMod";
 import "./communaute.css";
 
 type Onglet = "fil" | "workshop" | "captures" | "creations";
@@ -41,6 +42,7 @@ export function Communaute() {
     <div className="page communaute-page">
       <Smoke variant="top" />
       <Lucioles graine={83} />
+      <SuiviWorkshop />
       <div className="page__content communaute">
         <header className="communaute__entete">
           <div>
@@ -347,6 +349,7 @@ function MesMods({ appId }: { appId: number }) {
         {liste.map((m, i) => (
           <CarteObjet
             key={m.id}
+            id={m.id}
             index={i}
             objet={m.objet}
             repli={`Mod ${m.id}`}
@@ -357,7 +360,7 @@ function MesMods({ appId }: { appId: number }) {
               </>
             }
             badge={m.aMettreAJour ? "Mise à jour" : null}
-            ouvrir={() => (m.objet ? setOuvert(m.objet) : void api.ouvrirObjetWorkshop(m.id, false))}
+            ouvrir={() => setOuvert(m.objet ?? objetMinimal(m.id, appId, m.taille, m.maj))}
           />
         ))}
       </div>
@@ -366,7 +369,7 @@ function MesMods({ appId }: { appId: number }) {
           {mods.isFetchingNextPage ? "Chargement…" : "Voir plus de mods"}
         </button>
       )}
-      {ouvert && <FenetreObjet objet={ouvert} installe fermer={() => setOuvert(null)} />}
+      {ouvert && <FenetreObjet objet={ouvert} appId={appId} fermer={() => setOuvert(null)} />}
     </>
   );
 }
@@ -424,6 +427,8 @@ function Vitrine({ appId, genre }: { appId: number; genre: GenreWorkshop }) {
           {liste.map((o, i) => (
             <CarteObjet
               key={`${o.id}-${i}`}
+              id={o.id}
+              marquerInstalle
               index={i % 30}
               objet={o}
               repli={o.titre}
@@ -444,7 +449,7 @@ function Vitrine({ appId, genre }: { appId: number; genre: GenreWorkshop }) {
           {v.isFetchingNextPage ? "Chargement…" : "Voir plus"}
         </button>
       )}
-      {ouvert && <FenetreObjet objet={ouvert} installe={false} fermer={() => setOuvert(null)} />}
+      {ouvert && <FenetreObjet objet={ouvert} appId={appId} fermer={() => setOuvert(null)} />}
     </>
   );
 }
@@ -471,108 +476,58 @@ function Note({ note }: { note: number | null }) {
   );
 }
 
+/** Objet sans détails publics (retiré ou privé) : la fiche montre au moins l'essentiel. */
+function objetMinimal(id: string, appId: number, poids: number, maj: number): ObjetWorkshop {
+  return { id, appId, titre: `Mod ${id}`, apercu: "", description: "", taille: poids, maj, abonnes: 0, favoris: 0, vues: 0, note: null, votes: null, tags: [], video: null };
+}
+
 function CarteObjet({
   objet,
+  id,
   repli,
   pied,
   badge,
   index,
   ouvrir,
+  marquerInstalle = false,
 }: {
   objet: ObjetWorkshop | null;
+  id: string;
   repli: string;
   pied: React.ReactNode;
   badge: string | null;
   index: number;
   ouvrir: () => void;
+  marquerInstalle?: boolean;
 }) {
   const titre = objet?.titre || repli;
   const [casse, setCasse] = useState(false);
+  const progression = useProgression(id);
+  const installes = useIdsInstalles();
+  const installe = marquerInstalle && installes.has(id);
   return (
     <button type="button" className="com-carte" data-incline="" style={{ animationDelay: `${Math.min(index, 16) * 35}ms` }} onClick={ouvrir}>
       <span className="com-carte__image" style={{ background: degradeJaquette(titre) }}>
-        {objet?.apercu && !casse && <img src={viaCache(objet.apercu)} alt="" loading="lazy" draggable={false} onError={() => setCasse(true)} />}
+        {objet?.apercu && !casse ? (
+          <img src={viaCache(objet.apercu)} alt="" loading="lazy" draggable={false} onError={() => setCasse(true)} />
+        ) : (
+          <span className="com-carte__vide" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3h7z" />
+            </svg>
+          </span>
+        )}
         {badge && <span className="com-carte__badge">{badge}</span>}
+        {installe && progression == null && <span className="com-carte__badge is-installe">✓ Installé</span>}
+        {progression != null && (
+          <span className="com-carte__progression" aria-label={`Téléchargement ${Math.round(progression * 100)} %`}>
+            <span style={{ transform: `scaleX(${Math.max(0.03, progression)})` }} />
+          </span>
+        )}
       </span>
       <span className="com-carte__titre">{titre || "Sans titre"}</span>
       <span className="com-carte__pied">{pied}</span>
     </button>
-  );
-}
-
-function FenetreObjet({ objet, installe, fermer }: { objet: ObjetWorkshop; installe: boolean; fermer: () => void }) {
-  useEffect(() => {
-    const touche = (e: KeyboardEvent) => e.key === "Escape" && fermer();
-    window.addEventListener("keydown", touche);
-    return () => window.removeEventListener("keydown", touche);
-  }, [fermer]);
-  return (
-    <>
-      <div className="com-voile" onClick={fermer} aria-hidden="true" />
-      <div role="dialog" aria-modal="true" aria-label={objet.titre} className="com-fenetre">
-        <div className="com-fenetre__image" style={{ background: degradeJaquette(objet.titre) }}>
-          {objet.apercu && <img src={viaCache(objet.apercu)} alt="" draggable={false} />}
-          {objet.video && <span className="com-fenetre__lecture" aria-hidden="true">▶</span>}
-        </div>
-        <div className="com-fenetre__texte">
-          <h2>{objet.titre || "Sans titre"}</h2>
-          {objet.tags.length > 0 && (
-            <div className="com-tags">
-              {objet.tags.slice(0, 8).map((t) => (
-                <span key={t}>{t}</span>
-              ))}
-            </div>
-          )}
-          {objet.description && <p className="com-fenetre__description">{objet.description}</p>}
-          <dl className="com-chiffres">
-            {objet.note != null && (
-              <div>
-                <dt>Avis</dt>
-                <dd>
-                  <Note note={objet.note} />
-                </dd>
-              </div>
-            )}
-            {objet.abonnes > 0 && (
-              <div>
-                <dt>Abonnés</dt>
-                <dd>{entier(objet.abonnes)}</dd>
-              </div>
-            )}
-            {objet.favoris > 0 && (
-              <div>
-                <dt>Favoris</dt>
-                <dd>{entier(objet.favoris)}</dd>
-              </div>
-            )}
-            {objet.taille > 0 && (
-              <div>
-                <dt>Taille</dt>
-                <dd>{taille(objet.taille)}</dd>
-              </div>
-            )}
-            {objet.maj > 0 && (
-              <div>
-                <dt>Mis à jour</dt>
-                <dd>{date(objet.maj)}</dd>
-              </div>
-            )}
-          </dl>
-          <div className="com-fenetre__boutons">
-            <button type="button" className="btn btn--principal btn--petit" onClick={() => void api.ouvrirObjetWorkshop(objet.id, true)}>
-              {installe ? "Gérer dans Steam" : objet.video ? "Regarder dans Steam" : "S’abonner dans Steam"}
-            </button>
-            <button type="button" className="btn btn--secondaire btn--petit" onClick={() => void api.ouvrirObjetWorkshop(objet.id, false)}>
-              Ouvrir dans le navigateur
-            </button>
-            <button type="button" className="btn btn--lien" onClick={fermer}>
-              Fermer
-            </button>
-          </div>
-          <p className="com-fenetre__note">S’abonner se fait dans Steam : Steam n’offre pas d’accès pour le faire depuis une autre app.</p>
-        </div>
-      </div>
-    </>
   );
 }
 

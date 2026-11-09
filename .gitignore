@@ -20,3 +20,6 @@ Desktop.ini
 
 # Captures de mon vrai compte Steam (données perso) : gardées sur le PC, jamais publiées
 kit/references/steam-actuel/
+
+# Aide Workshop (Steamworks) : compilée à part
+src-tauri/workshop-aide/target/

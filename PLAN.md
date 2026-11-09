@@ -660,6 +660,23 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Tests : `mods_du_compte_seulement`, `numero_de_compte`, `chemins_de_captures`, `captures_triees`, `objet_de_query_files`.
 - README : la Communauté ajoutée, avec deux captures (aperçu, données factices).
 
+### Étape 11 bis — Installer les mods depuis ResTeaM, qualité des images (9 novembre 2026)
+
+- **Cartes vides** : c'étaient les configurations de manette de Steam Input (app 241100, sans image, titres en codes internes comme `#Library_ControllerSaveDefaultTitle`). Elles sont masquées du Workshop (`HORS_WORKSHOP`). Une carte sans image montre maintenant une icône au lieu d'un dégradé vide.
+- **Qualité de la fenêtre d'un objet** :
+  - nouvelle fenêtre, bien plus grande : scène en haut (image entière sur un fond flouté de la même image), rangée de vignettes, puis le texte ;
+  - galerie en grande taille (`previews` de `QueryFiles` / `IPublishedFileService/GetDetails`, souvent en 1080p) et vidéos YouTube (miniature, puis ouverture dans le navigateur) ;
+  - **fond Wallpaper Engine installé de type vidéo** : la vraie vidéo du disque est lue en pleine qualité (jusqu'à la 4K). Elle est trouvée par le `project.json` (`type: video`, `file`), et servie par le protocole `img` sous `/__workshop__/<appid>/<objet>/<fichier>`, **par morceaux de 4 Mo** (en-tête Range, réponse 206), pour lire 200 Mo sans tout charger en mémoire. Le nom de fichier est vérifié (un seul élément, sans `..` ni lecteur), et le type est deviné par l'extension ou les premiers octets.
+- **Installer et retirer un mod depuis ResTeaM** :
+  - Steam n'a pas d'API web pour s'abonner. Seuls les jeux le peuvent, par l'API Steamworks (`ISteamUGC::SubscribeItem`). Une **aide séparée**, `resteam-workshop.exe` (crate `src-tauri/workshop-aide`, `steamworks` 0.13), se présente à Steam comme le jeu (`init_app`), s'abonne ou se désabonne, demande le téléchargement en priorité, puis s'arrête. Steam télécharge ensuite en arrière-plan.
+  - L'aide et `steam_api64.dll` sont posées à côté de `ResTeaM.exe` par `build-exe.ps1`. ResTeaM ne charge jamais la DLL lui-même : il démarre même sans l'aide.
+  - Essai sans risque sur le PC de Tom : abonnement à un fond déjà abonné → `OK`, aucun changement ; jeu non possédé → message clair.
+  - Effet visible : pendant 1 à 2 secondes, Steam montre Tom « en jeu » sur le jeu du mod (Wallpaper Engine), comme quand un jeu s'ouvre.
+  - Suivi : `etat_mod` lit toutes les 1,5 s les octets reçus dans `steamapps/workshop/downloads/<appid>/<objet>` (ou `content/`), jusqu'à ce que le mod apparaisse dans l'`appworkshop_*.acf` du compte. Barre de progression dans la fenêtre et sur la carte, puis « ✓ Installé ».
+  - Retirer : demande de confirmation, puis désabonnement. « Installé » est aussi marqué dans la vitrine « Découvrir ».
+  - Si Steam refuse (jeu non possédé, Steam fermé), le message propose « Ouvrir dans Steam ».
+- Tests : `plages`, `noms_et_types_locaux`, `galerie_et_youtube` (59 tests en tout).
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

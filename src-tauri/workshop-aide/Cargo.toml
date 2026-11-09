@@ -1,0 +1,12 @@
+[package]
+name = "resteam-workshop"
+version = "0.1.0"
+edition = "2021"
+description = "Aide de ResTeaM : s'abonner ou se désabonner d'un objet du Workshop par l'API Steamworks"
+
+[dependencies]
+steamworks = "0.13.1"
+
+[profile.release]
+opt-level = "s"
+strip = true

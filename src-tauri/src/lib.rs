@@ -23,12 +23,13 @@ pub fn run() {
         .register_asynchronous_uri_scheme_protocol("img", |ctx, requete, repondeur| {
             let app = ctx.app_handle().clone();
             let chemin = requete.uri().path().to_string();
+            let plage = requete.headers().get("range").and_then(|v| v.to_str().ok()).map(str::to_owned);
             tauri::async_runtime::spawn(async move {
                 let Some(cache) = app.try_state::<images_locales::CacheImages>() else {
                     repondeur.respond(tauri::http::Response::builder().status(503).body(Vec::new()).unwrap());
                     return;
                 };
-                repondeur.respond(cache.servir(&chemin).await);
+                repondeur.respond(cache.servir(&chemin, plage.as_deref()).await);
             });
         })
         .setup(|app| {
@@ -72,6 +73,10 @@ pub fn run() {
             commandes::ouvrir_captures,
             commandes::fil_amis,
             commandes::ouvrir_objet_workshop,
+            commandes::fiche_mod,
+            commandes::abonner_mod,
+            commandes::etat_mod,
+            commandes::ouvrir_youtube,
             commandes::enregistrer_media_perso,
             commandes::file_steam,
             commandes::annuler_file_steam,

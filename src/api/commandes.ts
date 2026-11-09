@@ -34,6 +34,8 @@ import {
   type StatsSysteme,
   type SuccesJeu,
   type ActiviteAmi,
+  type EtatMod,
+  type FicheMod,
   type CapturesJeu,
   type GenreWorkshop,
   type ModsJeu,
@@ -123,6 +125,10 @@ export const api = {
   ouvrirCaptures: (appId: number) => appeler<void>("ouvrir_captures", { appId }),
   filAmis: () => appeler<ActiviteAmi[]>("fil_amis"),
   ouvrirObjetWorkshop: (id: string, dansSteam: boolean) => appeler<void>("ouvrir_objet_workshop", { id, dansSteam }),
+  ficheMod: (appId: number, id: string) => appeler<FicheMod>("fiche_mod", { appId, id }),
+  abonnerMod: (appId: number, id: string, abonner: boolean) => appeler<void>("abonner_mod", { appId, id, abonner }),
+  etatMod: (appId: number, id: string) => appeler<EtatMod>("etat_mod", { appId, id }),
+  ouvrirYoutube: (id: string) => appeler<void>("ouvrir_youtube", { id }),
 };
 
 /** Adresse d'une capture d'écran locale de Steam (servie par le protocole `img`). */

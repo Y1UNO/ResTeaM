@@ -822,6 +822,8 @@ pub struct ResumeWorkshop {
     pub taille: u64,
     pub nombre: usize,
     pub maj_en_attente: usize,
+    /// Identifiants des mods installés (pour marquer « Installé » dans la vitrine).
+    pub ids: Vec<String>,
 }
 
 /// Jeux qui ont des mods installés (abonnements du compte connecté).
@@ -838,6 +840,7 @@ pub async fn workshop_installe(app: AppHandle) -> Resultat<Vec<ResumeWorkshop>> 
             taille: j.taille,
             nombre: j.mods.len(),
             maj_en_attente: j.mods.iter().filter(|m| m.a_mettre_a_jour).count(),
+            ids: j.mods.iter().map(|m| m.id.clone()).collect(),
         })
         .collect())
 }
@@ -1012,4 +1015,104 @@ pub fn ouvrir_objet_workshop(app: AppHandle, id: String, dans_steam: bool) -> Re
     let page = format!("https://steamcommunity.com/sharedfiles/filedetails/?id={id}");
     let lien = if dans_steam { format!("steam://openurl/{page}") } else { page };
     app.opener().open_url(lien, None::<&str>).map_err(|_| Erreur::Interne("impossible d'ouvrir la page".into()))
+}
+
+// ——— Workshop : fiche complète, installation depuis ResTeaM ———
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FicheMod {
+    pub objet: Option<ObjetWorkshop>,
+    /// Vidéo ou image sur le disque, si l'objet est installé.
+    pub local: Option<workshop::MediaLocal>,
+}
+
+/// Fiche d'un objet : galerie en grande taille, vidéos, description longue, et la
+/// vidéo locale en pleine qualité si c'est un fond installé.
+#[tauri::command]
+pub async fn fiche_mod(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32, id: String) -> Resultat<FicheMod> {
+    if id.is_empty() || id.len() > 20 || !id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(Erreur::Interne("objet du Workshop invalide".into()));
+    }
+    let (_, cle) = identifiants(&app)?;
+    let objet = etat
+        .cache
+        .avec_cache(&format!("ugc-fiche:{id}"), TTL_OBJET_WORKSHOP, || workshop::fiche(&etat.steam, &cle, &id))
+        .await
+        .map(|d| d.donnees)
+        .unwrap_or(None);
+    let local = match local::dossier_steam() {
+        Some(steam) => {
+            if let Ok(mut d) = app.state::<crate::images_locales::CacheImages>().dossiers_workshop.write() {
+                *d = workshop::dossiers_contenu(&steam);
+            }
+            let id2 = id.clone();
+            tokio::task::spawn_blocking(move || workshop::media_local(&steam, app_id, &id2)).await.ok().flatten()
+        }
+        None => None,
+    };
+    Ok(FicheMod { objet, local })
+}
+
+/// Une seule demande à Steam à la fois.
+static VERROU_AIDE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+/// S'abonne (installer) ou se désabonne (retirer) d'un objet du Workshop par l'aide
+/// `resteam-workshop.exe` (API Steamworks). Steam télécharge ou retire ensuite
+/// l'objet en arrière-plan.
+#[tauri::command]
+pub async fn abonner_mod(app: AppHandle, app_id: u32, id: String, abonner: bool) -> Resultat<()> {
+    if id.is_empty() || id.len() > 20 || !id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(Erreur::Interne("objet du Workshop invalide".into()));
+    }
+    session_requise(&app)?;
+    let aide = std::env::current_exe()
+        .ok()
+        .and_then(|e| e.parent().map(|p| p.join("resteam-workshop.exe")))
+        .filter(|p| p.is_file())
+        .ok_or_else(|| Erreur::Interne("aide Workshop introuvable (resteam-workshop.exe à côté de ResTeaM.exe)".into()))?;
+    let _verrou = VERROU_AIDE.lock().await;
+    let action = if abonner { "abonner" } else { "desabonner" };
+    let sortie = tokio::task::spawn_blocking(move || {
+        let mut cmd = std::process::Command::new(aide);
+        cmd.args([action, &app_id.to_string(), &id]);
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+        }
+        cmd.output()
+    })
+    .await
+    .map_err(|_| Erreur::Interne("aide Workshop".into()))?
+    .map_err(|e| Erreur::Interne(format!("aide Workshop : {e}")))?;
+    let texte = String::from_utf8_lossy(&sortie.stdout);
+    match texte.lines().map(str::trim).rev().find(|l| l.starts_with("OK") || l.starts_with("ERREUR")) {
+        Some("OK") => Ok(()),
+        Some(l) => Err(Erreur::Steam(l.trim_start_matches("ERREUR").trim().to_string())),
+        None => Err(Erreur::Steam("pas de réponse de l'aide Workshop".into())),
+    }
+}
+
+/// Où en est l'installation d'un objet : installé, ou octets reçus par Steam.
+#[tauri::command]
+pub async fn etat_mod(app: AppHandle, app_id: u32, id: String) -> Resultat<workshop::EtatMod> {
+    if !id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(Erreur::Interne("objet du Workshop invalide".into()));
+    }
+    let (steam, compte) = compte_connecte(&app)?;
+    tokio::task::spawn_blocking(move || workshop::etat_mod(&steam, compte, app_id, &id))
+        .await
+        .map_err(|_| Erreur::Interne("lecture du Workshop".into()))
+}
+
+/// Ouvre une vidéo YouTube de présentation dans le navigateur.
+#[tauri::command]
+pub fn ouvrir_youtube(app: AppHandle, id: String) -> Resultat<()> {
+    if id.is_empty() || id.len() > 20 || !id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_') {
+        return Err(Erreur::Interne("vidéo invalide".into()));
+    }
+    app.opener()
+        .open_url(format!("https://www.youtube.com/watch?v={id}"), None::<&str>)
+        .map_err(|_| Erreur::Interne("impossible d'ouvrir la vidéo".into()))
 }

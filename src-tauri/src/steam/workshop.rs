@@ -18,6 +18,10 @@ use super::vdf::{self, Vdf};
 
 const BASE_STEAMID64: u64 = 76561197960265728;
 
+/// Pas des jeux : 241100 = configurations de manette de Steam Input (sans image,
+/// titres en codes internes). Masqués du Workshop.
+pub const HORS_WORKSHOP: [u32; 1] = [241100];
+
 /// Numéro de compte (SteamID64 − base), utilisé dans `userdata/` et `subscribedby`.
 pub fn numero_compte(steam_id: &str) -> Option<u32> {
     steam_id.parse::<u64>().ok()?.checked_sub(BASE_STEAMID64).and_then(|n| u32::try_from(n).ok())
@@ -85,13 +89,14 @@ pub fn mods_installes(steam: &Path, compte: u32) -> Vec<JeuWorkshop> {
     for biblio in local::dossiers_bibliotheque(steam) {
         let dossier = Path::new(&biblio.chemin).join("steamapps").join("workshop");
         let Ok(entrees) = std::fs::read_dir(&dossier) else { continue };
-        for e in entrees.flatten() {
+        let entrees: Vec<_> = entrees.flatten().collect();
+        for e in entrees {
             let nom = e.file_name().to_string_lossy().into_owned();
             if !(nom.starts_with("appworkshop_") && nom.ends_with(".acf")) {
                 continue;
             }
             let Ok(texte) = std::fs::read_to_string(e.path()) else { continue };
-            if let Some(j) = lire_appworkshop(&texte, compte) {
+            if let Some(j) = lire_appworkshop(&texte, compte).filter(|j| !HORS_WORKSHOP.contains(&j.app_id)) {
                 jeux.push(j);
             }
         }
@@ -122,6 +127,16 @@ pub struct ObjetWorkshop {
     pub tags: Vec<String>,
     /// Identifiant YouTube, pour les vidéos.
     pub video: Option<String>,
+    /// Images en grande taille ajoutées par l'auteur (souvent 1080p).
+    #[serde(default)]
+    pub galerie: Vec<String>,
+    /// Vidéos YouTube de présentation.
+    #[serde(default)]
+    pub youtube: Vec<String>,
+}
+
+fn id_youtube(y: &str) -> bool {
+    !y.is_empty() && y.len() <= 20 && y.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
 
 fn nombre(v: &Value) -> u64 {
@@ -161,6 +176,10 @@ pub fn texte_simple(brut: &str, max: usize) -> String {
 
 /// Un objet tel que renvoyé par `QueryFiles` ou `GetPublishedFileDetails`.
 pub fn objet_depuis(v: &Value) -> Option<ObjetWorkshop> {
+    objet_depuis_max(v, 420)
+}
+
+pub fn objet_depuis_max(v: &Value, max_description: usize) -> Option<ObjetWorkshop> {
     let id = v["publishedfileid"].as_str().map(str::to_owned).or_else(|| v["publishedfileid"].as_u64().map(|n| n.to_string()))?;
     // `result` ≠ 1 : objet supprimé ou caché.
     if v.get("result").is_some_and(|r| nombre(r) != 1) {
@@ -178,7 +197,7 @@ pub fn objet_depuis(v: &Value) -> Option<ObjetWorkshop> {
         app_id: nombre(if v["consumer_appid"].is_null() { &v["consumer_app_id"] } else { &v["consumer_appid"] }) as u32,
         titre,
         apercu: v["preview_url"].as_str().unwrap_or_default().to_string(),
-        description: texte_simple(description, 420),
+        description: texte_simple(description, max_description),
         taille: nombre(&v["file_size"]),
         maj: nombre(&v["time_updated"]) as i64,
         abonnes: nombre(&v["subscriptions"]),
@@ -187,7 +206,25 @@ pub fn objet_depuis(v: &Value) -> Option<ObjetWorkshop> {
         note: votes["score"].as_f64(),
         votes: votes.get("votes_up").map(|u| nombre(u) + nombre(&votes["votes_down"])),
         tags,
-        video: v["youtubevideoid"].as_str().filter(|y| !y.is_empty() && y.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')).map(str::to_owned),
+        video: v["youtubevideoid"].as_str().filter(|y| id_youtube(y)).map(str::to_owned),
+        galerie: v["previews"]
+            .as_array()
+            .map(|l| {
+                l.iter()
+                    .filter(|p| nombre(&p["preview_type"]) == 0)
+                    .filter_map(|p| p["url"].as_str().filter(|u| u.starts_with("https://")).map(str::to_owned))
+                    .collect()
+            })
+            .unwrap_or_default(),
+        youtube: v["previews"]
+            .as_array()
+            .map(|l| {
+                l.iter()
+                    .filter(|p| nombre(&p["preview_type"]) == 1)
+                    .filter_map(|p| p["youtubevideoid"].as_str().filter(|y| id_youtube(y)).map(str::to_owned))
+                    .collect()
+            })
+            .unwrap_or_default(),
     })
 }
 
@@ -274,6 +311,7 @@ pub async fn vitrine(
         ("return_vote_data", "true"),
         ("return_tags", "true"),
         ("return_short_description", "true"),
+        ("return_previews", "true"),
         ("strip_description_bbcode", "true"),
     ];
     // Les mods sont créés par le jeu lui-même ; illustrations, captures et guides
@@ -295,6 +333,136 @@ pub async fn vitrine(
         total: nombre(&r["total"]),
         objets: r["publishedfiledetails"].as_array().map(|l| l.iter().filter_map(objet_depuis).collect()).unwrap_or_default(),
     })
+}
+
+/// Fiche complète d'un objet (`IPublishedFileService/GetDetails`) : galerie,
+/// vidéos, avis et description longue.
+pub async fn fiche(client: &super::webapi::ClientSteam, cle: &str, id: &str) -> crate::erreur::Resultat<Option<ObjetWorkshop>> {
+    let url = url::Url::parse_with_params(
+        &format!("{API}/IPublishedFileService/GetDetails/v1/"),
+        &[
+            ("key", cle),
+            ("publishedfileids[0]", id),
+            ("includeadditionalpreviews", "true"),
+            ("includevotes", "true"),
+            ("includetags", "true"),
+            ("strip_description_bbcode", "true"),
+        ],
+    )
+    .map_err(|_| crate::erreur::Erreur::Interne("URL".into()))?;
+    let corps: Value = client.obtenir(url).await?;
+    Ok(corps["response"]["publishedfiledetails"].as_array().and_then(|l| l.first()).and_then(|v| objet_depuis_max(v, 1500)))
+}
+
+// ——— Fichiers installés d'un objet (lecture locale en pleine qualité) ———
+
+/// Dossiers `steamapps/workshop/content` de toutes les bibliothèques.
+pub fn dossiers_contenu(steam: &Path) -> Vec<PathBuf> {
+    local::dossiers_bibliotheque(steam)
+        .into_iter()
+        .map(|b| Path::new(&b.chemin).join("steamapps").join("workshop").join("content"))
+        .filter(|d| d.is_dir())
+        .collect()
+}
+
+/// Un nom de fichier sûr : un seul élément de chemin, sans `..` ni lecteur.
+pub fn nom_fichier_valide(nom: &str) -> bool {
+    !nom.is_empty() && nom.len() <= 200 && !nom.starts_with('.') && !nom.contains(['/', '\\', ':', '\0']) && nom != ".."
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaLocal {
+    /// Vidéo du fond (Wallpaper Engine, type « video »), en pleine qualité.
+    pub video: Option<String>,
+    /// Image d'aperçu sur le disque.
+    pub image: Option<String>,
+}
+
+fn adresse_locale(app_id: u32, id: &str, nom: &str) -> String {
+    let code = percent_encoding::utf8_percent_encode(nom, percent_encoding::NON_ALPHANUMERIC);
+    format!("http://img.localhost/__workshop__/{app_id}/{id}/{code}")
+}
+
+/// Ce qu'on peut montrer en local pour un objet installé : la vidéo du fond si c'en
+/// est une (`project.json` de Wallpaper Engine), sinon l'image d'aperçu.
+pub fn media_local(steam: &Path, app_id: u32, id: &str) -> Option<MediaLocal> {
+    if !id.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+    let dossier = dossiers_contenu(steam).into_iter().map(|d| d.join(app_id.to_string()).join(id)).find(|d| d.is_dir())?;
+    let projet: Option<Value> = std::fs::read_to_string(dossier.join("project.json")).ok().and_then(|t| serde_json::from_str(&t).ok());
+    let mut media = MediaLocal::default();
+    if let Some(p) = &projet {
+        if p["type"].as_str().is_some_and(|t| t.eq_ignore_ascii_case("video")) {
+            if let Some(f) = p["file"].as_str().filter(|f| nom_fichier_valide(f) && dossier.join(f).is_file()) {
+                media.video = Some(adresse_locale(app_id, id, f));
+            }
+        }
+        if let Some(f) = p["preview"].as_str().filter(|f| nom_fichier_valide(f) && dossier.join(f).is_file()) {
+            media.image = Some(adresse_locale(app_id, id, f));
+        }
+    }
+    if media.image.is_none() {
+        media.image = ["preview.jpg", "preview.png", "preview.gif"].iter().find(|f| dossier.join(f).is_file()).map(|f| adresse_locale(app_id, id, f));
+    }
+    (media.video.is_some() || media.image.is_some()).then_some(media)
+}
+
+/// Type d'un fichier servi : par l'extension, sinon par ses premiers octets
+/// (les vidéos de Wallpaper Engine n'ont parfois pas d'extension).
+pub fn type_media(nom: &str, debut: &[u8]) -> &'static str {
+    let ext = nom.rsplit_once('.').map(|(_, e)| e.to_ascii_lowercase()).unwrap_or_default();
+    match ext.as_str() {
+        "jpg" | "jpeg" => "image/jpeg",
+        "png" => "image/png",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "mp4" | "m4v" => "video/mp4",
+        "webm" => "video/webm",
+        _ if debut.len() >= 12 && &debut[4..8] == b"ftyp" => "video/mp4",
+        _ if debut.starts_with(&[0x1A, 0x45, 0xDF, 0xA3]) => "video/webm",
+        _ if debut.starts_with(&[0xFF, 0xD8, 0xFF]) => "image/jpeg",
+        _ if debut.starts_with(b"\x89PNG") => "image/png",
+        _ if debut.starts_with(b"GIF8") => "image/gif",
+        _ => "application/octet-stream",
+    }
+}
+
+// ——— Suivi d'un téléchargement ———
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct EtatMod {
+    /// Présent dans les mods installés du compte.
+    pub installe: bool,
+    /// Octets déjà reçus par Steam (dossier de téléchargement du Workshop).
+    pub recu: u64,
+}
+
+fn taille_dossier(d: &Path) -> u64 {
+    let Ok(entrees) = std::fs::read_dir(d) else { return 0 };
+    entrees
+        .flatten()
+        .map(|e| match e.file_type() {
+            Ok(t) if t.is_dir() => taille_dossier(&e.path()),
+            Ok(_) => e.metadata().map(|m| m.len()).unwrap_or(0),
+            Err(_) => 0,
+        })
+        .sum()
+}
+
+pub fn etat_mod(steam: &Path, compte: u32, app_id: u32, id: &str) -> EtatMod {
+    let installe = mods_installes(steam, compte).iter().any(|j| j.app_id == app_id && j.mods.iter().any(|m| m.id == id));
+    let mut recu = 0;
+    if !installe {
+        for b in local::dossiers_bibliotheque(steam) {
+            let w = Path::new(&b.chemin).join("steamapps").join("workshop");
+            recu = recu.max(taille_dossier(&w.join("downloads").join(app_id.to_string()).join(id)));
+            recu = recu.max(taille_dossier(&w.join("content").join(app_id.to_string()).join(id)));
+        }
+    }
+    EtatMod { installe, recu }
 }
 
 // ——— Captures d'écran ———
@@ -448,6 +616,34 @@ mod tests {
     }
 
     #[test]
+    fn noms_et_types_locaux() {
+        assert!(nom_fichier_valide("4K"));
+        assert!(nom_fichier_valide("preview.jpg"));
+        assert!(!nom_fichier_valide("../x.mp4"));
+        assert!(!nom_fichier_valide("a/b.mp4"));
+        assert!(!nom_fichier_valide("a\\b.mp4"));
+        assert!(!nom_fichier_valide("C:x"));
+        assert_eq!(type_media("4K", b"\0\0\0\x20ftypisom"), "video/mp4");
+        assert_eq!(type_media("fond.WEBM", b""), "video/webm");
+        assert_eq!(type_media("x", b"GIF89a"), "image/gif");
+    }
+
+    #[test]
+    fn galerie_et_youtube() {
+        let v: Value = serde_json::json!({
+            "publishedfileid": "9", "title": "A",
+            "previews": [
+                {"preview_type": 0, "url": "https://images.steamusercontent.com/ugc/1/HD/"},
+                {"preview_type": 1, "youtubevideoid": "dxy1pQRu9Po"},
+                {"preview_type": 1, "youtubevideoid": "pas bon !"}
+            ]
+        });
+        let o = objet_depuis(&v).unwrap();
+        assert_eq!(o.galerie, vec!["https://images.steamusercontent.com/ugc/1/HD/"]);
+        assert_eq!(o.youtube, vec!["dxy1pQRu9Po"]);
+    }
+
+    #[test]
     fn numero_de_compte() {
         assert_eq!(numero_compte("76561197960265770"), Some(42));
         assert_eq!(numero_compte("abc"), None);
@@ -538,6 +734,10 @@ mod essai_reel {
         for j in &jeux {
             println!("jeu {} : {} mods, {} Mo", j.app_id, j.mods.len(), j.taille / 1_048_576);
         }
+        println!("média 1309372573 : {:?}", media_local(&steam, 431960, "1309372573"));
+        println!("média 1055818964 : {:?}", media_local(&steam, 431960, "1055818964"));
+        println!("état 3769706782 : {:?}", etat_mod(&steam, compte, 431960, "3769706782"));
+        println!("jeux sans 241100 : {:?}", mods_installes(&steam, compte).iter().map(|j| j.app_id).collect::<Vec<_>>());
         let caps = captures(&steam, compte);
         println!("captures : {} jeux, {} images", caps.len(), caps.iter().map(|c| c.captures.len()).sum::<usize>());
         let client = crate::steam::webapi::ClientSteam::nouveau().unwrap();

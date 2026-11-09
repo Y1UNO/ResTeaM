@@ -25,6 +25,30 @@ pub struct CacheImages {
     pub dossier_perso: PathBuf,
     /// Dossier `760/remote` des captures du compte connecté, servi sous `/__captures__/…`.
     pub dossier_captures: std::sync::RwLock<Option<PathBuf>>,
+    /// Dossiers `steamapps/workshop/content` des bibliothèques, servis sous
+    /// `/__workshop__/<appid>/<objet>/<fichier>` (vidéos des fonds en pleine qualité).
+    pub dossiers_workshop: std::sync::RwLock<Vec<PathBuf>>,
+}
+
+/// Morceau servi à la fois pour une vidéo locale (lecture en flux).
+const MORCEAU_VIDEO: u64 = 4 * 1024 * 1024;
+
+/// Lit `bytes=a-b` (ou `bytes=a-`) d'un en-tête Range.
+pub fn lire_plage(plage: Option<&str>, total: u64) -> Option<(u64, u64)> {
+    if total == 0 {
+        return None;
+    }
+    let p = plage?.strip_prefix("bytes=")?;
+    let (a, b) = p.split_once('-')?;
+    let debut: u64 = a.trim().parse().ok()?;
+    if debut >= total {
+        return None;
+    }
+    let fin = match b.trim() {
+        "" => total - 1,
+        f => f.parse::<u64>().ok()?.min(total - 1),
+    };
+    (fin >= debut).then_some((debut, fin))
 }
 
 /// Fichiers perso autorisés : `avatar` ou `banniere`, extension d'image ou de vidéo.
@@ -96,12 +120,68 @@ impl CacheImages {
     pub fn nouveau(dossier: PathBuf, http: Client, dossier_perso: PathBuf) -> Self {
         let _ = fs::create_dir_all(&dossier);
         let _ = fs::create_dir_all(&dossier_perso);
-        Self { dossier, http, dossier_perso, dossier_captures: std::sync::RwLock::new(None) }
+        Self {
+            dossier,
+            http,
+            dossier_perso,
+            dossier_captures: std::sync::RwLock::new(None),
+            dossiers_workshop: std::sync::RwLock::new(Vec::new()),
+        }
     }
 
     /// Sert `/<adresse encodée>` : depuis le disque, sinon depuis Steam (puis rangée).
-    pub async fn servir(&self, chemin: &str) -> Response<Vec<u8>> {
+    /// Fichier d'un objet du Workshop installé, servi par morceaux (en-tête Range),
+    /// pour lire une vidéo de plusieurs centaines de Mo sans la charger en mémoire.
+    async fn servir_workshop(&self, reste: &str, plage: Option<&str>) -> Response<Vec<u8>> {
+        use tokio::io::{AsyncReadExt, AsyncSeekExt};
+        let interdit = || reponse(StatusCode::FORBIDDEN, Vec::new(), "text/plain");
+        let mut parties = reste.splitn(3, '/');
+        let (Some(app), Some(id), Some(nom)) = (parties.next(), parties.next(), parties.next()) else { return interdit() };
+        let nom = percent_encoding::percent_decode_str(nom.split('?').next().unwrap_or_default()).decode_utf8_lossy().into_owned();
+        let chiffres = |s: &str| !s.is_empty() && s.len() <= 20 && s.bytes().all(|b| b.is_ascii_digit());
+        if !chiffres(app) || !chiffres(id) || !crate::steam::workshop::nom_fichier_valide(&nom) {
+            return interdit();
+        }
+        let dossiers = self.dossiers_workshop.read().map(|d| d.clone()).unwrap_or_default();
+        let Some(fichier) = dossiers.iter().map(|d| d.join(app).join(id).join(&nom)).find(|f| f.is_file()) else {
+            return reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain");
+        };
+        let Ok(mut f) = tokio::fs::File::open(&fichier).await else { return reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain") };
+        let total = f.metadata().await.map(|m| m.len()).unwrap_or(0);
+        let mut debut_fichier = [0u8; 12];
+        let lus = f.read(&mut debut_fichier).await.unwrap_or(0);
+        let type_ = crate::steam::workshop::type_media(&nom, &debut_fichier[..lus]);
+        // Petite image : en entier. Vidéo : par morceaux de 4 Mo.
+        let (debut, fin) = match lire_plage(plage, total) {
+            Some(p) => p,
+            None if total <= MORCEAU_VIDEO && !type_.starts_with("video/") => {
+                let mut tout = Vec::with_capacity(total as usize);
+                let _ = f.seek(std::io::SeekFrom::Start(0)).await;
+                let _ = f.read_to_end(&mut tout).await;
+                return reponse(StatusCode::OK, tout, type_);
+            }
+            None => (0, total.saturating_sub(1)),
+        };
+        let fin = fin.min(debut + MORCEAU_VIDEO - 1);
+        let mut corps = vec![0u8; (fin - debut + 1) as usize];
+        if f.seek(std::io::SeekFrom::Start(debut)).await.is_err() || f.read_exact(&mut corps).await.is_err() {
+            return reponse(StatusCode::INTERNAL_SERVER_ERROR, Vec::new(), "text/plain");
+        }
+        Response::builder()
+            .status(StatusCode::PARTIAL_CONTENT)
+            .header("Content-Type", type_)
+            .header("Accept-Ranges", "bytes")
+            .header("Content-Range", format!("bytes {debut}-{fin}/{total}"))
+            .header("Access-Control-Allow-Origin", "*")
+            .body(corps)
+            .unwrap_or_else(|_| Response::new(Vec::new()))
+    }
+
+    pub async fn servir(&self, chemin: &str, plage: Option<&str>) -> Response<Vec<u8>> {
         let brut = chemin.trim_start_matches('/');
+        if let Some(reste) = brut.strip_prefix("__workshop__/") {
+            return self.servir_workshop(reste, plage).await;
+        }
         // Fichiers perso : un nom fixe, jamais un chemin venu de la requête.
         // Captures d'écran de Steam : chemin vérifié, sous le dossier du compte connecté.
         if let Some(chemin) = brut.strip_prefix("__captures__/") {
@@ -206,6 +286,17 @@ mod tests {
         assert!(hote_autorise("https://images.steamusercontent.com/ugc/1/A/"));
         assert!(hote_autorise("https://steamuserimages-a.akamaihd.net/ugc/1/A/"));
         assert!(!hote_autorise("file:///C:/Windows/win.ini"));
+    }
+
+    #[test]
+    fn plages() {
+        assert_eq!(lire_plage(Some("bytes=0-"), 100), Some((0, 99)));
+        assert_eq!(lire_plage(Some("bytes=10-19"), 100), Some((10, 19)));
+        assert_eq!(lire_plage(Some("bytes=10-500"), 100), Some((10, 99)));
+        assert_eq!(lire_plage(Some("bytes=100-"), 100), None);
+        assert_eq!(lire_plage(Some("bytes=20-10"), 100), None);
+        assert_eq!(lire_plage(Some("octets=0-"), 100), None);
+        assert_eq!(lire_plage(None, 100), None);
     }
 
     #[test]

@@ -328,7 +328,7 @@ export type ObjetsProfil = { fond: ObjetProfil | null; miniFond: ObjetProfil | n
 
 // ——— Communauté (Workshop, captures, fil des amis) ———
 
-export type ResumeWorkshop = { appId: number; taille: number; nombre: number; majEnAttente: number };
+export type ResumeWorkshop = { appId: number; taille: number; nombre: number; majEnAttente: number; ids: string[] };
 
 export type ObjetWorkshop = {
   id: string;
@@ -347,7 +347,15 @@ export type ObjetWorkshop = {
   tags: string[];
   /** Identifiant YouTube, pour les vidéos. */
   video: string | null;
+  /** Images en grande taille ajoutées par l'auteur. */
+  galerie?: string[];
+  /** Vidéos YouTube de présentation. */
+  youtube?: string[];
 };
+
+export type MediaLocal = { video: string | null; image: string | null };
+export type FicheMod = { objet: ObjetWorkshop | null; local: MediaLocal | null };
+export type EtatMod = { installe: boolean; recu: number };
 
 export type ModDetaille = {
   id: string;

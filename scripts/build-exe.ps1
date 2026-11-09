@@ -21,6 +21,21 @@ try {
     Pop-Location
 }
 
+# Aide Workshop (API Steamworks), compilée à part, posée à côté de l'exe avec steam_api64.dll.
+$aide = Join-Path $racine 'src-tauri\workshop-aide'
+Push-Location $aide
+try {
+    cargo build --release
+    if ($LASTEXITCODE -ne 0) { throw "La compilation de l'aide Workshop a échoué (code $LASTEXITCODE)." }
+} finally {
+    Pop-Location
+}
+$sortie = Split-Path -Parent $exe
+Copy-Item (Join-Path $aide 'target\release\resteam-workshop.exe') $sortie -Force
+$dll = Get-ChildItem (Join-Path $aide 'target\release\build') -Recurse -Filter 'steam_api64.dll' | Select-Object -First 1
+if (-not $dll) { throw 'steam_api64.dll introuvable.' }
+Copy-Item $dll.FullName $sortie -Force
+
 # Raccourci sur le Bureau, qui pointe toujours vers le dernier exe construit.
 $bureau = [Environment]::GetFolderPath('Desktop')
 $lnk = Join-Path $bureau 'ResTeaM.lnk'

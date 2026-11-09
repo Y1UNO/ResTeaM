@@ -20,7 +20,7 @@ Projet personnel de [Y1UNO](https://github.com/Y1UNO), construit étape par éta
 | **Liste de souhaits** | Les promos en premier, l'affiche au survol |
 | **Téléchargements** | Débit et disque en direct, file d'attente, glisser un jeu pour l'installer |
 | **Amis et profils** | En ligne / en jeu, profil des amis, jeux en commun |
-| **Communauté** | Fil des amis (qui joue à quoi, jeux du moment), Workshop (mes mods installés et vitrine d'un jeu, avec recherche), mes captures d'écran Steam, créations de la communauté (illustrations, captures, vidéos, guides) |
+| **Communauté** | Fil des amis (qui joue à quoi, jeux du moment), Workshop (mes mods installés et vitrine d'un jeu, avec recherche ; **installer et retirer un mod directement depuis ResTeaM**, avec la progression ; les fonds vidéo installés sont lus en pleine qualité), mes captures d'écran Steam, créations de la communauté (illustrations, captures, vidéos, guides) |
 | **Profil** | Rangs de temps de jeu de Novice à Éternel (0 h → 10 000 h), lune du niveau, badges, personnalisation (fond, cadre, ambiance, photo et bannière perso, objets Steam) |
 
 | | |
@@ -47,6 +47,7 @@ Projet personnel de [Y1UNO](https://github.com/Y1UNO), construit étape par éta
 - **Connexion Steam OpenID** : ResTeaM ne voit jamais le mot de passe.
 - **Clé Web API** rangée dans le Gestionnaire d'identifiants Windows. Elle ne quitte jamais Rust et n'est jamais écrite dans un fichier.
 - Installation et désinstallation pilotées par Steam (`steam://`), avec une file d'attente si un jeu tourne.
+- **Workshop** : Steam n'ayant pas d'API web pour s'abonner, une petite aide séparée (`resteam-workshop.exe`, API Steamworks) s'abonne ou se désabonne au nom du jeu, puis Steam télécharge en arrière-plan.
 
 ```
 src/          interface React (pages, composants, appels typés vers Rust)

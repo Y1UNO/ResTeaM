@@ -1116,3 +1116,29 @@ pub fn ouvrir_youtube(app: AppHandle, id: String) -> Resultat<()> {
         .open_url(format!("https://www.youtube.com/watch?v={id}"), None::<&str>)
         .map_err(|_| Erreur::Interne("impossible d'ouvrir la vidéo".into()))
 }
+
+// ——— Salon d'achat (pages officielles de Steam dans une fenêtre ResTeaM) ———
+
+/// Ouvre le salon d'achat : la fiche d'un jeu, ou une page de Steam vérifiée.
+#[tauri::command]
+pub fn ouvrir_salon(app: AppHandle, app_id: Option<u32>, adresse: Option<String>) -> Resultat<()> {
+    let url = match (app_id, adresse) {
+        (Some(id), _) => tauri::Url::parse(&format!("https://store.steampowered.com/app/{id}/")).ok(),
+        (None, Some(a)) => crate::salon::adresse_depart(&a),
+        (None, None) => tauri::Url::parse(crate::salon::ACCUEIL).ok(),
+    }
+    .ok_or_else(|| Erreur::Interne("adresse refusée : seules les pages de Steam s'ouvrent dans le salon".into()))?;
+    crate::salon::ouvrir(&app, url).map_err(|e| Erreur::Interne(format!("salon d'achat : {e}")))
+}
+
+/// Dernier état du salon (adresse réelle, domaine, chargement), pour la barre.
+#[tauri::command]
+pub fn salon_etat() -> Option<crate::salon::EtatSalon> {
+    crate::salon::etat()
+}
+
+/// Boutons de la barre du salon (retour, recharger, panier, fenêtre…).
+#[tauri::command]
+pub fn salon_action(app: AppHandle, action: String) -> Resultat<()> {
+    crate::salon::action(&app, &action).map_err(Erreur::Interne)
+}

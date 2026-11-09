@@ -1,0 +1,186 @@
+/* Barre du salon d'achat (60 px, au-dessus des pages de Steam). */
+html.est-salon,
+html.est-salon body,
+html.est-salon #root {
+  height: 100%;
+  overflow: hidden;
+  background: #0b0b0d;
+}
+
+.salon-barre {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-left: 16px;
+  background: linear-gradient(180deg, #111114, #0b0b0d);
+  border-bottom: 1px solid var(--line-2);
+  user-select: none;
+  animation: salon-entree 0.45s var(--ease) backwards;
+}
+@keyframes salon-entree {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.salon-barre__marque {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.salon-barre__marque svg {
+  filter: drop-shadow(0 0 8px rgba(126, 226, 168, 0.35));
+}
+.salon-barre__marque span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.salon-barre__marque strong {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+}
+.salon-barre__marque em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--text-4);
+}
+
+.salon-barre__nav,
+.salon-barre__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.salon-barre__nav button,
+.salon-barre__icone {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+.salon-barre__nav button:hover,
+.salon-barre__icone:hover {
+  background: var(--fill-hover);
+  color: var(--text-1);
+}
+.salon-barre__nav button:active {
+  transform: scale(0.92);
+}
+.salon-barre__recharger:hover svg {
+  transform: rotate(140deg);
+  transition: transform 0.5s var(--ease);
+}
+
+/* Adresse : vert pour Steam, orange hors de Steam, rouge si non chiffré. */
+.salon-barre__adresse {
+  --teinte: 126, 226, 168;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--teinte), 0.06);
+  border: 1px solid rgba(var(--teinte), 0.28);
+  overflow: hidden;
+  font-size: 13px;
+}
+.salon-barre__adresse.is-externe {
+  --teinte: 255, 196, 92;
+}
+.salon-barre__adresse.is-danger {
+  --teinte: 255, 92, 92;
+}
+.salon-barre__cadenas {
+  display: grid;
+  color: rgb(var(--teinte));
+}
+.salon-barre__statut {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--teinte), 0.14);
+  color: rgb(var(--teinte));
+  font-size: 11px;
+  font-weight: 600;
+}
+.salon-barre__hote {
+  flex: 0 0 auto;
+  color: var(--text-1);
+  font-weight: 600;
+}
+.salon-barre__chemin {
+  min-width: 0;
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Chargement : une lueur qui file sous l'adresse. */
+.salon-barre__charge {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(var(--teinte)), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+}
+.salon-barre__adresse.is-chargement .salon-barre__charge {
+  opacity: 1;
+  animation: salon-charge 1.1s ease-in-out infinite;
+}
+@keyframes salon-charge {
+  to {
+    transform: translateX(260%);
+  }
+}
+
+.salon-barre__panier {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--dur-fast) ease;
+}
+.salon-barre__panier:hover {
+  transform: translateY(-1px);
+}
+.salon-barre__panier svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Boutons de fenêtre : toute la hauteur de la barre. */
+.salon-barre .titlebar__controls {
+  align-self: stretch;
+}
+.salon-barre .titlebar__btn {
+  height: 100%;
+}

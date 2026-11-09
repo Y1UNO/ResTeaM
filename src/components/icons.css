@@ -74,7 +74,10 @@
   }
 }
 
-/* Panier communautaire : les joueurs sortent la tête au survol. */
-:is(button, a):hover .ico-communaute .ico-tetes {
-  transform: translateY(-1.4px);
+/* Panier communautaire (Workshop) : l'anse se soulève, l'étincelle scintille. */
+:is(button, a):hover .ico-workshop .ico-anse {
+  transform: translateY(-1.3px);
+}
+:is(button, a):hover .ico-workshop .ico-eclat {
+  animation: ico-scintille 0.9s ease-in-out infinite;
 }

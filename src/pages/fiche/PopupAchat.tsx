@@ -27,7 +27,11 @@ export function PopupAchat({ appId, nom, prix, obtenir = false, onFermer }: Prop
     return () => window.removeEventListener("keydown", touche);
   }, [fermer]);
 
-  const ouvrir = () => {
+  const salon = () => {
+    void api.ouvrirSalon(appId);
+    fermer();
+  };
+  const client = () => {
     void api.steamLien({ type: "magasin", appId });
     fermer();
   };
@@ -46,20 +50,23 @@ export function PopupAchat({ appId, nom, prix, obtenir = false, onFermer }: Prop
           {obtenir ? "Obtenir" : "Acheter"} {nom}
         </h2>
         <p className="achat__texte">
-          Pour ta sécurité, le paiement se fait directement dans Steam. On ouvre la page du jeu dans ton client Steam : rien
-          n’est payé ici.
+          Le paiement se fait chez Steam, sur ses pages officielles, ouvertes dans le salon d’achat de ResTeaM. Steam gère la
+          connexion et le paiement : ResTeaM n’y a jamais accès.
         </p>
         <div className="achat__prix">
           <span>Prix</span>
           <strong>{prix}</strong>
         </div>
         <div className="achat__boutons">
-          <button type="button" className="btn btn--secondaire btn--petit" onClick={fermer}>
+          <button type="button" className="btn btn--lien" onClick={fermer}>
             Annuler
           </button>
-          <button type="button" className="btn btn--principal btn--petit achat__ouvrir" onClick={ouvrir} autoFocus>
+          <button type="button" className="btn btn--secondaire btn--petit" onClick={client}>
+            Dans le client Steam
+          </button>
+          <button type="button" className="btn btn--principal btn--petit achat__ouvrir" onClick={salon} autoFocus>
             <IconePanier />
-            Ouvrir dans Steam
+            Ouvrir le salon d’achat
           </button>
         </div>
       </div>

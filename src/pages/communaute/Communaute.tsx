@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { PATHS } from "../../app/paths";
 import { adresseCapture, api } from "../../api/commandes";
 import { useBibliotheque, useFilAmis, useImages, useMesCaptures, useModsJeu, useVitrineWorkshop, useWorkshopInstalle } from "../../api/requetes";
 import { estErreurApp, type ActiviteAmi, type Capture, type GenreWorkshop, type ObjetWorkshop, type TriWorkshop } from "../../api/types";
@@ -28,14 +29,18 @@ const ONGLETS: [Onglet, string][] = [
  * depuis la fiche d'un jeu.
  */
 export function Communaute() {
-  const [params, setParams] = useSearchParams();
-  const onglet = (ONGLETS.some(([id]) => id === params.get("onglet")) ? params.get("onglet") : "fil") as Onglet;
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  // Raccourci « Workshop » de la barre de gauche : /workshop ouvre cet onglet.
+  const surWorkshop = useLocation().pathname === PATHS.workshop;
+  const onglet = (surWorkshop ? "workshop" : ONGLETS.some(([id]) => id === params.get("onglet")) ? params.get("onglet") : "fil") as Onglet;
   const jeuParam = Number(params.get("jeu")) || null;
   const changer = (o: Onglet, jeu: number | null = jeuParam) => {
     const p = new URLSearchParams();
-    p.set("onglet", o);
+    if (o !== "workshop") p.set("onglet", o);
     if (jeu) p.set("jeu", String(jeu));
-    setParams(p, { replace: true });
+    const q = p.toString();
+    navigate(`${o === "workshop" ? PATHS.workshop : PATHS.communaute}${q ? `?${q}` : ""}`, { replace: true });
   };
 
   return (
@@ -46,8 +51,10 @@ export function Communaute() {
       <div className="page__content communaute">
         <header className="communaute__entete">
           <div>
-            <h1 className="page__title">Communauté</h1>
-            <p className="communaute__sous-titre">Tes amis, tes mods, tes captures et les créations des joueurs.</p>
+            <h1 className="page__title">{surWorkshop ? "Workshop" : "Communauté"}</h1>
+            <p className="communaute__sous-titre">
+              {surWorkshop ? "Tes mods, et tout le Workshop d’un jeu à installer en un clic." : "Tes amis, tes mods, tes captures et les créations des joueurs."}
+            </p>
           </div>
           <div className="ruban__onglets" role="tablist" aria-label="Communauté">
             {ONGLETS.map(([id, libelle]) => (

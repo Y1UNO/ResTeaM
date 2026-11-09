@@ -172,7 +172,7 @@ Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bi
 
 **Ensuite** : rangées de la boutique façon Steam (carrousels à flèches, « Car tu as joué à… », « Moins de 10 € », rangées par tag), puis les étapes 11, 13, 14 et 15.
 
-### À faire — Acheter sans quitter ResTeaM (idée de Tom, 9 novembre 2026)
+### Acheter sans quitter ResTeaM (idée de Tom, 9 novembre 2026) — fait à l'étape 12, voir le journal
 
 **Ce qui est possible, et ce qui ne l'est pas**
 - Steam n'a **aucune API** pour qu'une autre app paie à sa place. Même l'API Steamworks ne permet aux jeux que leurs propres achats internes, ou d'ouvrir l'overlay, qui demande une fenêtre de jeu. Une page de paiement « 100 % ResTeaM » voudrait dire que ResTeaM touche aux cookies de connexion et aux moyens de paiement. **C'est non**, c'est précisément ce qu'il faut éviter.
@@ -720,6 +720,27 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
   - Agrandir / Restaurer : quatre coins qui s'écartent ou se resserrent autour d'une étoile ;
   - Fermer : une croix qui tourne dans une orbite, avec une petite lune qui en fait le tour, et un rouge doux au lieu du rouge de Windows.
 - Plans notés : salon d'achat officiel de Steam dans ResTeaM, coffre-fort et campagne de tests « tout faire planter ».
+
+### Étape 12 — Salon d'achat, raccourci Workshop (9 novembre 2026)
+
+- **Raccourci Workshop** dans la barre de gauche, avec un « panier communautaire » stylisé : panier tressé à anse, croissant accroché à l'anse et étincelle. Au survol, l'anse se soulève et l'étincelle scintille. `/workshop` ouvre directement l'onglet Workshop (titre « Workshop »), et le bouton de la fiche d'un jeu y mène. La Communauté retrouve son icône à deux joueurs.
+- **Salon d'achat** (`src-tauri/src/salon.rs`, `src/salon/SalonBarre.tsx`) :
+  - une fenêtre ResTeaM sans cadre Windows, qui contient deux webviews (Tauri `unstable`, `Window::add_child`) ;
+    - en haut, `salon-barre` : une page locale de ResTeaM, que `main.tsx` reconnaît à son nom et qui n'affiche que la barre ;
+    - en dessous, `salon-steam` : les **vraies pages de Steam** ;
+  - la barre contient : précédente, suivante, recharger, accueil du magasin, **adresse réelle** (fournie par Rust depuis le moteur du navigateur, jamais par la page), Panier, ouvrir dans le navigateur, et les boutons de fenêtre dans la DA. L'adresse est en vert « Steam officiel » avec un cadenas sur `*.steampowered.com` / `*.steamcommunity.com`, en orange « Hors de Steam » ailleurs (PayPal…), en rouge si la page n'est pas chiffrée ;
+  - **sécurité** :
+    - aucune capacité ne vise la page de Steam, qui n'a donc aucun accès aux commandes de ResTeaM. La capacité `salon` ne vise que la barre (déplacer la fenêtre) ;
+    - la page de Steam a **son propre dossier de données WebView2** (`salon-steam/`) : les cookies de Steam sont isolés de la fenêtre principale ;
+    - SmartScreen est gardé (wry le coupe par défaut) ;
+    - navigation en HTTPS seulement ;
+    - les liens `steam://` partent vers le client Steam ;
+    - « nouvel onglet » : une page de Steam reste dans le salon, une autre page part dans le navigateur ;
+    - **aucun script ni CSS ajouté** aux pages de Steam. Seuls précédente et suivante passent par `history.back()` / `history.forward()`, de simples ordres de navigation qui ne lisent rien ;
+  - fermer ResTeaM ferme le salon. Le salon s'ouvre sur la fiche du jeu sur Steam. Ajouter au panier, se connecter (QR code avec l'app Steam, ou mot de passe tapé chez Steam) et payer se font chez Steam ;
+  - la popup d'achat propose « Ouvrir le salon d'achat », avec « Dans le client Steam » en second choix.
+- Tests : `domaines`, `adresses_de_depart`, `navigation` du salon.
+- **À vérifier dans l'exe** : ouverture du salon depuis Acheter, connexion Steam, panier, puis un achat de bout en bout (un jeu gratuit ou très bon marché), et redimensionnement de la fenêtre.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

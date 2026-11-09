@@ -26,7 +26,7 @@ import { rangDepuisMinutes } from "../../lib/rangs";
 import { viaCache } from "../../lib/imageLocale";
 import { Medias } from "./Medias";
 import { BadgeRang } from "../../components/BadgeRang";
-import { IconCommunity } from "../../components/icons";
+import { IconWorkshop } from "../../components/icons";
 import { IconePanier, MontantDefilant, PrixPromo, Reduction } from "../../components/Prix";
 import { PopupAchat } from "./PopupAchat";
 import { FenetreProprietes } from "./Proprietes";
@@ -309,11 +309,11 @@ function BlocPossede({
         <button
           type="button"
           className="fiche-bloc__etoile"
-          aria-label={`Communauté de ${nom}`}
-          title="Communauté (Workshop, créations)"
-          onClick={() => navigate(`/communaute?onglet=workshop&jeu=${jeu.appId}`)}
+          aria-label={`Workshop de ${nom}`}
+          title="Workshop et créations du jeu"
+          onClick={() => navigate(`/workshop?jeu=${jeu.appId}`)}
         >
-          <IconCommunity size={20} />
+          <IconWorkshop size={20} />
         </button>
         <button
           type="button"

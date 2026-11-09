@@ -670,7 +670,11 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     case "ouvrir_captures":
     case "ouvrir_objet_workshop":
     case "ouvrir_youtube":
+    case "ouvrir_salon":
+    case "salon_action":
       return null;
+    case "salon_etat":
+      return { url: "https://store.steampowered.com/app/1145350/Hades_II/", hote: "store.steampowered.com", officiel: true, securise: true, titre: "Hades II sur Steam", chargement: false };
     case "fiche_mod": {
       const i = Number(String(args?.id ?? "0").slice(-3)) || 0;
       const o = objetFactice(i, Number(args?.appId));

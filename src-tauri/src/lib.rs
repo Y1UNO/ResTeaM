@@ -2,6 +2,7 @@ mod cache;
 mod commandes;
 mod erreur;
 mod images_locales;
+mod salon;
 mod secrets;
 mod session;
 mod steam;
@@ -77,6 +78,9 @@ pub fn run() {
             commandes::abonner_mod,
             commandes::etat_mod,
             commandes::ouvrir_youtube,
+            commandes::ouvrir_salon,
+            commandes::salon_etat,
+            commandes::salon_action,
             commandes::enregistrer_media_perso,
             commandes::file_steam,
             commandes::annuler_file_steam,
@@ -104,6 +108,14 @@ pub fn run() {
             commandes::installer_jeu,
             commandes::stats_systeme,
         ])
+        // Fermer ResTeaM ferme aussi le salon d'achat.
+        .on_window_event(|fenetre, evenement| {
+            if fenetre.label() == "main" && matches!(evenement, tauri::WindowEvent::Destroyed) {
+                if let Some(s) = fenetre.app_handle().get_window(salon::FENETRE) {
+                    let _ = s.close();
+                }
+            }
+        })
         .run(tauri::generate_context!())
         .expect("erreur au lancement de ResTeaM");
 }

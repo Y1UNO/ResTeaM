@@ -21,8 +21,19 @@ import { router } from "./app/router";
 import { clientRequetes } from "./api/requetes";
 import { useSession } from "./app/session";
 import { installerInteractions } from "./lib/interactif";
+import { SalonBarre } from "./salon/SalonBarre";
 
-installerInteractions();
+/**
+ * La même page sert aussi de barre au salon d'achat (webview « salon-barre ») :
+ * elle n'affiche alors que la barre, sans l'app ni la session.
+ * Dans l'aperçu navigateur : `?salon=barre`.
+ */
+type Interne = { __TAURI_INTERNALS__?: { metadata?: { currentWebview?: { label?: string } } } };
+const etiquette = (window as unknown as Interne).__TAURI_INTERNALS__?.metadata?.currentWebview?.label;
+const estBarreSalon = etiquette === "salon-barre" || new URLSearchParams(location.search).get("salon") === "barre";
+
+if (estBarreSalon) document.documentElement.classList.add("est-salon");
+else installerInteractions();
 
 // Pas de menu « Enregistrer l'image sous… » du navigateur : ResTeaM a ses propres menus
 // (clic droit sur un jeu). Les champs de texte gardent copier / coller.
@@ -32,12 +43,16 @@ document.addEventListener("contextmenu", (e) => {
 });
 
 // Lecture de la session et de l'état de la clé, une fois au démarrage.
-void useSession.getState().initialiser();
+if (!estBarreSalon) void useSession.getState().initialiser();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <QueryClientProvider client={clientRequetes}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    {estBarreSalon ? (
+      <SalonBarre />
+    ) : (
+      <QueryClientProvider client={clientRequetes}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    )}
   </React.StrictMode>,
 );

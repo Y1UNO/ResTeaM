@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   IconCharts,
   IconCommunity,
+  IconWorkshop,
   IconDownloads,
   IconLibrary,
   IconPerson,
@@ -36,6 +37,7 @@ const MAIN: RailItem[] = [
   { label: "Magasin", to: PATHS.magasin, icon: <IconStore />, match: [PATHS.magasin, "/jeu"] },
   { label: "Classements", to: PATHS.classements, icon: <IconCharts />, match: [PATHS.classements] },
   { label: "Communauté", to: PATHS.communaute, icon: <IconCommunity />, match: [PATHS.communaute] },
+  { label: "Workshop", to: PATHS.workshop, icon: <IconWorkshop />, match: [PATHS.workshop] },
   { label: "Liste de souhaits", to: PATHS.souhaits, icon: <IconWishlist />, match: [PATHS.souhaits] },
 ];
 

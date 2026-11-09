@@ -16,6 +16,21 @@ type TitleBarProps = {
  * et les trois boutons Réduire / Agrandir / Fermer sont dessinés dans la DA.
  */
 export function TitleBar({ pleinEcran = false }: TitleBarProps) {
+  const act = (fn: ActionFenetre) => {
+    if (inTauri) void getCurrentWindow()[fn]();
+  };
+  return (
+    <div className={`titlebar${pleinEcran ? " titlebar--plein" : ""}`}>
+      <div className="titlebar__drag" data-tauri-drag-region />
+      <BoutonsFenetre act={act} />
+    </div>
+  );
+}
+
+export type ActionFenetre = "minimize" | "toggleMaximize" | "close";
+
+/** Réduire / Agrandir / Fermer, dessinés dans la DA (aussi dans le salon d'achat). */
+export function BoutonsFenetre({ act }: { act: (fn: ActionFenetre) => void }) {
   const [maximized, setMaximized] = useState(true);
 
   useEffect(() => {
@@ -31,13 +46,7 @@ export function TitleBar({ pleinEcran = false }: TitleBarProps) {
     return () => stop?.();
   }, []);
 
-  const act = (fn: "minimize" | "toggleMaximize" | "close") => {
-    if (inTauri) void getCurrentWindow()[fn]();
-  };
-
   return (
-    <div className={`titlebar${pleinEcran ? " titlebar--plein" : ""}`}>
-      <div className="titlebar__drag" data-tauri-drag-region />
       <div className="titlebar__controls">
         {/* Boutons dessinés dans la DA « clair de lune » (demande de Tom). */}
         {/* Réduire : un croissant qui se couche derrière l'horizon. */}
@@ -92,6 +101,5 @@ export function TitleBar({ pleinEcran = false }: TitleBarProps) {
           </svg>
         </button>
       </div>
-    </div>
   );
 }

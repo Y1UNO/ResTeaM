@@ -357,6 +357,10 @@ export type MediaLocal = { video: string | null; image: string | null };
 export type FicheMod = { objet: ObjetWorkshop | null; local: MediaLocal | null };
 export type EtatMod = { installe: boolean; recu: number };
 
+/** État du salon d'achat : adresse réelle affichée par la barre ResTeaM. */
+export type EtatSalon = { url: string; hote: string; officiel: boolean; securise: boolean; titre: string; chargement: boolean };
+export type ActionSalon = "retour" | "avancer" | "recharger" | "accueil" | "panier" | "navigateur" | "reduire" | "agrandir" | "fermer";
+
 export type ModDetaille = {
   id: string;
   taille: number;

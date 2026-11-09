@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "salon",
+  "description": "Barre du salon d'achat (page locale de ResTeaM) : déplacer la fenêtre et écouter l'adresse réelle. La page de Steam en dessous n'a aucune capacité.",
+  "webviews": ["salon-barre"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize",
+    "core:window:allow-is-maximized"
+  ]
+}

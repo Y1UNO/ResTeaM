@@ -14,7 +14,7 @@ Projet personnel de [Y1UNO](https://github.com/Y1UNO), construit étape par éta
 |---|---|
 | **Accueil** | Le dernier jeu joué en grand (affiche floutée, rang, succès), un bouton Jouer, une jaquette 3D qui se déplie en patch notes, un ruban des favoris et le panneau des amis |
 | **Bibliothèque** | Tous les jeux, avec filtres (installés, favoris, récents), tri, recherche et clic droit (Jouer, Propriétés, Ouvrir le dossier, Désinstaller…) |
-| **Magasin** | Recherche, promos à la une, rayons par genre, jeux gratuits, prix qui défilent. L'achat se fait toujours dans Steam |
+| **Magasin** | Recherche, promos à la une, rayons par genre, jeux gratuits, prix qui défilent. L'achat se fait dans le **salon d'achat** : les pages officielles de Steam dans une fenêtre ResTeaM, isolée, avec l'adresse réelle et un cadenas affichés par ResTeaM |
 | **Fiche d'un jeu** | Description, avis, captures, DLC, configuration, et les **propriétés du jeu** (options de lancement, mises à jour, téléchargements pendant le jeu) |
 | **Classements** | Meilleures ventes et jeux les plus joués, avec les joueurs en direct |
 | **Liste de souhaits** | Les promos en premier, l'affiche au survol |

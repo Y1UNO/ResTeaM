@@ -35,6 +35,8 @@ import {
   type SuccesJeu,
   type ActiviteAmi,
   type EtatMod,
+  type EtatSalon,
+  type ActionSalon,
   type FicheMod,
   type CapturesJeu,
   type GenreWorkshop,
@@ -129,6 +131,9 @@ export const api = {
   abonnerMod: (appId: number, id: string, abonner: boolean) => appeler<void>("abonner_mod", { appId, id, abonner }),
   etatMod: (appId: number, id: string) => appeler<EtatMod>("etat_mod", { appId, id }),
   ouvrirYoutube: (id: string) => appeler<void>("ouvrir_youtube", { id }),
+  ouvrirSalon: (appId: number | null, adresse: string | null = null) => appeler<void>("ouvrir_salon", { appId, adresse }),
+  salonEtat: () => appeler<EtatSalon | null>("salon_etat"),
+  salonAction: (action: ActionSalon) => appeler<void>("salon_action", { action }),
 };
 
 /** Adresse d'une capture d'écran locale de Steam (servie par le protocole `img`). */

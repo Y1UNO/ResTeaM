@@ -5,6 +5,7 @@ export const PATHS = {
   magasin: "/magasin",
   classements: "/classements",
   communaute: "/communaute",
+  workshop: "/workshop",
   souhaits: "/souhaits",
   recherche: "/recherche",
   telechargements: "/telechargements",

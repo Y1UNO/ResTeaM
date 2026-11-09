@@ -43,6 +43,7 @@ export const router = createHashRouter([
       { path: PATHS.jeu, element: <Fiche /> },
       { path: PATHS.classements, element: <Classements /> },
       { path: PATHS.communaute, element: <Communaute /> },
+      { path: PATHS.workshop, element: <Communaute /> },
       { path: PATHS.souhaits, element: <Souhaits /> },
       { path: PATHS.recherche, element: <Recherche /> },
       { path: PATHS.telechargements, element: <Telechargements /> },

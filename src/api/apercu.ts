@@ -717,8 +717,10 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         objet: {
           ...o,
           description: `${o.description} Réglages : vitesse, couleurs, musique. Fonctionne en 1080p, 1440p et 4K.`,
-          galerie: CAPTURES_FACTICES.map((h) => `${CDN_APERCU}/1145350/ss_${h}.1920x1080.jpg?t=1779901265`),
-          youtube: ["dxy1pQRu9Po"],
+          // Un objet sur trois n'a qu'un petit aperçu (comme les GIF de 250 px des fonds « scène »).
+          galerie: i % 3 === 0 ? [] : CAPTURES_FACTICES.map((h) => `${CDN_APERCU}/1145350/ss_${h}.1920x1080.jpg?t=1779901265`),
+          ...(i % 3 === 0 ? { apercu: `${CDN_APERCU}/1145350/capsule_231x87.jpg` } : {}),
+          youtube: i % 3 === 0 ? [] : ["dxy1pQRu9Po"],
         },
         local: null,
       };

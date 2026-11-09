@@ -32,6 +32,8 @@ pub struct CacheImages {
 
 /// Morceau servi à la fois pour une vidéo locale (lecture en flux).
 const MORCEAU_VIDEO: u64 = 4 * 1024 * 1024;
+/// Image locale servie d'un bloc (illustration d'une scène en 4K : quelques dizaines de Mo au plus).
+const IMAGE_LOCALE_MAX: u64 = 64 * 1024 * 1024;
 
 /// Lit `bytes=a-b` (ou `bytes=a-`) d'un en-tête Range.
 pub fn lire_plage(plage: Option<&str>, total: u64) -> Option<(u64, u64)> {
@@ -143,28 +145,42 @@ impl CacheImages {
             return interdit();
         }
         let dossiers = self.dossiers_workshop.read().map(|d| d.clone()).unwrap_or_default();
-        let Some(fichier) = dossiers.iter().map(|d| d.join(app).join(id).join(&nom)).find(|f| f.is_file()) else {
+        let scene = nom == crate::steam::workshop::NOM_SCENE;
+        // `__scene__` : le média haute définition rangé dans `scene.pkg` (jamais un fichier de ce nom).
+        let vrai_nom = if scene { "scene.pkg" } else { nom.as_str() };
+        let Some(fichier) = dossiers.iter().map(|d| d.join(app).join(id).join(vrai_nom)).find(|f| f.is_file()) else {
             return reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain");
         };
+        let (base, total) = if scene {
+            let p = fichier.clone();
+            match tokio::task::spawn_blocking(move || crate::steam::workshop::morceau_scene(&p)).await.ok().flatten() {
+                Some(m) => (m.debut, m.longueur),
+                None => return reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain"),
+            }
+        } else {
+            (0, tokio::fs::metadata(&fichier).await.map(|m| m.len()).unwrap_or(0))
+        };
         let Ok(mut f) = tokio::fs::File::open(&fichier).await else { return reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain") };
-        let total = f.metadata().await.map(|m| m.len()).unwrap_or(0);
         let mut debut_fichier = [0u8; 12];
-        let lus = f.read(&mut debut_fichier).await.unwrap_or(0);
-        let type_ = crate::steam::workshop::type_media(&nom, &debut_fichier[..lus]);
-        // Petite image : en entier. Vidéo : par morceaux de 4 Mo.
+        let _ = f.seek(std::io::SeekFrom::Start(base)).await;
+        let lus = f.read(&mut debut_fichier).await.unwrap_or(0).min(total as usize);
+        let type_ = crate::steam::workshop::type_media(if scene { "" } else { &nom }, &debut_fichier[..lus]);
+        // Image : en entier (jusqu'à 64 Mo, une balise <img> ne demande pas de plage).
+        // Vidéo : par morceaux de 4 Mo.
         let (debut, fin) = match lire_plage(plage, total) {
             Some(p) => p,
-            None if total <= MORCEAU_VIDEO && !type_.starts_with("video/") => {
-                let mut tout = Vec::with_capacity(total as usize);
-                let _ = f.seek(std::io::SeekFrom::Start(0)).await;
-                let _ = f.read_to_end(&mut tout).await;
+            None if total <= IMAGE_LOCALE_MAX && !type_.starts_with("video/") => {
+                let mut tout = vec![0u8; total as usize];
+                if f.seek(std::io::SeekFrom::Start(base)).await.is_err() || f.read_exact(&mut tout).await.is_err() {
+                    return reponse(StatusCode::INTERNAL_SERVER_ERROR, Vec::new(), "text/plain");
+                }
                 return reponse(StatusCode::OK, tout, type_);
             }
             None => (0, total.saturating_sub(1)),
         };
         let fin = fin.min(debut + MORCEAU_VIDEO - 1);
         let mut corps = vec![0u8; (fin - debut + 1) as usize];
-        if f.seek(std::io::SeekFrom::Start(debut)).await.is_err() || f.read_exact(&mut corps).await.is_err() {
+        if f.seek(std::io::SeekFrom::Start(base + debut)).await.is_err() || f.read_exact(&mut corps).await.is_err() {
             return reponse(StatusCode::INTERNAL_SERVER_ERROR, Vec::new(), "text/plain");
         }
         Response::builder()

@@ -103,6 +103,8 @@ export function FenetreObjet({ objet: depart, appId, fermer }: { objet: ObjetWor
   const medias: Media[] = useMemo(() => {
     const l: Media[] = [];
     if (local?.video) l.push({ type: "video", src: local.video });
+    // Fond « scène » installé : l'illustration en pleine définition, avant tout aperçu.
+    if (local?.imageHd) l.push({ type: "image", src: local.imageHd });
     // Images en grande taille de l'auteur ; sinon l'aperçu de Steam (souvent un GIF
     // animé), et l'image du disque seulement s'il n'y a rien d'autre.
     const galerie = objet.galerie ?? [];
@@ -116,6 +118,9 @@ export function FenetreObjet({ objet: depart, appId, fermer }: { objet: ObjetWor
   const [choix, setChoix] = useState(0);
   useEffect(() => setChoix(0), [medias.length]);
   const media = medias[Math.min(choix, medias.length - 1)];
+  // Aperçu minuscule (GIF de 250 px de Steam) : agrandi au plus ×1,6 pour rester net.
+  const [petite, setPetite] = useState<number | null>(null);
+  useEffect(() => setPetite(null), [media?.src]);
 
   useEffect(() => {
     const touche = (e: KeyboardEvent) => {
@@ -152,7 +157,21 @@ export function FenetreObjet({ objet: depart, appId, fermer }: { objet: ObjetWor
         <div className="com-fenetre__scene">
           <div className="com-fenetre__media" style={media ? undefined : { background: degradeJaquette(objet.titre) }}>
             {media?.type === "video" && <video key={media.src} src={media.src} autoPlay loop muted playsInline />}
-            {media?.type === "image" && <img key={media.src} src={media.src} alt="" draggable={false} />}
+            {media?.type === "image" && (
+              <img
+                key={media.src}
+                src={media.src}
+                alt=""
+                draggable={false}
+                className={petite ? "is-petite" : undefined}
+                style={petite ? { width: petite * 1.6 } : undefined}
+                onLoad={(e) => {
+                  const l = e.currentTarget.naturalWidth;
+                  setPetite(l > 0 && l < 480 ? l : null);
+                }}
+              />
+            )}
+            {petite && <span className="com-fenetre__basse">Aperçu de l’auteur · {petite} px</span>}
             {media?.youtube && (
               <button type="button" className="com-fenetre__lecture" aria-label="Regarder la vidéo sur YouTube" onClick={() => void api.ouvrirYoutube(media.youtube as string)}>
                 ▶

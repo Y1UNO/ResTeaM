@@ -377,7 +377,8 @@ export type ObjetWorkshop = {
   youtube?: string[];
 };
 
-export type MediaLocal = { video: string | null; image: string | null };
+/** `imageHd` : illustration d'un fond « scène » tirée de `scene.pkg`, en pleine définition. */
+export type MediaLocal = { video: string | null; image: string | null; imageHd?: string | null };
 export type FicheMod = { objet: ObjetWorkshop | null; local: MediaLocal | null };
 export type EtatMod = { installe: boolean; recu: number };
 

@@ -373,8 +373,11 @@ pub fn nom_fichier_valide(nom: &str) -> bool {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MediaLocal {
-    /// Vidéo du fond (Wallpaper Engine, type « video »), en pleine qualité.
+    /// Vidéo du fond (Wallpaper Engine, type « video », ou vidéo d'une scène), en pleine qualité.
     pub video: Option<String>,
+    /// Illustration en haute définition d'un fond « scène » (tirée de `scene.pkg`).
+    #[serde(default)]
+    pub image_hd: Option<String>,
     /// Image d'aperçu sur le disque.
     pub image: Option<String>,
 }
@@ -403,10 +406,166 @@ pub fn media_local(steam: &Path, app_id: u32, id: &str) -> Option<MediaLocal> {
             media.image = Some(adresse_locale(app_id, id, f));
         }
     }
+    // Fond « scène » : l'aperçu n'est qu'un petit GIF (souvent 250×250). La plus grande
+    // texture de `scene.pkg` contient souvent l'illustration (PNG, JPEG) ou une vidéo
+    // (MP4) en pleine définition : on la montre telle quelle, servie sous `__scene__`.
+    if media.video.is_none() {
+        if let Some(m) = morceau_scene(&dossier.join("scene.pkg")) {
+            let adresse = adresse_locale(app_id, id, NOM_SCENE);
+            if m.video {
+                media.video = Some(adresse);
+            } else {
+                media.image_hd = Some(adresse);
+            }
+        }
+    }
     if media.image.is_none() {
         media.image = ["preview.jpg", "preview.png", "preview.gif"].iter().find(|f| dossier.join(f).is_file()).map(|f| adresse_locale(app_id, id, f));
     }
-    (media.video.is_some() || media.image.is_some()).then_some(media)
+    (media.video.is_some() || media.image.is_some() || media.image_hd.is_some()).then_some(media)
+}
+
+/// Nom virtuel du média tiré de `scene.pkg` (jamais un vrai fichier lu par son nom).
+pub const NOM_SCENE: &str = "__scene__";
+
+/// Morceau de `scene.pkg` qui contient un fichier lisible tel quel.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MorceauScene {
+    /// Position du fichier dans `scene.pkg`.
+    pub debut: u64,
+    pub longueur: u64,
+    pub video: bool,
+}
+
+/// `scene.pkg` déjà examinés (chemin → date de modification, résultat).
+static SCENES: std::sync::Mutex<Option<HashMap<PathBuf, (std::time::SystemTime, Option<MorceauScene>)>>> = std::sync::Mutex::new(None);
+
+/// Média haute définition d'un `scene.pkg`, mis en cache tant que le fichier ne change pas.
+pub fn morceau_scene(pkg: &Path) -> Option<MorceauScene> {
+    let date = std::fs::metadata(pkg).and_then(|m| m.modified()).ok()?;
+    if let Ok(g) = SCENES.lock() {
+        if let Some((d, m)) = g.as_ref().and_then(|c| c.get(pkg)) {
+            if *d == date {
+                return *m;
+            }
+        }
+    }
+    let m = std::fs::File::open(pkg).ok().and_then(|f| lire_scene(std::io::BufReader::new(f)));
+    if let Ok(mut g) = SCENES.lock() {
+        g.get_or_insert_with(HashMap::new).insert(pkg.to_path_buf(), (date, m));
+    }
+    m
+}
+
+/// Lit la table de `scene.pkg` (`PKGV…`, puis nom, position, taille de chaque fichier)
+/// et cherche, dans les textures (`.tex`), un fichier PNG, JPEG ou MP4 rangé tel quel
+/// (précédé de sa taille sur 4 octets). Vidéo d'abord, sinon la plus grande image.
+/// Tout est borné : une table piégée ne fait ni lire ni allouer n'importe quoi.
+pub fn lire_scene<R: std::io::Read + std::io::Seek>(mut r: R) -> Option<MorceauScene> {
+    use std::io::SeekFrom;
+    let u32_ = |r: &mut R| -> Option<u32> {
+        let mut b = [0u8; 4];
+        r.read_exact(&mut b).ok()?;
+        Some(u32::from_le_bytes(b))
+    };
+    let n = u32_(&mut r)? as usize;
+    if !(4..=32).contains(&n) {
+        return None;
+    }
+    let mut version = vec![0u8; n];
+    r.read_exact(&mut version).ok()?;
+    if !version.starts_with(b"PKGV") {
+        return None;
+    }
+    let nombre = u32_(&mut r)?;
+    if nombre > 20_000 {
+        return None;
+    }
+    let mut entrees = Vec::new();
+    for _ in 0..nombre {
+        let ln = u32_(&mut r)? as usize;
+        if ln > 1024 {
+            return None;
+        }
+        let mut nom = vec![0u8; ln];
+        r.read_exact(&mut nom).ok()?;
+        let (pos, taille) = (u32_(&mut r)? as u64, u32_(&mut r)? as u64);
+        entrees.push((String::from_utf8_lossy(&nom).to_lowercase(), pos, taille));
+    }
+    let base = r.stream_position().ok()?;
+    let mut meilleur: Option<MorceauScene> = None;
+    for (nom, pos, taille) in entrees {
+        let ecarte = ["depth", "mask", "particle", "noise", "normal"].iter().any(|m| nom.contains(m));
+        if !nom.ends_with(".tex") || ecarte || taille < 100_000 {
+            continue;
+        }
+        r.seek(SeekFrom::Start(base + pos)).ok()?;
+        let mut tete = vec![0u8; taille.min(4096) as usize];
+        if r.read_exact(&mut tete).is_err() || !tete.starts_with(b"TEXV") {
+            continue;
+        }
+        let Some((debut, video)) = signature(&tete) else { continue };
+        if debut < 4 {
+            continue;
+        }
+        let longueur = u32::from_le_bytes(tete[debut - 4..debut].try_into().ok()?) as u64;
+        if longueur < 50_000 || debut as u64 + longueur > taille {
+            continue;
+        }
+        // Une image n'est retenue que si elle a le format d'un écran : les auteurs rangent
+        // aussi dans le paquet des affiches (dons, codes QR) qui ne sont pas le fond.
+        if !video && !format_ecran(dimensions_image(&tete[debut..])) {
+            continue;
+        }
+        let m = MorceauScene { debut: base + pos + debut as u64, longueur, video };
+        let mieux = match meilleur {
+            None => true,
+            Some(b) => (m.video && !b.video) || (m.video == b.video && m.longueur > b.longueur),
+        };
+        if mieux {
+            meilleur = Some(m);
+        }
+    }
+    meilleur
+}
+
+/// Paysage d'au moins 1600 px de large, entre 4:3 et 21:9 : le format d'un fond d'écran.
+fn format_ecran(d: Option<(u32, u32)>) -> bool {
+    d.is_some_and(|(l, h)| l >= 1600 && h > 0 && (1.3..=2.45).contains(&(l as f64 / h as f64)))
+}
+
+/// Largeur et hauteur d'une image PNG (bloc IHDR) ou JPEG (marqueur SOF), d'après ses premiers octets.
+fn dimensions_image(o: &[u8]) -> Option<(u32, u32)> {
+    if o.starts_with(b"\x89PNG") {
+        let l = u32::from_be_bytes(o.get(16..20)?.try_into().ok()?);
+        let h = u32::from_be_bytes(o.get(20..24)?.try_into().ok()?);
+        return Some((l, h));
+    }
+    // JPEG : on suit les segments jusqu'au premier SOF (C0 à CF, sauf C4, C8 et CC).
+    let mut i = 2;
+    while i + 9 < o.len() {
+        if o[i] != 0xFF {
+            return None;
+        }
+        let m = o[i + 1];
+        let longueur = u16::from_be_bytes([o[i + 2], o[i + 3]]) as usize;
+        if (0xC0..=0xCF).contains(&m) && ![0xC4, 0xC8, 0xCC].contains(&m) {
+            let h = u16::from_be_bytes([o[i + 5], o[i + 6]]) as u32;
+            let l = u16::from_be_bytes([o[i + 7], o[i + 8]]) as u32;
+            return Some((l, h));
+        }
+        i += 2 + longueur;
+    }
+    None
+}
+
+/// Début d'un fichier PNG, JPEG ou MP4 dans l'en-tête d'une texture, et s'il s'agit d'une vidéo.
+fn signature(t: &[u8]) -> Option<(usize, bool)> {
+    let chercher = |motif: &[u8]| t.windows(motif.len()).position(|w| w == motif);
+    if let Some(i) = chercher(b"ftyp").filter(|i| *i >= 8) {
+        return Some((i - 4, true));
+    }
+    chercher(b"\x89PNG\r\n\x1a\n").or_else(|| chercher(&[0xFF, 0xD8, 0xFF])).map(|i| (i, false))
 }
 
 /// Type d'un fichier servi : par l'extension, sinon par ses premiers octets
@@ -549,6 +708,122 @@ pub fn captures(steam: &Path, compte: u32) -> Vec<CapturesJeu> {
     match std::fs::read_to_string(base.join("screenshots.vdf")) {
         Ok(t) => lire_captures(&t, Some(&remote)),
         Err(_) => Vec::new(),
+    }
+}
+
+#[cfg(test)]
+mod tests_scene {
+    use super::*;
+    use std::io::Cursor;
+
+    /// `scene.pkg` minimal : table, puis une texture qui contient `contenu` (avec sa taille devant).
+    fn paquet(textures: &[(&str, Vec<u8>)]) -> Vec<u8> {
+        let mut donnees = Vec::new();
+        let mut table = Vec::new();
+        for (nom, contenu) in textures {
+            let mut tex = b"TEXV0005\0TEXI0001\0".to_vec();
+            tex.extend_from_slice(&[0u8; 40]);
+            tex.extend_from_slice(&(contenu.len() as u32).to_le_bytes());
+            tex.extend_from_slice(contenu);
+            table.extend_from_slice(&(nom.len() as u32).to_le_bytes());
+            table.extend_from_slice(nom.as_bytes());
+            table.extend_from_slice(&(donnees.len() as u32).to_le_bytes());
+            table.extend_from_slice(&(tex.len() as u32).to_le_bytes());
+            donnees.extend_from_slice(&tex);
+        }
+        let mut p = 8u32.to_le_bytes().to_vec();
+        p.extend_from_slice(b"PKGV0024");
+        p.extend_from_slice(&(textures.len() as u32).to_le_bytes());
+        p.extend_from_slice(&table);
+        p.extend_from_slice(&donnees);
+        p
+    }
+
+    fn png_de(taille: usize, l: u32, h: u32) -> Vec<u8> {
+        let mut v = b"\x89PNG\r\n\x1a\n\0\0\0\x0dIHDR".to_vec();
+        v.extend_from_slice(&l.to_be_bytes());
+        v.extend_from_slice(&h.to_be_bytes());
+        v.resize(taille, 7);
+        v
+    }
+
+    fn png(taille: usize) -> Vec<u8> {
+        png_de(taille, 3840, 2160)
+    }
+
+    #[test]
+    fn affiche_portrait_ecartee() {
+        // L'affiche de dons (portrait, plus grande) est écartée au profit du fond paysage.
+        let p = paquet(&[("materials/dons.tex", png_de(300_000, 3157, 3516)), ("materials/fond.tex", png(150_000))]);
+        assert_eq!(lire_scene(Cursor::new(&p)).map(|m| m.longueur), Some(150_000));
+        let p = paquet(&[("materials/dons.tex", png_de(300_000, 3157, 3516))]);
+        assert_eq!(lire_scene(Cursor::new(&p)), None);
+        // JPEG : dimensions lues dans le marqueur SOF0.
+        let jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0, 4, 0, 0, 0xFF, 0xC0, 0, 17, 8, 0x04, 0x38, 0x07, 0x80, 3, 0, 0];
+        assert_eq!(dimensions_image(&jpeg), Some((1920, 1080)));
+        assert!(format_ecran(Some((1920, 1080))) && !format_ecran(Some((1080, 1920))) && !format_ecran(Some((800, 450))));
+    }
+
+    #[test]
+    fn image_puis_video() {
+        let p = paquet(&[("materials/fond.tex", png(150_000)), ("materials/petit.tex", png(120_000))]);
+        let m = lire_scene(Cursor::new(&p)).unwrap();
+        assert!(!m.video);
+        assert_eq!(m.longueur, 150_000);
+        assert_eq!(&p[m.debut as usize..m.debut as usize + 4], b"\x89PNG");
+        // Une vidéo passe devant une image plus grande.
+        let mut mp4 = vec![0, 0, 0, 0x20];
+        mp4.extend_from_slice(b"ftypisom");
+        mp4.resize(110_000, 1);
+        let p = paquet(&[("materials/fond.tex", png(150_000)), ("materials/anim.tex", mp4)]);
+        let m = lire_scene(Cursor::new(&p)).unwrap();
+        assert!(m.video && m.longueur == 110_000);
+    }
+
+    #[test]
+    fn rien_de_lisible_ou_piege() {
+        // Profondeur et masques écartés, texture compressée (sans signature) ignorée.
+        let p = paquet(&[("materials/fond_depth.tex", png(150_000)), ("materials/x.tex", vec![9u8; 150_000])]);
+        assert_eq!(lire_scene(Cursor::new(&p)), None);
+        // Taille annoncée plus grande que la texture : refusée.
+        let mut p = paquet(&[("materials/fond.tex", png(150_000))]);
+        let i = p.windows(4).position(|w| w == b"\x89PNG").unwrap();
+        p[i - 4..i].copy_from_slice(&u32::MAX.to_le_bytes());
+        assert_eq!(lire_scene(Cursor::new(&p)), None);
+        // En-têtes absurdes ou tronqués.
+        assert_eq!(lire_scene(Cursor::new(b"\xff\xff\xff\xffPKGV")), None);
+        assert_eq!(lire_scene(Cursor::new(Vec::<u8>::new())), None);
+        let mut p = 8u32.to_le_bytes().to_vec();
+        p.extend_from_slice(b"PKGV0024");
+        p.extend_from_slice(&u32::MAX.to_le_bytes());
+        assert_eq!(lire_scene(Cursor::new(&p)), None);
+    }
+
+    /// Lecture seule des fonds « scène » installés sur ce PC.
+    #[test]
+    #[ignore = "lit les fonds Wallpaper Engine de ce PC"]
+    fn scenes_de_ce_pc() {
+        let steam = local::dossier_steam().unwrap();
+        for id in ["3436945972", "3454792257"] {
+            println!("{id} : {:?}", media_local(&steam, 431960, id));
+        }
+        // Bilan sur tous les fonds « scène » installés.
+        let (mut total, mut video, mut image) = (0, 0, 0);
+        for d in dossiers_contenu(&steam) {
+            let Ok(l) = std::fs::read_dir(d.join("431960")) else { continue };
+            for e in l.flatten() {
+                let pkg = e.path().join("scene.pkg");
+                if pkg.is_file() {
+                    total += 1;
+                    match morceau_scene(&pkg) {
+                        Some(m) if m.video => video += 1,
+                        Some(_) => image += 1,
+                        None => {}
+                    }
+                }
+            }
+        }
+        println!("scènes : {total}, vidéo HD : {video}, image HD : {image}");
     }
 }
 

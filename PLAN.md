@@ -284,6 +284,8 @@ Je m'occupe du code du Worker (dans `serveur/`), du déploiement avec wrangler, 
 
 Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare et on fait le **serveur de partage des profils** (section « Plus tard » ci-dessus). Après seulement, on attaque ces idées. Rien n'est commencé.
 
+**Décision de Tom (9 novembre 2026)** : l'économie et les styles (coffre à styles, ticket du jour, bundles, soutien, échanges : sections 12 et 13) se font **tout à la fin**, après toutes les autres idées.
+
 ### Refusé par Tom (ne pas reproposer)
 - **Lanceur rapide** (raccourci global) : Tom a déjà son app Kayro pour ça.
 - **Sons d'interface** : inutiles pour ce genre d'app.

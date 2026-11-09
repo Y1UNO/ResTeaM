@@ -390,12 +390,13 @@ Structure proposée, qui garde toutes les idées de Tom :
 | Source | Payant ? | Hasard ? | Échangeable ? |
 |---|---|---|---|
 | Ticket du jour (et tickets bonus gagnés en jouant) | non | oui | **oui**, entre amis |
-| Bundles et styles au choix | oui | non | non (liés au compte) |
+| Bundles et styles au choix | oui | non | **oui** (on sait ce qu'on achète : ce n'est pas un tirage) |
 | Soutenir ResTeaM (badge ou cadre « soutien ») | oui | non | non |
 | Tickets payants (si on les garde) | oui | oui | **non**, jamais |
 
-- **Échanges** :
-  - seulement des objets gratuits, entre comptes ResTeaM, validés par le serveur (les deux acceptent, rien ne se perd) ;
+- **Échanges** (précision du 9 novembre au soir, Tom craignait qu'on ne puisse rien échanger) :
+  - **presque tout s'échange** : tout ce qui vient du ticket du jour (la grande majorité des styles) et des bundles. Seuls le badge « Soutien » et les objets des éventuels tickets payants restent liés au compte ;
+  - entre comptes ResTeaM, validés par le serveur (les deux acceptent, rien ne se perd) ;
   - l'échelle de valeur est en **points de rareté** (commun 1, rare 5, épique 20, légendaire 80, lunaire 300, à régler), **jamais en euros** ;
   - aucune revente contre de l'argent, aucun retrait.
 - **Tickets payants**, seulement si Tom les veut vraiment après avoir lu ces contraintes :

@@ -146,6 +146,59 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 
 À vérifier avant d'écrire dans les fichiers de Steam : les clés exactes, en lisant d'abord les fichiers du PC de Tom, sans rien modifier.
 
+### Prochaine étape — Communauté (lot 2, avec le Workshop de l'étape 12)
+
+Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bis.
+
+**Place dans l'app** : un onglet **Communauté** dans la barre de gauche (icône `IconCommunity` déjà prête), entre Classements et Liste de souhaits. Raccourci depuis la fiche d'un jeu : bouton « Communauté du jeu ».
+
+**Une page, plusieurs onglets** :
+
+| Onglet | Contenu | Source |
+|---|---|---|
+| **Fil** (accueil) | Ce que font les amis : qui joue à quoi maintenant, jeux récents (heures sur 2 semaines), nouveaux jeux en commun. Cartes vivantes avec l'affiche du jeu | `GetPlayerSummaries` + `GetRecentlyPlayedGames` des amis (déjà en cache pour une partie) |
+| **Workshop** | 1. **Mes mods** par jeu : nom, image, taille, date de mise à jour. 2. **Vitrine** d'un jeu : les plus populaires, récents, tendance, avec recherche et tags. 3. Fiche d'un mod : images, description, note, abonnés | Local : `steamapps/workshop/appworkshop_<id>.acf` et dossier `content/<id>/` ; détails et vitrine : `IPublishedFileService/GetDetails` et `QueryFiles` (clé côté Rust) |
+| **Captures** | Mes captures d'écran par jeu, depuis le disque, en grille, avec agrandissement et « Ouvrir le dossier » | Local : `userdata/<accountid>/760/remote/<appid>/screenshots/` |
+| **Créations** | Illustrations, guides et vidéos de la communauté d'un jeu, les plus populaires | `IPublishedFileService/QueryFiles` avec le type de fichier (types exacts à vérifier) |
+| **Discussions** | Liens vers les forums du jeu (pas d'API publique) | Ouvre la page dans Steam |
+
+**S'abonner ou se désabonner d'un mod** : aucune API publique sans session web Steam. Le bouton ouvre la page du mod dans Steam (`steam://url/CommunityFilePage/<id>`). Steam s'ouvre alors au premier plan, puis ResTeaM le recache. À tester : ouvrir plutôt dans le navigateur.
+
+**Côté Rust** : nouveau module `steam/workshop.rs` (lecture des `.acf` avec `vdf.rs`, tailles des dossiers), commandes `mods_installes`, `vitrine_workshop`, `fiche_mod`, `captures_jeu`, `fil_amis`. Cache de 1 h pour la vitrine, de 10 min pour le fil. Les images de mods passent par le protocole `img` (ajouter l'hôte des images UGC, `images.steamusercontent.com`, à la liste autorisée et à la CSP). Les captures locales sont servies comme les fichiers `__perso__` (chemins vérifiés, jamais un chemin venu de la requête).
+
+**À vérifier d'abord, sans rien modifier** : les `appworkshop_*.acf` et le dossier `760` sur le PC de Tom, et les réponses réelles de `QueryFiles`.
+
+**Vérification dans l'exe** : les mods de Tom apparaissent, la recherche Workshop marche, ses captures s'affichent, le fil montre ses amis.
+
+**Ensuite** : rangées de la boutique façon Steam (carrousels à flèches, « Car tu as joué à… », « Moins de 10 € », rangées par tag), puis les étapes 11, 13, 14 et 15.
+
+### Plus tard — Serveur de partage des profils (pour que les amis voient photo, bannière et style ResTeaM)
+
+Noté le 9 novembre 2026, à faire plus tard. **Oui, c'est faisable gratuitement**, et c'est largement assez puissant pour Tom et ses amis.
+
+**Choix : Cloudflare** (offre gratuite)
+- **Workers** : le petit serveur, 100 000 requêtes par jour.
+- **R2** : stockage des fichiers, 10 Go gratuits, **téléchargements gratuits et illimités** (pas de frais de sortie), ce qui compte pour des bannières vidéo.
+- **D1** : petite base pour les choix de style (fond, cadre, effet, couleur), 5 Go.
+- Gros fichiers : un Worker gratuit accepte 100 Mo par envoi. Au-delà, ResTeaM envoie directement dans R2 avec une adresse signée (jusqu'à 5 Go), donc pas de vraie limite de poids.
+- Ailleurs : Supabase limite à 50 Mo par fichier et met le projet en pause après une semaine sans activité. Firebase ne propose plus de stockage gratuit.
+
+**Fonctionnement**
+1. Une option « Partager mon profil ResTeaM » dans le pinceau magique. Elle est éteinte par défaut.
+2. Pour prouver qui il est, Tom se connecte une fois avec Steam (OpenID), vérifié par le Worker lui-même. Le Worker donne un jeton, rangé dans le Gestionnaire d'identifiants Windows comme la clé API. **La clé API Steam n'est jamais envoyée au serveur.**
+3. ResTeaM envoie la photo, la bannière et les choix de style, rangés sous le SteamID.
+4. Sur le profil d'un ami, ResTeaM demande au serveur s'il a un profil partagé. Si oui, il l'affiche par-dessus les objets Steam. Les fichiers passent par le cache disque du protocole `img`, donc chaque ami ne télécharge qu'une fois par changement.
+5. Sécurité : seuls les types image et vidéo sont acceptés, le serveur vérifie le jeton à chaque écriture, et chacun ne peut modifier que son propre profil.
+
+**Ce que Tom devra fournir ou faire lui-même** (je ne peux pas créer de compte)
+- Créer un compte Cloudflare gratuit.
+- Activer R2. Cloudflare demande une carte bancaire même pour l'offre gratuite ; rien n'est débité sous les quotas. À confirmer au moment de l'inscription.
+- Lancer `npx wrangler login` une fois et valider dans le navigateur.
+- Choisir le nom du serveur (par exemple `resteam-profils`). L'adresse sera `https://<nom>.<compte>.workers.dev`.
+- Ses amis doivent avoir ResTeaM, et aucun réglage n'est nécessaire de leur côté.
+
+Je m'occupe du code du Worker (dans `serveur/`), du déploiement avec wrangler, de la CSP et du branchement dans ResTeaM.
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |

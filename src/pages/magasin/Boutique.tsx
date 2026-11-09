@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useProduits, useRayonMagasin, useRechercheMagasin, useSouhaits } from "../../api/requetes";
 import type { Produit, VitrineMagasin } from "../../api/types";
 import { PATHS } from "../../app/paths";
-import { useMoletteHorizontale } from "../../lib/molette";
 import { date, entier } from "../../lib/format";
 import { viaCache } from "../../lib/imageLocale";
 import { degradeJaquette } from "../../lib/images";
@@ -486,8 +485,9 @@ export function RangeeGratuits() {
   const navigate = useNavigate();
   const r = useRayonMagasin("gratuits");
   const piste = useRef<HTMLDivElement>(null);
-  useMoletteHorizontale(piste, r.data?.length);
   const liste = (r.data ?? []).slice(0, 18);
+  // Carrousel à flèches, comme Steam : la molette fait défiler la page normalement.
+  const decaler = (sens: number) => piste.current?.scrollBy({ left: sens * piste.current.clientWidth * 0.85, behavior: "smooth" });
   if (liste.length === 0) return null;
   return (
     <section className="boutique__bloc" aria-labelledby="gratuits-titre">
@@ -496,6 +496,14 @@ export function RangeeGratuits() {
           Gratuits et populaires
         </h2>
         <span className="boutique__indice">à essayer sans rien payer</span>
+        <div className="bfleches">
+          <button type="button" aria-label="Précédents" onClick={() => decaler(-1)}>
+            ‹
+          </button>
+          <button type="button" aria-label="Suivants" onClick={() => decaler(1)}>
+            ›
+          </button>
+        </div>
       </div>
       <div ref={piste} className="brangee">
         {liste.map((p, i) => (

@@ -64,6 +64,7 @@ pub fn run() {
             commandes::regler_jeu,
             commandes::ouvrir_dossier_jeu,
             commandes::dlc_jeu,
+            commandes::objets_profil,
             commandes::file_steam,
             commandes::annuler_file_steam,
             commandes::connexion_steam,

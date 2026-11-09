@@ -35,7 +35,7 @@
         "font-src": "'self' data:",
         "img-src": "'self' data: blob: http://img.localhost https://img.localhost https://*.steamstatic.com https://*.akamaihd.net https://*.steampowered.com",
         "connect-src": "ipc: http://ipc.localhost https://video.akamai.steamstatic.com https://video.fastly.steamstatic.com",
-        "media-src": "'self' blob: https://video.akamai.steamstatic.com https://video.fastly.steamstatic.com",
+        "media-src": "'self' blob: https://video.akamai.steamstatic.com https://video.fastly.steamstatic.com https://cdn.cloudflare.steamstatic.com https://cdn.akamai.steamstatic.com https://cdn.fastly.steamstatic.com",
         "object-src": "'none'",
         "base-uri": "'self'",
         "frame-src": "'none'",

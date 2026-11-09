@@ -12,6 +12,7 @@ import {
   type DemandeInstallation,
   type FicheJeu,
   type Produit,
+  type ObjetsProfil,
   type ProfilJoueur,
   type ProprietesJeu,
   type Reglage,
@@ -105,5 +106,6 @@ export const api = {
   reglerJeu: (demande: Omit<Reglage, "compte">) => appeler<FileSteam>("regler_jeu", { demande }),
   ouvrirDossierJeu: (appId: number) => appeler<void>("ouvrir_dossier_jeu", { appId }),
   dlcJeu: (appId: number) => appeler<Produit[]>("dlc_jeu", { appId }),
+  objetsProfil: (steamId: string) => appeler<Donnee<ObjetsProfil>>("objets_profil", { steamId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

@@ -4,7 +4,6 @@ import { useClassements, useEnLigne, useProduits } from "../api/requetes";
 import { estErreurApp, type Classe, type Produit, type Releve } from "../api/types";
 import { Smoke } from "../components/Smoke";
 import { Compteur, Lucioles } from "../components/Vivant";
-import { Courbe } from "../components/Courbe";
 import { entier } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import { degradeHero, degradeJaquette } from "../lib/images";
@@ -139,6 +138,10 @@ function EnJeu({ donnees, chargement }: { donnees: { joueurs: number; releves: R
     return cases;
   }, [donnees]);
   const releves = donnees?.releves ?? [];
+  const presents = valeurs.filter((v): v is number => v != null);
+  const maxi = Math.max(1, ...presents);
+  const min = Math.min(maxi, ...presents);
+  const derniere = valeurs.reduce<number>((m, v, i) => (v != null ? i : m), -1);
   const pic = releves.length ? Math.max(...releves.map((r) => r.joueurs)) : null;
   const moyenne = releves.length ? Math.round(releves.reduce((s, r) => s + r.joueurs, 0) / releves.length) : null;
   const avant = releves.length >= 2 ? releves[releves.length - 2].joueurs : null;
@@ -175,8 +178,15 @@ function EnJeu({ donnees, chargement }: { donnees: { joueurs: number; releves: R
           )}
         </div>
       </div>
-      <div className="en-jeu__courbe">
-        <Courbe valeurs={valeurs} couleur="#9fd8ff" hauteur={130} attente="La courbe se remplit à chaque relevé (toutes les 20 min)" />
+      <div className="en-jeu__barres" aria-hidden="true">
+        {valeurs.map((b, i) => (
+          <span
+            key={i}
+            className={`en-jeu__barre${b == null ? " is-vide" : ""}${i === derniere ? " is-dernier" : ""}`}
+            style={{ height: b == null ? "10%" : `${28 + ((b - min) / Math.max(1, maxi - min)) * 72}%`, "--i": i } as React.CSSProperties}
+          />
+        ))}
+        <span className="en-jeu__balayage" />
       </div>
       <span className="en-jeu__legende">
         Steam ne publie pas le total : c’est la somme des joueurs en jeu sur les 10 jeux les plus joués. La courbe se remplit au fil des relevés de ResTeaM (toutes les 20 min, quand l’app est ouverte).

@@ -1002,3 +1002,7 @@
   border-color: rgba(238, 242, 255, 0.4);
   color: var(--text-1);
 }
+/* Fluidité : la brume animée a son propre calque. */
+.accueil .affiche__brume {
+  will-change: transform, opacity;
+}

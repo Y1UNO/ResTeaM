@@ -24,6 +24,19 @@ import { NOMS_RANGS, PALIERS, ROMAINS, rangDepuisMinutes } from "../../lib/rangs
 import "../pages.css";
 import "./profil.css";
 import { viaCache } from "../../lib/imageLocale";
+import { useObjetsProfil } from "../../api/requetes";
+import {
+  CadreAvatar,
+  EffetProfil,
+  FondProfil,
+  PanneauPersonnalisation,
+  PinceauMagique,
+  usePersonnalisation,
+  type Personnalisation,
+} from "./Personnalisation";
+
+/** Un ami : ses objets Steam, avec les réglages par défaut (ses choix ResTeaM ne sont pas partagés). */
+const PERSO_AMI: Personnalisation = { fond: "steam", jeuFond: null, cadre: "steam", avatarAnime: true, effet: "pluie", accent: "#9fd8ff" };
 
 const RANGS = [
   { romain: "0", nom: "Novice", seuil: "< 10 h" },
@@ -55,6 +68,7 @@ export function Profil() {
 
 function VueProfil({ ami }: { ami: string | null }) {
   const navigate = useNavigate();
+  const moiId = useSession((x) => x.steamId);
   const joueur = useJoueurMoi();
   const niveau = useNiveauBadges();
   const biblio = useBibliotheque();
@@ -74,6 +88,14 @@ function VueProfil({ ami }: { ami: string | null }) {
   const chargement = ami ? profilAmi.isLoading : joueur.isLoading;
   const fiche = amis.data?.donnees.amis.find((a) => a.steamId === ami);
   const palette = usePalette(viaCache(j?.avatar) ?? null, j?.pseudo ?? "Profil");
+  const objets = useObjetsProfil(ami ?? moiId).data?.donnees;
+  const persoMoi = usePersonnalisation((s) => s.p);
+  const perso = ami ? PERSO_AMI : persoMoi;
+  const [panneau, setPanneau] = useState(false);
+  const favoris = useMemo(() => jeuxMoi.filter((x) => x.favori), [jeuxMoi]);
+  const imagesFavoris = useImages(panneau || perso.jeuFond ? favoris.map((x) => x.appId) : []);
+  const heroFond = perso.fond === "jeu" && perso.jeuFond ? imagesDe(perso.jeuFond, imagesFavoris.data).hero : null;
+  const avatarAffiche = perso.avatarAnime && objets?.avatarAnime?.image ? objets.avatarAnime.image : j?.avatar;
 
   const minutesRecentes = r.reduce((s, x) => s + x.minutesDeuxSemaines, 0);
   const parRang = useMemo(() => {
@@ -100,23 +122,20 @@ function VueProfil({ ami }: { ami: string | null }) {
 
   return (
     <div className="profil" style={style}>
-      <div className="profil__fond" aria-hidden="true" />
-      <div className="profil__voile" aria-hidden="true" />
+      <FondProfil p={perso} objets={objets} hero={heroFond} palette={palette} />
       <Smoke variant="hero" className="profil__fumee" />
-      <Lucioles couleur={palette[0]} graine={ami ? Number(ami.slice(-6)) : 11} nombre={18} />
+      {perso.effet === "lucioles" && <Lucioles couleur={perso.accent} graine={ami ? Number(ami.slice(-6)) : 11} nombre={26} />}
+      <EffetProfil p={perso} />
 
       <div className="profil__contenu">
         <section className="profil__haut" aria-labelledby="profil-nom">
           <div className="profil__avatar">
-            <span className="profil__orbite" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
             <span className="profil__avatar-image" data-incline="">
-              {j?.avatar ? <img src={viaCache(j.avatar)} alt="" draggable={false} /> : <span className="profil__avatar-vide" />}
+              {avatarAffiche ? <img src={viaCache(avatarAffiche)} alt="" draggable={false} /> : <span className="profil__avatar-vide" />}
             </span>
-            {n && <LuneNiveau niveau={n.niveau} fraction={n.xpPourSuivant + (n.xp - n.xpNiveauActuel) > 0 ? (n.xp - n.xpNiveauActuel) / (n.xp - n.xpNiveauActuel + n.xpPourSuivant) : 1} reste={n.xpPourSuivant} />}
+            <CadreAvatar p={perso} objets={objets} />
+            {!ami && <PinceauMagique onClick={() => setPanneau(true)} />}
+            {n && <LuneNiveau pluie={perso.effet === "pluie"} niveau={n.niveau} fraction={n.xpPourSuivant + (n.xp - n.xpNiveauActuel) > 0 ? (n.xp - n.xpNiveauActuel) / (n.xp - n.xpNiveauActuel + n.xpPourSuivant) : 1} reste={n.xpPourSuivant} />}
           </div>
 
           <div className="profil__identite">
@@ -255,6 +274,7 @@ function VueProfil({ ami }: { ami: string | null }) {
           </div>
         </section>
       </div>
+      {panneau && !ami && <PanneauPersonnalisation objets={objets} favoris={favoris} images={imagesFavoris.data} onFermer={() => setPanneau(false)} />}
     </div>
   );
 }
@@ -273,12 +293,12 @@ const GOUTTES = [
   { left: 45, delai: 0.2, duree: 3.6, point: true },
 ];
 
-function LuneNiveau({ niveau, fraction, reste }: { niveau: number; fraction: number; reste: number }) {
+function LuneNiveau({ niveau, fraction, reste, pluie = true }: { niveau: number; fraction: number; reste: number; pluie?: boolean }) {
   const id = useId().replace(/:/g, "");
   const v = Math.min(1, Math.max(0, fraction));
   return (
     <div className="lune-niveau" title={`Niveau Steam ${niveau} · encore ${entier(reste)} XP pour le niveau ${niveau + 1}`}>
-      <div className="lune-niveau__pluie" aria-hidden="true">
+      <div className="lune-niveau__pluie" aria-hidden="true" hidden={!pluie}>
         {GOUTTES.map((g, i) => (
           <span
             key={i}

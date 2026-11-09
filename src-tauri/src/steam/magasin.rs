@@ -14,6 +14,8 @@ use crate::erreur::{Erreur, Resultat};
 pub struct Prix {
     /// Centimes.
     pub initial: u64,
+    /// Nom gardé tel quel en JSON (`final_`) : le front le lit sous ce nom.
+    #[serde(rename = "final_")]
     pub final_: u64,
     pub reduction: u32,
     /// « 19,57 € ».

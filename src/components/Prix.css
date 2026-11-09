@@ -36,12 +36,10 @@
 @keyframes reduction-pouls {
   0%,
   100% {
-    box-shadow: 0 0 10px rgba(255, 60, 80, 0.35);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 20px rgba(255, 60, 80, 0.75);
-    transform: scale(1.06);
+    transform: scale(1.07);
   }
 }
 @keyframes reduction-reflet {

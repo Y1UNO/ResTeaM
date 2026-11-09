@@ -579,6 +579,13 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         recents: jeux.filter((j) => j.minutesDeuxSemaines > 0),
       });
     }
+    case "objets_profil":
+      return enveloppe({
+        fond: { nom: "The Crossroads Between Realms", image: "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1145350/4c9456badc54af712d6cb4398ab4c194dc523ed1.jpg", videoWebm: "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1145350/6953b75620c178917da85926d91bade8ad7d1f38.webm", videoMp4: null },
+        miniFond: null,
+        cadre: { nom: "Ghostly Frame", image: "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1145350/7e753023f517ba01d4fd5d4031d69addb68751f5.png", videoWebm: null, videoMp4: null },
+        avatarAnime: null,
+      });
     case "amis_possedant":
       return ["76561198000000100", "76561198000000101", "76561198000000103"];
     case "patch_notes":

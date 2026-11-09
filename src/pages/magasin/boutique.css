@@ -767,3 +767,33 @@ html.defile .bgenre::before {
   color: var(--text-3);
   background: none;
 }
+.bfleches {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.bfleches button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line-3);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+.bfleches button:hover {
+  border-color: rgba(238, 242, 255, 0.4);
+  transform: scale(1.08);
+}
+.brangee {
+  scrollbar-width: none;
+}
+/* Panier plus grand dans les boutons Acheter. */
+.btn .icone-panier,
+.achat__ouvrir .icone-panier {
+  width: 24px;
+  height: 24px;
+}

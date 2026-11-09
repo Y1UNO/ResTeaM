@@ -1,0 +1,62 @@
+/* Menu du clic droit sur un jeu. */
+.menu-jeu {
+  position: fixed;
+  z-index: 70;
+  min-width: 230px;
+  padding: 6px;
+  border-radius: var(--radius-lg);
+  background: rgba(16, 16, 20, 0.96);
+  border: 1px solid var(--line-active);
+  box-shadow: var(--shadow-2), 0 0 30px rgba(238, 242, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  animation: menu-jeu-ouvre 0.18s var(--ease) both;
+  transform-origin: top left;
+}
+@keyframes menu-jeu-ouvre {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-4px);
+  }
+}
+.menu-jeu__titre {
+  padding: 8px 10px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+.menu-jeu__item {
+  padding: 9px 10px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-2);
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.menu-jeu__item:hover,
+.menu-jeu__item:focus-visible {
+  background: var(--fill-active);
+  color: var(--text-1);
+}
+.menu-jeu__item.is-principal {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.menu-jeu__item.is-danger:hover {
+  background: rgba(240, 138, 116, 0.14);
+  color: #ffd9cf;
+}
+.menu-jeu__separateur {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--line-2);
+}

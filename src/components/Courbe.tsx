@@ -74,7 +74,6 @@ export function Courbe({ valeurs, couleur = "#eef2ff", hauteur = 120, max, atten
           <>
             <path className="courbe__aire" style={{ d: `path("${aire}")` } as CSSProperties} fill={`url(#aire${id})`} />
             <path className="courbe__ligne" style={{ d: `path("${ligne}")` } as CSSProperties} stroke={couleur} />
-            <path className="courbe__passage" style={{ d: `path("${ligne}")` } as CSSProperties} stroke={`url(#passage${id})`} />
           </>
         ) : (
           <line className="courbe__base" x1="0" x2={L} y1={H - 8} y2={H - 8} />

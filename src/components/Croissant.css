@@ -14,9 +14,8 @@
 }
 /* Remplissage à l'arrivée, puis lueur qui respire. */
 .croissant__arc {
-  animation:
-    croissant-remplit 1.2s var(--ease) both,
-    croissant-lueur 3.6s ease-in-out 1.2s infinite;
+  filter: drop-shadow(0 0 5px rgba(238, 242, 255, 0.6));
+  animation: croissant-remplit 1.2s var(--ease) both;
 }
 @keyframes croissant-remplit {
   from {
@@ -48,9 +47,8 @@
 
 /* ——— 100 % : lune bleue, brillante, avec halo et éclats ——— */
 .croissant.is-complet .croissant__arc {
-  animation:
-    croissant-remplit 1.4s var(--ease) both,
-    croissant-lueur-bleue 2.6s ease-in-out 1.4s infinite;
+  filter: drop-shadow(0 0 9px rgba(124, 200, 255, 0.95));
+  animation: croissant-remplit 1.4s var(--ease) both;
 }
 @keyframes croissant-lueur-bleue {
   0%,

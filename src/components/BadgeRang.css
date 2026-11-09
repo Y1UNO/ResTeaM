@@ -194,19 +194,18 @@
   inset: 12%;
   z-index: 3;
   border-radius: 50%;
-  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
-  background-size: 250% 100%;
+  background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.55), transparent 45%);
   mix-blend-mode: overlay;
   pointer-events: none;
   animation: br-reflet 4.5s ease-in-out infinite;
 }
 @keyframes br-reflet {
   0%,
-  60% {
-    background-position: 120% 0;
-  }
   100% {
-    background-position: -120% 0;
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
   }
 }
 .badge-rang.is-anime .badge-rang__aura {

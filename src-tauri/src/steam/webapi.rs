@@ -751,3 +751,58 @@ mod tests {
         assert!(!a.is_empty());
     }
 }
+
+// ——— Objets de profil Steam (fond, cadre, avatar animé) ———
+
+const CDN_OBJETS: &str = "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/";
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ObjetProfil {
+    pub nom: String,
+    /// Image (fond, cadre en PNG animé, avatar en GIF).
+    pub image: Option<String>,
+    pub video_webm: Option<String>,
+    pub video_mp4: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ObjetsProfil {
+    pub fond: Option<ObjetProfil>,
+    pub mini_fond: Option<ObjetProfil>,
+    pub cadre: Option<ObjetProfil>,
+    pub avatar_anime: Option<ObjetProfil>,
+}
+
+fn objet(v: &serde_json::Value, image: &str) -> Option<ObjetProfil> {
+    let chemin = |c: &str| v[c].as_str().filter(|s| !s.is_empty()).map(|s| format!("{CDN_OBJETS}{s}"));
+    let image = chemin(image).or_else(|| chemin("image_large"));
+    let video_webm = chemin("movie_webm");
+    let video_mp4 = chemin("movie_mp4");
+    if image.is_none() && video_webm.is_none() && video_mp4.is_none() {
+        return None;
+    }
+    Some(ObjetProfil {
+        nom: v["item_title"].as_str().or(v["name"].as_str()).unwrap_or_default().to_string(),
+        image,
+        video_webm,
+        video_mp4,
+    })
+}
+
+impl ClientSteam {
+    /// Objets de profil équipés (publics) : fond (souvent une vidéo), mini-fond,
+    /// cadre d'avatar et avatar animé, achetés dans la boutique des points Steam.
+    pub async fn objets_profil(&self, steam_id: &str) -> Resultat<ObjetsProfil> {
+        let url = Self::url("IPlayerService/GetProfileItemsEquipped/v1/", &[("steamid", steam_id), ("language", "french")])?;
+        let corps: serde_json::Value = self.obtenir(url).await?;
+        let r = &corps["response"];
+        Ok(ObjetsProfil {
+            fond: objet(&r["profile_background"], "image_large"),
+            mini_fond: objet(&r["mini_profile_background"], "image_large"),
+            cadre: objet(&r["avatar_frame"], "image_small"),
+            avatar_anime: objet(&r["animated_avatar"], "image_small"),
+        })
+    }
+}

@@ -320,3 +320,8 @@ export type Classe = { rang: number; appId: number; rangAvant: number; valeur: n
 export type Classements = { plusJoues: Classe[]; meilleuresVentes: Classe[] };
 export type Releve = { le: number; joueurs: number };
 export type EnLigne = { joueurs: number; releves: Releve[] };
+
+// ——— Objets de profil Steam ———
+
+export type ObjetProfil = { nom: string; image: string | null; videoWebm: string | null; videoMp4: string | null };
+export type ObjetsProfil = { fond: ObjetProfil | null; miniFond: ObjetProfil | null; cadre: ObjetProfil | null; avatarAnime: ObjetProfil | null };

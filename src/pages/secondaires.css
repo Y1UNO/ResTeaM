@@ -764,3 +764,44 @@ html.defile .dl-zone__fleche,
 html.defile .dl-zone__anneau {
   animation-play-state: paused;
 }
+
+/* Recherche : un peu plus grand et plus aéré (demande de Tom). */
+.recherche {
+  gap: 44px;
+}
+.recherche .secondaire__bloc {
+  gap: 18px;
+}
+.r-jeux {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 22px;
+}
+.r-jeu strong {
+  font-size: 14px;
+}
+.r-magasin {
+  grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+  gap: 12px 16px;
+}
+.r-magasin__ligne {
+  padding: 10px;
+  border-radius: var(--radius-lg);
+}
+.r-magasin__ligne .brecherche__image {
+  width: 184px;
+  height: 86px;
+  border-radius: 12px;
+}
+.r-magasin__ligne .brecherche__texte strong {
+  font-size: 16px;
+}
+.r-magasin__ligne .brecherche__texte span {
+  font-size: 13px;
+}
+.r-ami {
+  padding: 10px 20px 10px 10px;
+}
+.r-ami__avatar {
+  width: 42px;
+  height: 42px;
+}

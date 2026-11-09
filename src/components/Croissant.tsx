@@ -50,7 +50,7 @@ export function Croissant({ valeur, texte, taille = 84 }: CroissantProps) {
             <stop offset="0.35" stopColor="#fff" stopOpacity="0" />
             <stop offset="0.5" stopColor="#fff" stopOpacity={complet ? 0.95 : 0.7} />
             <stop offset="0.65" stopColor="#fff" stopOpacity="0" />
-            <animateTransform attributeName="gradientTransform" type="rotate" from="0 0.5 0.5" to="360 0.5 0.5" dur={complet ? "3.2s" : "5.5s"} repeatCount="indefinite" />
+            {complet && <animateTransform attributeName="gradientTransform" type="rotate" from="0 0.5 0.5" to="360 0.5 0.5" dur="3.2s" repeatCount="indefinite" />}
           </linearGradient>
         </defs>
         <g mask={`url(#m${id})`}>

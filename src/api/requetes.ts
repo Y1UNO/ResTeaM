@@ -282,3 +282,13 @@ export function useProprietesJeu(appId: number | null) {
 export function useDlcJeu(appId: number | null) {
   return useQuery({ queryKey: ["dlc", appId], queryFn: () => api.dlcJeu(appId as number), enabled: appId != null, staleTime: 30 * 60_000 });
 }
+
+/** Objets de profil Steam équipés (fond animé, cadre, avatar animé). */
+export function useObjetsProfil(steamId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["objets-profil", steamId],
+    queryFn: () => api.objetsProfil(steamId as string),
+    enabled: !!steamId,
+    staleTime: 30 * 60_000,
+  });
+}

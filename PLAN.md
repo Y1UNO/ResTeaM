@@ -510,6 +510,22 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 - **Icônes dans la DA** (`src/components/icons.tsx`) : bibliothèque avec un croissant, sac du magasin, barres et étoile, croissant et étoile pour les souhaits, loupe-croissant, flèche dans un engrenage, icône Communauté prête. Petits mouvements au survol. Les boutons de la fenêtre sont redessinés : la croix tourne, le cadre grandit.
 - Ta vidéo (Steam qui défile) a été lue en extrayant des images avec ffmpeg. **Pour le lot suivant** : plus de types de sections façon Steam (carrousels à flèches, « Car tu as joué à… », « Moins de 10 € », rangées par tag en bas de page).
 
+### Lot 3 — Profil personnalisable, prix NaN, fluidité, clic droit (9 novembre 2026)
+
+- **Prix « NaN,NaN € »** (Recherche, DLC) : serde renommait `final_` en `final`. Le nom est fixé (`#[serde(rename = "final_")]`), avec un test ; caches `produit2:` et `fiche3:`.
+- **Défilement** :
+  - retrait du mode « défilement » (une classe sur `<html>` qui recalculait toute la page) et de `content-visibility` sur les sections, qui faisait sauter la page ;
+  - les animations qui redessinaient à chaque image sont remplacées : ombres et filtres qui pulsaient, reflets en dégradé, gradient SVG animé de la courbe ;
+  - la rangée « Gratuits » ne détourne plus la molette : carrousel à flèches, comme Steam.
+- **Classements** : retour aux barres, en plus vivant. Elles poussent à l'arrivée, une vague parcourt les barres remplies, les cases vides respirent, la dernière pulse, une lueur balaie la carte. Tout est en transform et opacité.
+- **Panier** plus grand dans les boutons Acheter ; **Recherche** plus grande et plus aérée.
+- **Clic droit sur un jeu de la bibliothèque** (`src/pages/bibliotheque/MenuJeu.tsx`) : Jouer, Installer ou Voir le téléchargement, Propriétés, Fiche, Ouvrir le dossier, Page dans Steam, Désinstaller.
+- **Profil personnalisable** (`src/pages/profil/Personnalisation.tsx`) :
+  - objets Steam équipés lus par `IPlayerService/GetProfileItemsEquipped` (public) : fond (vidéo webm/mp4), cadre d'avatar, avatar animé. Ils s'affichent aussi sur le profil des amis ;
+  - **pinceau magique** sur son avatar : panneau pour choisir le fond (Steam, couleurs de l'avatar, nébuleuse, aurore, affiche d'un favori), le cadre (Steam, lunes en orbite, lianes, engrenages, aura, aucun), l'avatar animé, l'ambiance (pluie lunaire, lucioles, étoiles filantes, calme) et une couleur ;
+  - les choix ResTeaM sont gardés sur ce PC ; les amis voient les objets Steam, car il faudrait un serveur pour partager les choix ResTeaM ;
+  - CSP : `media-src` ouvert aux CDN d'objets Steam (`cdn.cloudflare/akamai/fastly.steamstatic.com`).
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

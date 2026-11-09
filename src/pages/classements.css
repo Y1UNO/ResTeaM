@@ -313,21 +313,28 @@
     radial-gradient(ellipse at 85% 0%, rgba(159, 216, 255, 0.1), transparent 55%),
     var(--surface-2);
 }
+/* Lueur qui balaie la carte : un calque qui glisse (transform), rien n'est redessiné. */
 .en-jeu::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 40%, rgba(159, 216, 255, 0.06) 50%, transparent 60%);
-  background-size: 250% 100%;
-  animation: en-jeu-reflet 6s ease-in-out infinite;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  background: linear-gradient(100deg, transparent, rgba(159, 216, 255, 0.07), transparent);
+  transform: translateX(-120%);
+  animation: en-jeu-reflet 7s ease-in-out infinite;
   pointer-events: none;
+  will-change: transform;
 }
 @keyframes en-jeu-reflet {
-  from {
-    background-position: 130% 0;
+  0%,
+  15% {
+    transform: translateX(-120%);
   }
-  to {
-    background-position: -130% 0;
+  85%,
+  100% {
+    transform: translateX(320%);
   }
 }
 .en-jeu__titre {
@@ -392,4 +399,97 @@ html.defile .en-jeu::before {
 .en-jeu .en-jeu__courbe {
   height: auto;
   display: block;
+}
+
+/* ——— Barres vivantes (style d'avant, en plus animé) ——— */
+.en-jeu__barres {
+  position: relative;
+  flex: 1;
+  min-width: 360px;
+  height: 120px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+.en-jeu__barre {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, rgba(159, 216, 255, 0.55), rgba(159, 216, 255, 0.18));
+  transform-origin: bottom;
+  will-change: transform;
+  animation:
+    en-jeu-pousse 0.8s var(--ease) calc(var(--i) * 14ms) both,
+    en-jeu-vague 3.2s ease-in-out calc(0.8s + var(--i) * 70ms) infinite;
+}
+@keyframes en-jeu-pousse {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes en-jeu-vague {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.07);
+  }
+}
+/* Cases sans relevé : elles respirent en vague, de gauche à droite. */
+.en-jeu__barre.is-vide {
+  background: rgba(238, 242, 255, 0.1);
+  animation:
+    en-jeu-pousse 0.8s var(--ease) calc(var(--i) * 14ms) both,
+    en-jeu-respire 2.6s ease-in-out calc(var(--i) * 55ms) infinite;
+}
+@keyframes en-jeu-respire {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* Dernier relevé : blanc lumineux qui pulse. */
+.en-jeu__barre.is-dernier {
+  position: relative;
+  background: linear-gradient(180deg, #fff, #9fd8ff);
+  box-shadow: 0 0 14px rgba(159, 216, 255, 0.7);
+}
+.en-jeu__barre.is-dernier::after {
+  content: "";
+  position: absolute;
+  inset: -4px -3px 0;
+  border-radius: 4px 4px 0 0;
+  background: rgba(159, 216, 255, 0.45);
+  filter: blur(6px);
+  animation: en-jeu-dernier 1.6s ease-in-out infinite;
+}
+@keyframes en-jeu-dernier {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* Ligne lumineuse qui passe sur les barres. */
+.en-jeu__balayage {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 8%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  transform: translateX(-100%);
+  animation: en-jeu-balaye 4.5s ease-in-out 1s infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes en-jeu-balaye {
+  to {
+    transform: translateX(1250%);
+  }
 }

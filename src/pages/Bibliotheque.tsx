@@ -9,6 +9,7 @@ import { degradeJaquette, imagesDe } from "../lib/images";
 import { rangDepuisMinutes } from "../lib/rangs";
 import { useInstallation } from "../installation/store";
 import { BadgeRang } from "../components/BadgeRang";
+import { MenuJeu } from "./bibliotheque/MenuJeu";
 import "./pages.css";
 import "./Bibliotheque.css";
 
@@ -31,6 +32,9 @@ export function Bibliotheque() {
   const [tri, setTri] = useState<Tri>("az");
   const ouvrirChoix = useInstallation((s) => s.ouvrirChoix);
   const ouvrirSuivi = useInstallation((s) => s.ouvrirSuivi);
+  const [menu, setMenu] = useState<{ jeu: JeuBibliotheque; x: number; y: number } | null>(null);
+  const ouvrirMenu = useCallback((jeu: JeuBibliotheque, x: number, y: number) => setMenu({ jeu, x, y }), []);
+  const fermerMenu = useCallback(() => setMenu(null), []);
 
   // État d'installation en direct (le disque fait foi). Un jeu dont l'état n'a pas
   // changé garde le même objet, pour que sa tuile ne se redessine pas à chaque relevé.
@@ -190,10 +194,11 @@ export function Bibliotheque() {
 
         <div key={`${filtre}-${tri}`} className="biblio__grille">
           {visibles.map((j) => (
-            <Tuile key={j.appId} jeu={j} jaquette={imagesDe(j.appId, images.data).jaquettePetite ?? null} onAction={suivre} />
+            <Tuile key={j.appId} jeu={j} jaquette={imagesDe(j.appId, images.data).jaquettePetite ?? null} onAction={suivre} onMenu={ouvrirMenu} />
           ))}
         </div>
       </div>
+      {menu && <MenuJeu jeu={menu.jeu} x={menu.x} y={menu.y} images={images.data} onFermer={fermerMenu} />}
     </div>
   );
 }
@@ -202,11 +207,14 @@ const Tuile = memo(function Tuile({
   jeu,
   jaquette,
   onAction,
+  onMenu,
 }: {
   jeu: JeuBibliotheque;
   jaquette: string | null;
   /** `choix` : ouvrir le choix du disque ; sinon le suivi du téléchargement. */
   onAction: (jeu: JeuBibliotheque, choix: boolean) => void;
+  /** Clic droit : menu du jeu (propriétés, dossier, désinstaller…). */
+  onMenu: (jeu: JeuBibliotheque, x: number, y: number) => void;
 }) {
   const navigate = useNavigate();
   const [ratee, setRatee] = useState(false);
@@ -224,7 +232,13 @@ const Tuile = memo(function Tuile({
   };
 
   return (
-    <div className="tuile">
+    <div
+      className="tuile"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onMenu(jeu, e.clientX, e.clientY);
+      }}
+    >
       <div className="tuile__cadre">
       <button
         type="button"

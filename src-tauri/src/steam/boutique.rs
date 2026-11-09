@@ -18,6 +18,8 @@ const CDN: &str = "https://shared.akamai.steamstatic.com/store_item_assets/";
 #[serde(rename_all = "camelCase")]
 pub struct PrixProduit {
     /// Centimes.
+    /// Nom gardé tel quel en JSON (`final_`) : le front le lit sous ce nom.
+    #[serde(rename = "final_")]
     pub final_: u64,
     pub initial: u64,
     pub reduction: u32,
@@ -323,6 +325,10 @@ mod tests {
         let tags = HashMap::from([(19, "Action".to_string()), (9, "Stratégie".to_string())]);
         let p = produit(&it, &tags).unwrap();
         assert_eq!(p.prix.as_ref().unwrap().texte_final, "47,99 €");
+        // Le front lit `final_` (bug « NaN,NaN € » quand serde renommait en `final`).
+        let json = serde_json::to_value(p.prix.as_ref().unwrap()).unwrap();
+        assert_eq!(json["final_"], 4799);
+        assert_eq!(json["initial"], 7999);
         assert_eq!(p.prix.as_ref().unwrap().reduction, 40);
         assert_eq!(p.avis.unwrap().libelle, "Très positives");
         assert_eq!(p.tags, vec!["Action", "Stratégie"]);

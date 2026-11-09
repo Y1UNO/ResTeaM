@@ -1,0 +1,509 @@
+/* Personnalisation du profil : fonds, cadres, effets et panneau. */
+
+/* ——— Fonds ——— */
+.fond-profil {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 620px;
+  overflow: hidden;
+  pointer-events: none;
+  animation: fond-profil-entre 1s ease both;
+}
+@keyframes fond-profil-entre {
+  from {
+    opacity: 0;
+  }
+}
+.fond-profil__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+}
+.fond-profil__affiche {
+  background: center 25% / cover no-repeat;
+  filter: blur(6px) saturate(1.1);
+  transform: scale(1.04);
+  opacity: 0.45;
+}
+.fond-profil.is-avatar {
+  background:
+    radial-gradient(ellipse at 70% 30%, color-mix(in srgb, var(--c1) 65%, transparent), transparent 58%),
+    radial-gradient(ellipse at 92% 75%, color-mix(in srgb, var(--c2) 35%, transparent), transparent 55%);
+}
+.fond-profil__nebuleuse {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform;
+}
+.fond-profil__nebuleuse.n1 {
+  left: 40%;
+  top: -20%;
+  width: 50%;
+  height: 90%;
+  background: color-mix(in srgb, var(--accent-profil) 55%, transparent);
+  animation: nebuleuse 26s ease-in-out infinite;
+}
+.fond-profil__nebuleuse.n2 {
+  left: 62%;
+  top: 20%;
+  width: 40%;
+  height: 70%;
+  background: rgba(150, 90, 255, 0.4);
+  animation: nebuleuse 32s ease-in-out infinite reverse;
+}
+.fond-profil__nebuleuse.n3 {
+  left: 20%;
+  top: 30%;
+  width: 34%;
+  height: 60%;
+  background: rgba(60, 120, 255, 0.28);
+  animation: nebuleuse 38s ease-in-out infinite;
+}
+@keyframes nebuleuse {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-60px, 30px) scale(1.15);
+  }
+}
+.fond-profil__aurore {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 46%;
+  border-radius: 50%;
+  filter: blur(50px);
+  will-change: transform;
+}
+.fond-profil__aurore.a1 {
+  top: 4%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-profil) 60%, transparent), rgba(63, 224, 138, 0.35), transparent);
+  animation: aurore 18s ease-in-out infinite;
+}
+.fond-profil__aurore.a2 {
+  top: 26%;
+  background: linear-gradient(90deg, transparent, rgba(160, 120, 255, 0.35), color-mix(in srgb, var(--accent-profil) 40%, transparent), transparent);
+  animation: aurore 24s ease-in-out infinite reverse;
+}
+@keyframes aurore {
+  0%,
+  100% {
+    transform: translateX(-6%) skewY(-4deg);
+  }
+  50% {
+    transform: translateX(6%) skewY(4deg);
+  }
+}
+.fond-profil__voile {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(9, 9, 10, 0.88) 0%, rgba(9, 9, 10, 0.35) 55%, rgba(9, 9, 10, 0.15) 100%),
+    linear-gradient(180deg, transparent 55%, var(--bg) 100%);
+}
+
+/* ——— Cadres autour de l'avatar (168 px) ——— */
+.cadre-avatar {
+  position: absolute;
+  inset: -16px;
+  z-index: 2;
+  pointer-events: none;
+}
+.cadre-avatar--steam {
+  inset: -22%;
+  width: 144%;
+  height: 144%;
+  object-fit: contain;
+}
+.cadre-avatar__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-profil) 60%, transparent));
+  animation: cadre-tourne 40s linear infinite;
+}
+.cadre-avatar.is-engrenages .cadre-avatar__svg {
+  animation-duration: 28s;
+}
+@keyframes cadre-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.cadre-avatar__feuille {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: cadre-feuille 3s ease-in-out infinite;
+}
+@keyframes cadre-feuille {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.cadre-avatar__orbite {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent-profil) 25%, transparent);
+  animation: cadre-tourne 26s linear infinite;
+}
+.cadre-avatar__orbite span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  border-radius: 50%;
+  background: var(--accent-profil);
+  box-shadow: 0 0 12px var(--accent-profil);
+  transform: rotate(var(--a)) translateX(101px);
+}
+.cadre-avatar__orbite span:nth-child(1) {
+  --a: 20deg;
+}
+.cadre-avatar__orbite span:nth-child(2) {
+  --a: 150deg;
+  opacity: 0.7;
+  transform: rotate(var(--a)) translateX(101px) scale(0.7);
+}
+.cadre-avatar__orbite span:nth-child(3) {
+  --a: 255deg;
+  opacity: 0.5;
+  transform: rotate(var(--a)) translateX(101px) scale(0.5);
+}
+.cadre-avatar__aura {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--accent-profil), transparent 35%, var(--accent-profil) 60%, transparent 85%, var(--accent-profil));
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 64%);
+  mask: radial-gradient(circle, transparent 62%, #000 64%);
+  filter: blur(1px) drop-shadow(0 0 10px var(--accent-profil));
+  animation: cadre-tourne 6s linear infinite;
+}
+
+/* ——— Étoiles filantes ——— */
+.effet-etoiles {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 520px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.effet-etoiles span {
+  position: absolute;
+  width: 140px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--accent-profil), #fff);
+  border-radius: 2px;
+  opacity: 0;
+  transform: rotate(-20deg);
+  animation: etoile-filante 7s ease-in infinite;
+}
+@keyframes etoile-filante {
+  0%,
+  80% {
+    opacity: 0;
+    transform: rotate(-20deg) translateX(0);
+  }
+  84% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-20deg) translateX(-420px);
+  }
+}
+
+/* ——— Pinceau magique ——— */
+.pinceau {
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(238, 242, 255, 0.35);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25), rgba(14, 14, 17, 0.9));
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(159, 216, 255, 0.35);
+  transition: transform 0.35s var(--ease);
+}
+.pinceau:hover {
+  transform: rotate(-14deg) scale(1.12);
+}
+.pinceau svg {
+  animation: pinceau-peint 2.6s ease-in-out infinite;
+}
+@keyframes pinceau-peint {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-12deg) translate(-1px, 1px);
+  }
+}
+.pinceau__etincelle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px #9fd8ff;
+  opacity: 0;
+  animation: pinceau-etincelle 2.4s ease-out infinite;
+}
+.pinceau__etincelle.e1 {
+  left: 6px;
+  bottom: 6px;
+}
+.pinceau__etincelle.e2 {
+  left: 2px;
+  bottom: 14px;
+  animation-delay: 0.8s;
+}
+.pinceau__etincelle.e3 {
+  left: 12px;
+  bottom: 2px;
+  animation-delay: 1.6s;
+}
+@keyframes pinceau-etincelle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-10px, 10px) scale(1);
+  }
+}
+
+/* ——— Panneau ——— */
+.perso {
+  position: fixed;
+  z-index: 50;
+  top: 40px;
+  right: 24px;
+  bottom: 24px;
+  width: 400px;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: var(--radius-2xl);
+  background: rgba(14, 14, 17, 0.94);
+  border: 1px solid var(--line-active);
+  box-shadow: var(--shadow-3);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: perso-entre 0.4s var(--ease) both;
+}
+.perso.is-sortie {
+  animation: perso-sort 0.32s ease both;
+}
+@keyframes perso-entre {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+@keyframes perso-sort {
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+.perso__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.perso__entete strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+}
+.perso__note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-4);
+}
+.perso__groupe {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.perso__titre {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-kicker);
+}
+.perso__options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.perso__option {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-2);
+  font-size: 11.5px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.perso__option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(238, 242, 255, 0.35);
+}
+.perso__option.is-actif {
+  border-color: var(--accent-profil);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent-profil) 35%, transparent);
+  color: var(--text-1);
+}
+.perso__option:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.perso__apercu {
+  position: relative;
+  display: block;
+  height: 54px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #18181b;
+}
+.perso__apercu img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.apercu-avatar {
+  background: radial-gradient(circle at 70% 30%, rgba(159, 216, 255, 0.6), #141418 70%);
+}
+.apercu-nebuleuse {
+  background: radial-gradient(circle at 60% 30%, rgba(159, 216, 255, 0.6), transparent 50%), radial-gradient(circle at 25% 70%, rgba(150, 90, 255, 0.5), transparent 55%), #0e0e14;
+}
+.apercu-aurore {
+  background: linear-gradient(160deg, transparent 20%, rgba(63, 224, 138, 0.5) 40%, rgba(160, 120, 255, 0.45) 60%, transparent 80%), #0e0e14;
+}
+.apercu-jeu {
+  background: linear-gradient(135deg, #2a2a33, #18181b);
+}
+.apercu-lune,
+.apercu-lianes,
+.apercu-engrenages,
+.apercu-aura,
+.apercu-aucun {
+  background: radial-gradient(circle, #2c3a4a 0 16px, transparent 17px), #141418;
+}
+.apercu-lune::after,
+.apercu-lianes::after,
+.apercu-engrenages::after,
+.apercu-aura::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px;
+  border-radius: 50%;
+}
+.apercu-lune::after {
+  border: 1px solid rgba(159, 216, 255, 0.5);
+  box-shadow: 16px -10px 0 -17px #9fd8ff;
+}
+.apercu-lianes::after {
+  border: 2px dashed rgba(63, 224, 138, 0.8);
+}
+.apercu-engrenages::after {
+  border: 3px dotted rgba(238, 242, 255, 0.8);
+}
+.apercu-aura::after {
+  border: 3px solid transparent;
+  background: conic-gradient(#9fd8ff, transparent, #c9a6ff, transparent, #9fd8ff) border-box;
+  -webkit-mask: radial-gradient(circle, transparent 16px, #000 17px);
+  mask: radial-gradient(circle, transparent 16px, #000 17px);
+}
+.apercu-pluie {
+  background: repeating-linear-gradient(100deg, transparent 0 8px, rgba(238, 242, 255, 0.4) 8px 9px), #141418;
+}
+.apercu-lucioles {
+  background: radial-gradient(circle at 20% 30%, #fff 0 1.5px, transparent 3px), radial-gradient(circle at 70% 60%, #9fd8ff 0 1.5px, transparent 3px), radial-gradient(circle at 45% 80%, #fff 0 1px, transparent 2px), #141418;
+}
+.apercu-etoiles {
+  background: linear-gradient(160deg, transparent 40%, #fff 48%, transparent 52%), #141418;
+}
+.apercu-calme {
+  background: #141418;
+}
+.perso__jeux {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.perso__jeu {
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: #18181b center / cover no-repeat;
+  cursor: pointer;
+}
+.perso__jeu.is-actif {
+  border-color: var(--accent-profil);
+}
+.perso__case {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.perso__couleurs {
+  display: flex;
+  gap: 10px;
+}
+.perso__couleur {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.perso__couleur:hover {
+  transform: scale(1.12);
+}
+.perso__couleur.is-actif {
+  border-color: #fff;
+  box-shadow: 0 0 12px currentColor;
+}

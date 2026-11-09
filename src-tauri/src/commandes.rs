@@ -25,7 +25,7 @@ use crate::steam::pc::{self, ConfigPc};
 use crate::steam::redemarrage::{FileSteam, Redemarrage};
 use crate::steam::local::{self, Collections, DossierBibliotheque, JeuInstalle};
 use crate::steam::webapi::{Actu, JeuPossede, ListeAmis, NiveauBadges, SuccesJeu};
-use crate::steam::webapi::{ClientSteam, Joueur};
+use crate::steam::webapi::{ClientSteam, Joueur, ObjetsProfil};
 
 /// Durée de vie en cache du profil de l'utilisateur.
 const TTL_JOUEUR: i64 = 5 * 60;
@@ -431,7 +431,7 @@ const TTL_VITRINE: i64 = 30 * 60;
 /// Fiche du magasin d'un jeu (description, prix, médias, configuration requise).
 #[tauri::command]
 pub async fn fiche_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<FicheJeu>> {
-    etat.cache.avec_cache(&format!("fiche2:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await
+    etat.cache.avec_cache(&format!("fiche3:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await
 }
 
 /// Évaluations des joueurs (toutes langues et en français).
@@ -467,7 +467,7 @@ async fn produits_caches(etat: &EtatApp, app_ids: &[u32]) -> Resultat<Vec<Produi
     let mut connus = HashMap::new();
     let mut manquants = Vec::new();
     for id in app_ids.iter().copied().take(100) {
-        match etat.cache.frais::<Produit>(&format!("produit:{id}"))? {
+        match etat.cache.frais::<Produit>(&format!("produit2:{id}"))? {
             Some(p) => {
                 connus.insert(id, p);
             }
@@ -477,7 +477,7 @@ async fn produits_caches(etat: &EtatApp, app_ids: &[u32]) -> Resultat<Vec<Produi
     if !manquants.is_empty() {
         let tags = etat.cache.avec_cache("tags-fr", TTL_TAGS, || etat.steam.noms_tags()).await?.donnees;
         for p in etat.steam.produits(&manquants, &tags).await? {
-            etat.cache.ranger(&format!("produit:{}", p.app_id), &p, TTL_PRODUIT)?;
+            etat.cache.ranger(&format!("produit2:{}", p.app_id), &p, TTL_PRODUIT)?;
             connus.insert(p.app_id, p);
         }
     }
@@ -735,7 +735,7 @@ fn nom_simple(s: &str) -> String {
 /// catégorie DLC (gardée si le nom du DLC commence par celui du jeu).
 #[tauri::command]
 pub async fn dlc_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Vec<Produit>> {
-    let fiche = etat.cache.avec_cache(&format!("fiche2:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await?.donnees;
+    let fiche = etat.cache.avec_cache(&format!("fiche3:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await?.donnees;
     if !fiche.dlc.is_empty() {
         return produits_caches(&etat, &fiche.dlc).await;
     }
@@ -750,4 +750,15 @@ pub async fn dlc_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Vec<Prod
         .donnees;
     let produits = produits_caches(&etat, &ids).await?;
     Ok(produits.into_iter().filter(|p| p.app_id != app_id && nom_simple(&p.nom).starts_with(&base)).collect())
+}
+
+/// Objets de profil Steam équipés (le sien ou ceux d'un ami), cache d'une heure.
+#[tauri::command]
+pub async fn objets_profil(etat: State<'_, EtatApp>, steam_id: String) -> Resultat<Donnee<ObjetsProfil>> {
+    if steam_id.len() != 17 || !steam_id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(Erreur::Interne("identifiant Steam invalide".into()));
+    }
+    etat.cache
+        .avec_cache(&format!("objets-profil:{steam_id}"), 60 * 60, || etat.steam.objets_profil(&steam_id))
+        .await
 }

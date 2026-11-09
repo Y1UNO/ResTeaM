@@ -20,6 +20,7 @@ use crate::steam::boutique::{Produit, Souhait};
 use crate::steam::classements::{self, Classements, EnLigne, Releve};
 use crate::steam::magasin::{AvisJeu, FicheJeu, VitrineMagasin};
 use crate::steam::notes::{self, PatchNotes};
+use crate::steam::parametres::{self, ParametresSteam, ReglageSteam};
 use crate::steam::proprietes::{self, Proprietes, Reglage};
 use crate::steam::pc::{self, ConfigPc};
 use crate::steam::redemarrage::{FileSteam, Redemarrage};
@@ -712,6 +713,86 @@ pub async fn regler_jeu(app: AppHandle, etat: State<'_, EtatApp>, demande: Deman
     }
     etat.redemarrage.ajouter_reglage(&app, r);
     Ok(etat.redemarrage.lire())
+}
+
+// ——— Paramètres de Steam ———
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ParametresSteamEtat {
+    pub parametres: ParametresSteam,
+    /// Changements en attente du prochain redémarrage de Steam.
+    pub en_attente: Option<ReglageSteam>,
+    pub file: FileSteam,
+}
+
+/// Paramètres de Steam lus sur le disque, et ceux en attente dans la file.
+#[tauri::command]
+pub async fn parametres_steam(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<ParametresSteamEtat> {
+    let session = session_requise(&app)?;
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    let parametres = tauri::async_runtime::spawn_blocking(move || parametres::lire(&steam, &session.steam_id))
+        .await
+        .map_err(|e| Erreur::Interne(e.to_string()))?;
+    let file = etat.redemarrage.lire();
+    Ok(ParametresSteamEtat { parametres, en_attente: file.reglage_steam.clone(), file })
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DemandeReglageSteam {
+    pub limite_kbps: Option<u32>,
+    pub telechargements_en_jeu: Option<bool>,
+    pub ralentir_streaming: Option<bool>,
+    pub overlay: Option<bool>,
+}
+
+/// Met des paramètres de Steam dans la file : Steam redémarre caché (après le jeu
+/// en cours) et ils sont écrits pendant qu'il est fermé.
+#[tauri::command]
+pub async fn regler_steam(app: AppHandle, etat: State<'_, EtatApp>, demande: DemandeReglageSteam) -> Resultat<FileSteam> {
+    let session = session_requise(&app)?;
+    let r = ReglageSteam {
+        compte: session.steam_id,
+        limite_kbps: demande.limite_kbps,
+        telechargements_en_jeu: demande.telechargements_en_jeu,
+        ralentir_streaming: demande.ralentir_streaming,
+        overlay: demande.overlay,
+    };
+    r.valider()?;
+    if !r.vide() {
+        etat.redemarrage.ajouter_reglage_steam(&app, r);
+    }
+    Ok(etat.redemarrage.lire())
+}
+
+/// Retire les paramètres de Steam en attente.
+#[tauri::command]
+pub fn annuler_reglage_steam(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<FileSteam> {
+    etat.redemarrage.annuler_reglage_steam(&app)?;
+    Ok(etat.redemarrage.lire())
+}
+
+/// Démarrage de Steam avec Windows : appliqué tout de suite (registre de l'utilisateur).
+#[tauri::command]
+pub fn steam_au_demarrage(actif: bool) -> Resultat<bool> {
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    parametres::regler_demarrage_windows(&steam, actif)?;
+    Ok(parametres::demarrage_windows())
+}
+
+/// Ouvre un dossier de bibliothèque de Steam dans l'Explorateur (seulement ceux
+/// déclarés dans `libraryfolders.vdf`).
+#[tauri::command]
+pub fn ouvrir_bibliotheque_steam(app: AppHandle, chemin: String) -> Resultat<()> {
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    let connu = local::dossiers_bibliotheque(&steam).into_iter().any(|b| b.chemin == chemin);
+    if !connu {
+        return Err(Erreur::Interne("dossier inconnu".into()));
+    }
+    app.opener()
+        .open_path(std::path::Path::new(&chemin).join("steamapps").to_string_lossy(), None::<&str>)
+        .map_err(|_| Erreur::Interne("impossible d'ouvrir le dossier".into()))
 }
 
 /// Ouvre le dossier d'installation du jeu dans l'Explorateur.

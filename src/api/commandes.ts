@@ -44,6 +44,8 @@ import {
   type PageWorkshop,
   type ResumeWorkshop,
   type TriWorkshop,
+  ParametresSteamEtat,
+  ReglageSteam,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -115,6 +117,11 @@ export const api = {
   profilJoueur: (steamId: string) => appeler<Donnee<ProfilJoueur>>("profil_joueur", { steamId }),
   proprietesJeu: (appId: number) => appeler<ProprietesJeu>("proprietes_jeu", { appId }),
   reglerJeu: (demande: Omit<Reglage, "compte">) => appeler<FileSteam>("regler_jeu", { demande }),
+  parametresSteam: () => appeler<ParametresSteamEtat>("parametres_steam"),
+  reglerSteam: (demande: Omit<ReglageSteam, "compte">) => appeler<FileSteam>("regler_steam", { demande }),
+  annulerReglageSteam: () => appeler<FileSteam>("annuler_reglage_steam"),
+  steamAuDemarrage: (actif: boolean) => appeler<boolean>("steam_au_demarrage", { actif }),
+  ouvrirBibliothequeSteam: (chemin: string) => appeler<void>("ouvrir_bibliotheque_steam", { chemin }),
   ouvrirDossierJeu: (appId: number) => appeler<void>("ouvrir_dossier_jeu", { appId }),
   dlcJeu: (appId: number) => appeler<Produit[]>("dlc_jeu", { appId }),
   objetsProfil: (steamId: string) => appeler<Donnee<ObjetsProfil>>("objets_profil", { steamId }),

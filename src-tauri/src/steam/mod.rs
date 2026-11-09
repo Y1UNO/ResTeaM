@@ -10,6 +10,7 @@ pub mod magasin;
 pub mod pc;
 pub mod proprietes;
 pub mod notes;
+pub mod parametres;
 pub mod redemarrage;
 pub mod vdf;
 pub mod webapi;

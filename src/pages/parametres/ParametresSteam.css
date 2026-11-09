@@ -1,0 +1,298 @@
+/* ——— Paramètres de Steam ——— */
+.psteam {
+  gap: 22px;
+}
+.psteam--charge {
+  min-height: 220px;
+}
+.psteam__squelette {
+  flex: 1;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, rgba(238, 242, 255, 0.03), rgba(238, 242, 255, 0.07), rgba(238, 242, 255, 0.03));
+  animation: psteam-souffle 1.6s ease-in-out infinite;
+}
+@keyframes psteam-souffle {
+  50% {
+    opacity: 0.5;
+  }
+}
+.psteam__entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.psteam__note {
+  font-size: 12.5px;
+  color: var(--text-4);
+}
+.psteam__groupe {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.psteam__groupe h3 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-kicker);
+}
+
+/* Une ligne de réglage (texte à gauche, contrôle à droite). */
+.psteam__ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.psteam__ligne--haut {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+button.psteam__ligne {
+  cursor: pointer;
+}
+button.psteam__ligne:hover {
+  background: var(--fill-hover);
+  border-color: rgba(238, 242, 255, 0.08);
+}
+.psteam__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.psteam__texte strong {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.psteam__texte > span {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+/* Interrupteur : une petite lune qui passe de croissant (coupé) à pleine (actif). */
+.interrupteur__rail {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: rgba(238, 242, 255, 0.08);
+  border: 1px solid rgba(238, 242, 255, 0.16);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+.interrupteur__lune {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-3);
+  overflow: hidden;
+  transition:
+    transform 0.4s var(--ease),
+    background-color 0.3s ease;
+}
+/* L'ombre qui creuse le croissant, effacée quand l'interrupteur est actif. */
+.interrupteur__lune::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #1b1b1f;
+  transform: translate(6px, -3px);
+  transition:
+    transform 0.45s var(--ease),
+    opacity 0.35s ease;
+}
+.interrupteur.is-actif .interrupteur__rail {
+  background: rgba(126, 226, 168, 0.18);
+  border-color: rgba(126, 226, 168, 0.55);
+}
+.interrupteur.is-actif .interrupteur__lune {
+  transform: translateX(20px);
+  background: #eef2ff;
+}
+.interrupteur.is-actif .interrupteur__lune::after {
+  transform: translate(14px, -8px);
+  opacity: 0;
+}
+
+/* Choix de la limite de débit. */
+.psteam__puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.psteam__puce,
+.psteam__autre {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(238, 242, 255, 0.12);
+  background: rgba(238, 242, 255, 0.04);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.psteam__puce:hover,
+.psteam__autre:hover {
+  border-color: rgba(238, 242, 255, 0.3);
+  color: var(--text-1);
+}
+.psteam__puce.is-actif,
+.psteam__autre.is-actif {
+  background: rgba(238, 242, 255, 0.14);
+  border-color: rgba(238, 242, 255, 0.5);
+  color: var(--text-1);
+}
+.psteam__autre {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: text;
+}
+.psteam__autre input {
+  width: 52px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.psteam__autre input::-webkit-outer-spin-button,
+.psteam__autre input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Changements en attente du redémarrage de Steam. */
+.psteam__file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(238, 242, 255, 0.05);
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  animation: rise-in 0.4s var(--ease) both;
+}
+.psteam__file-texte {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.psteam__lune {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: inset -4px -1px 0 0 #eef2ff;
+  animation: psteam-tourne 4s linear infinite;
+}
+.psteam__file.is-actif .psteam__lune {
+  animation-duration: 1s;
+}
+@keyframes psteam-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disques et bibliothèques. */
+.psteam__disques {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.psteam__disque {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(238, 242, 255, 0.03);
+  border: 1px solid rgba(238, 242, 255, 0.07);
+}
+.psteam__lecteur {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  background: rgba(238, 242, 255, 0.07);
+  color: var(--text-1);
+}
+.psteam__disque-infos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.psteam__disque-infos strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.psteam__disque-infos > span:last-child {
+  font-size: 12px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.psteam__jauge {
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(238, 242, 255, 0.08);
+  overflow: hidden;
+}
+.psteam__jauge span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9fb4ff, #eef2ff);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psteam__lune,
+  .psteam__squelette {
+    animation: none;
+  }
+}

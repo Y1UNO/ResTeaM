@@ -156,7 +156,7 @@ fn sauvegarder(chemin: &Path) {
     let _ = fs::copy(chemin, copie);
 }
 
-fn ecrire_cle(chemin: &Path, bloc: &[&str], cle: &str, valeur: &str) -> Resultat<()> {
+pub(crate) fn ecrire_cle(chemin: &Path, bloc: &[&str], cle: &str, valeur: &str) -> Resultat<()> {
     let texte = fs::read_to_string(chemin)?;
     let nouveau = vdf::modifier(&texte, bloc, cle, valeur)
         .ok_or_else(|| Erreur::Interne(format!("structure inattendue dans {}", chemin.display())))?;

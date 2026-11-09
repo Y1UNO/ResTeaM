@@ -159,8 +159,18 @@ export function useFileSteam() {
     staleTime: 0,
     refetchInterval: (q) => {
       const f = q.state.data;
-      return f && (f.installations.length || f.desinstallations.length || f.reglages?.length) ? 2_000 : 15_000;
+      return f && (f.installations.length || f.desinstallations.length || f.reglages?.length || f.reglageSteam) ? 2_000 : 15_000;
     },
+  });
+}
+
+/** Paramètres de Steam (disque) et ceux en attente ; relus toutes les 2 s tant qu'il y en a. */
+export function useParametresSteam() {
+  return useQuery({
+    queryKey: ["parametres-steam"],
+    queryFn: api.parametresSteam,
+    staleTime: 0,
+    refetchInterval: (q) => (q.state.data?.enAttente ? 2_000 : false),
   });
 }
 

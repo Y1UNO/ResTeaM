@@ -103,11 +103,13 @@ const SS = `${CDN_APERCU}/1145350`;
 const CHARGE = Date.now();
 const EN_JEU = typeof location !== "undefined" && location.search.includes("enjeu=1");
 type ReglageApercu = { appId: number; optionsLancement: string | null; majAuto: number | null; telechargementsEnJeu: number | null };
-const FILE = { installations: [] as number[], desinstallations: [] as number[], reglages: [] as ReglageApercu[], redemarrage: 0 };
+const FILE = { installations: [] as number[], desinstallations: [] as number[], reglages: [] as ReglageApercu[], redemarrage: 0, reglageSteam: null as Record<string, unknown> | null };
+/** Paramètres de Steam simulés (disque). */
+const PARAMS_STEAM = { limiteKbps: 0, telechargementsEnJeu: true, ralentirStreaming: false, overlay: true, demarrageWindows: true };
 const PROPRIETES = new Map<number, { optionsLancement: string; majAuto: number; telechargementsEnJeu: number }>();
 const jeuEnCours = () => (EN_JEU && Date.now() - CHARGE < 25_000 ? 730 : null);
 function avancerFile() {
-  const vide = !FILE.installations.length && !FILE.desinstallations.length && !FILE.reglages.length;
+  const vide = !FILE.installations.length && !FILE.desinstallations.length && !FILE.reglages.length && !FILE.reglageSteam;
   if (vide || jeuEnCours()) return;
   if (!FILE.redemarrage) {
     FILE.redemarrage = Date.now();
@@ -128,19 +130,22 @@ function avancerFile() {
       telechargementsEnJeu: r.telechargementsEnJeu ?? p.telechargementsEnJeu,
     });
   }
+  if (FILE.reglageSteam) Object.assign(PARAMS_STEAM, FILE.reglageSteam);
+  FILE.reglageSteam = null;
   FILE.installations = [];
   FILE.desinstallations = [];
   FILE.reglages = [];
   FILE.redemarrage = 0;
 }
 function fileSteam() {
-  const vide = !FILE.installations.length && !FILE.desinstallations.length && !FILE.reglages.length;
+  const vide = !FILE.installations.length && !FILE.desinstallations.length && !FILE.reglages.length && !FILE.reglageSteam;
   return {
     phase: vide ? "repos" : jeuEnCours() ? "attenteJeu" : "redemarrage",
     jeuEnCours: vide ? null : jeuEnCours(),
     installations: [...FILE.installations],
     desinstallations: [...FILE.desinstallations],
     reglages: FILE.reglages.map((r) => ({ ...r })),
+    reglageSteam: FILE.reglageSteam ? { ...FILE.reglageSteam } : null,
   };
 }
 /** Installations simulées : appId → heure du clic sur « Installer ». */
@@ -394,6 +399,33 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       return donneesApercu("produits_magasin", { appIds: Number(args?.appId) === 1145350 ? [2868840, 413150, 367520] : [] });
     case "file_steam":
       return fileSteam();
+    case "parametres_steam":
+      avancerFile();
+      return {
+        parametres: {
+          ...PARAMS_STEAM,
+          bibliotheques: [
+            { disque: { bibliotheque: String.raw`C:\Program Files (x86)\Steam`, lecteur: "C:", nom: "", libre: 9_000_000_000, total: 499_000_000_000 }, nombreJeux: 7 },
+            { disque: { bibliotheque: String.raw`E:\SteamLibrary`, lecteur: "E:", nom: "Data", libre: 593_000_000_000, total: 821_000_000_000 }, nombreJeux: 23 },
+          ],
+        },
+        enAttente: FILE.reglageSteam ? { ...FILE.reglageSteam } : null,
+        file: fileSteam(),
+      };
+    case "regler_steam": {
+      const d = args?.demande as Record<string, unknown>;
+      const net = Object.fromEntries(Object.entries(d).filter(([, v]) => v != null));
+      FILE.reglageSteam = { ...(FILE.reglageSteam ?? {}), ...net };
+      return fileSteam();
+    }
+    case "annuler_reglage_steam":
+      FILE.reglageSteam = null;
+      return fileSteam();
+    case "steam_au_demarrage":
+      PARAMS_STEAM.demarrageWindows = Boolean(args?.actif);
+      return PARAMS_STEAM.demarrageWindows;
+    case "ouvrir_bibliotheque_steam":
+      return undefined;
     case "stats_systeme": {
       // Compteurs cumulés, comme ceux de Windows.
       const t = Date.now();

@@ -200,7 +200,31 @@ export type FileSteam = {
   installations: number[];
   desinstallations: number[];
   reglages?: Reglage[];
+  /** Paramètres de Steam en attente du prochain redémarrage. */
+  reglageSteam?: ReglageSteam | null;
 };
+
+// ——— Paramètres de Steam ———
+
+/** Changements demandés (seuls les champs non nuls sont écrits). */
+export type ReglageSteam = {
+  compte?: string;
+  /** Limite de débit en kilobits par seconde (0 : sans limite). */
+  limiteKbps: number | null;
+  telechargementsEnJeu: boolean | null;
+  ralentirStreaming: boolean | null;
+  overlay: boolean | null;
+};
+export type BibliothequeSteam = { disque: Disque; nombreJeux: number };
+export type ParametresSteam = {
+  limiteKbps: number;
+  telechargementsEnJeu: boolean;
+  ralentirStreaming: boolean;
+  overlay: boolean;
+  demarrageWindows: boolean;
+  bibliotheques: BibliothequeSteam[];
+};
+export type ParametresSteamEtat = { parametres: ParametresSteam; enAttente: ReglageSteam | null; file: FileSteam };
 
 // ——— Étape 10 : propriétés d'un jeu ———
 

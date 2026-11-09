@@ -10,8 +10,9 @@ import { useSession } from "../app/session";
 import "./pages.css";
 import "./Parametres.css";
 import { viaCache } from "../lib/imageLocale";
+import { ParametresSteamBloc } from "./parametres/ParametresSteam";
 
-/** Paramètres : compte Steam (déconnexion) et clé Steam Web API (remplacer, supprimer). */
+/** Paramètres : compte Steam (déconnexion), clé Steam Web API (remplacer, supprimer) et paramètres de Steam. */
 export function Parametres() {
   const joueur = useJoueurMoi();
   const steamId = useSession((s) => s.steamId);
@@ -134,6 +135,8 @@ export function Parametres() {
             </div>
           )}
         </section>
+
+        <ParametresSteamBloc />
       </div>
     </div>
   );

@@ -124,6 +124,7 @@ export const api = {
   preferencesEcrire: (preferences: Preferences) => appeler<void>("preferences_ecrire", { preferences }),
   resteamAuDemarrage: (actif: boolean) => appeler<boolean>("resteam_au_demarrage", { actif }),
   jeuSession: () => appeler<EtatJeu>("jeu_session"),
+  notificationEssai: () => appeler<void>("notification_essai"),
   parametresSteam: () => appeler<ParametresSteamEtat>("parametres_steam"),
   reglerSteam: (demande: Omit<ReglageSteam, "compte">) => appeler<FileSteam>("regler_steam", { demande }),
   annulerReglageSteam: () => appeler<FileSteam>("annuler_reglage_steam"),

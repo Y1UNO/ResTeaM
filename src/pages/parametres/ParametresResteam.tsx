@@ -25,6 +25,7 @@ export function ParametresResteam() {
   const client = useQueryClient();
   const requete = useQuery({ queryKey: ["preferences"], queryFn: api.preferencesLire, staleTime: 0 });
   const [message, setMessage] = useState<string | null>(null);
+  const [essai, setEssai] = useState(false);
   const d = requete.data;
 
   const changer = async (cle: keyof Preferences, valeur: boolean) => {
@@ -75,6 +76,19 @@ export function ParametresResteam() {
             {NOTIFICATIONS.map((l) => (
               <Interrupteur key={l.cle} titre={l.titre} detail={l.detail} actif={d.preferences[l.cle]} onChange={(v) => void changer(l.cle, v)} />
             ))}
+            <div className="psteam__essai">
+              <button
+                type="button"
+                className="btn btn--secondaire btn--petit"
+                onClick={() => {
+                  void api.notificationEssai().catch(() => {});
+                  setEssai(true);
+                }}
+              >
+                Envoyer une notification d’essai
+              </button>
+              {essai && <span>Elle apparaît en bas à droite de l’écran.</span>}
+            </div>
           </div>
         </>
       ) : (

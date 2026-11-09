@@ -3,6 +3,7 @@ mod commandes;
 mod erreur;
 mod images_locales;
 mod jeu;
+mod notifications;
 mod preferences;
 mod salon;
 mod secrets;
@@ -121,6 +122,7 @@ pub fn run() {
                 }
             }
             jeu::surveiller(app.handle().clone());
+            notifications::installer(app.handle(), &dossier);
             // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
             let handle = app.handle().clone();
             app.state::<EtatApp>().redemarrage.reprendre(&handle);
@@ -147,6 +149,7 @@ pub fn run() {
             commandes::preferences_ecrire,
             commandes::resteam_au_demarrage,
             commandes::jeu_session,
+            commandes::notification_essai,
             commandes::parametres_steam,
             commandes::regler_steam,
             commandes::annuler_reglage_steam,

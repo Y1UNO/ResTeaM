@@ -741,6 +741,12 @@ pub fn resteam_au_demarrage(actif: bool) -> Resultat<bool> {
     Ok(crate::preferences::demarrage_windows())
 }
 
+/// Notification Windows d'essai (bouton des Paramètres).
+#[tauri::command]
+pub fn notification_essai(app: AppHandle) {
+    crate::notifications::envoyer(&app, "ResTeaM".into(), "Les notifications fonctionnent. Un clic ici rouvre ResTeaM.".into());
+}
+
 /// Jeu en cours et dernière session terminée.
 #[tauri::command]
 pub fn jeu_session() -> crate::jeu::EtatJeu {

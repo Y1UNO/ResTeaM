@@ -418,6 +418,8 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     case "resteam_au_demarrage":
       PREFS_DEMARRAGE.actif = Boolean(args?.actif);
       return PREFS_DEMARRAGE.actif;
+    case "notification_essai":
+      return undefined;
     case "jeu_session": {
       // `?enjeu=1` : un jeu tourne pendant 25 s après le chargement, puis la session se termine.
       const enJeu = jeuEnCours();

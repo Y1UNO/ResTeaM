@@ -884,6 +884,10 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 7. Workshop : ouvrir un fond « scène » (par exemple le Wlop en vidéo).
 8. Coffre-fort : `session.json` doit commencer par `rstm1:` après le premier lancement.
 
+### Étape 18 bis — Menu du logo (9 novembre 2026)
+
+- Au survol, les lignes du menu du logo (Paramètres, Mode Salon, Se déconnecter) prenaient le style de la petite étiquette « F11 » : bordure, marge réduite, décalage à droite. Le style de l'étiquette avait été inséré au milieu de la règle commune « survol + focus ». Les deux règles sont de nouveau séparées : lignes alignées, fond clair au survol.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

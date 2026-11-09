@@ -84,17 +84,22 @@
     color var(--dur-fast) ease;
 }
 .logo-menu__item:hover,
+.logo-menu__item:focus-visible {
+  background: var(--fill-active);
+  color: var(--text-1);
+}
+/* Raccourci clavier à droite d'une ligne (« F11 »). */
 .logo-menu__raccourci {
   margin-left: auto;
   padding: 2px 7px;
   border-radius: 6px;
   border: 1px solid rgba(238, 242, 255, 0.16);
   font-size: 11px;
+  font-weight: 600;
   color: var(--text-4);
 }
-.logo-menu__item:focus-visible {
-  background: var(--fill-active);
-  color: var(--text-1);
+.logo-menu__item svg {
+  flex: 0 0 auto;
 }
 .logo-menu__item:focus-visible {
   outline: none;

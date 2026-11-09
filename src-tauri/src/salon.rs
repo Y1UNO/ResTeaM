@@ -17,6 +17,7 @@ use std::sync::Mutex;
 use serde::Serialize;
 use tauri::webview::{NewWindowResponse, PageLoadEvent, WebviewBuilder};
 use tauri::window::WindowBuilder;
+use tauri::window::{Color, Window};
 use tauri::{AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Url, WebviewUrl, WindowEvent};
 use tauri_plugin_opener::OpenerExt;
 
@@ -25,6 +26,8 @@ pub const BARRE: &str = "salon-barre";
 pub const STEAM: &str = "salon-steam";
 /// Hauteur de la barre ResTeaM, en pixels logiques.
 const HAUTEUR_BARRE: f64 = 60.0;
+/// Fond de la DA (le même que la fenêtre principale), affiché avant les pages.
+const FOND: Color = Color(9, 9, 10, 255);
 
 pub const ACCUEIL: &str = "https://store.steampowered.com/";
 pub const PANIER: &str = "https://store.steampowered.com/cart/";
@@ -88,17 +91,23 @@ fn adresse(app: &AppHandle, u: &Url, chargement: bool) {
 }
 
 /// Ouvre le salon sur une page de Steam (ou y navigue s'il est déjà ouvert).
+///
+/// **À appeler hors du fil principal** (commande `async`) : sous Windows, créer
+/// une webview depuis le fil principal bloque WebView2 (`Window::add_child`
+/// attend le fil principal), et la fenêtre reste grise et vide.
 pub fn ouvrir(app: &AppHandle, url: Url) -> tauri::Result<()> {
     if let Some(steam) = app.get_webview(STEAM) {
         steam.navigate(url)?;
         if let Some(f) = app.get_window(FENETRE) {
             let _ = f.unminimize();
+            let _ = f.show();
             let _ = f.set_focus();
         }
         return Ok(());
     }
     adresse(app, &url, true);
 
+    // Cachée jusqu'à ce que la barre et Steam soient en place : jamais de fenêtre vide.
     let fenetre = WindowBuilder::new(app, FENETRE)
         .title("Salon d'achat · ResTeaM")
         .inner_size(1320.0, 880.0)
@@ -106,19 +115,38 @@ pub fn ouvrir(app: &AppHandle, url: Url) -> tauri::Result<()> {
         .decorations(false)
         .shadow(true)
         .theme(Some(tauri::Theme::Dark))
+        .background_color(FOND)
+        .visible(false)
         .center()
         .build()?;
+    if let Err(e) = remplir(app, &fenetre, url) {
+        // Échec : pas de fenêtre fantôme, et la barre repartira de zéro.
+        let _ = fenetre.destroy();
+        if let Ok(mut etat) = ETAT.lock() {
+            *etat = None;
+        }
+        return Err(e);
+    }
+    fenetre.show()?;
+    let _ = fenetre.set_focus();
+    Ok(())
+}
+
+/// Pose la barre et la page de Steam dans la fenêtre du salon.
+fn remplir(app: &AppHandle, fenetre: &Window, url: Url) -> tauri::Result<()> {
     let taille = fenetre.inner_size()?.to_logical::<f64>(fenetre.scale_factor()?);
 
     // La barre : une page locale de ResTeaM (main.tsx la reconnaît à son nom).
     fenetre.add_child(
-        WebviewBuilder::new(BARRE, WebviewUrl::App("index.html".into())),
+        WebviewBuilder::new(BARRE, WebviewUrl::App("index.html".into())).background_color(FOND),
         LogicalPosition::new(0.0, 0.0),
         LogicalSize::new(taille.width, HAUTEUR_BARRE),
     )?;
 
     let (a1, a2, a3, a4, a5) = (app.clone(), app.clone(), app.clone(), app.clone(), app.clone());
     let steam = WebviewBuilder::new(STEAM, WebviewUrl::External(url))
+        // Fond sombre avant le premier affichage de Steam (aucun script ajouté à la page).
+        .background_color(FOND)
         // Cookies et cache de Steam à part, loin de la fenêtre principale.
         .data_directory(app.path().app_data_dir()?.join("salon-steam"))
         // Garde SmartScreen (wry le coupe par défaut) : protection anti-hameçonnage.
@@ -164,6 +192,7 @@ pub fn ouvrir(app: &AppHandle, url: Url) -> tauri::Result<()> {
         }
         _ => {}
     });
+    placer(app);
     Ok(())
 }
 

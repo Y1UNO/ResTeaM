@@ -74,9 +74,15 @@
   }
 }
 
-/* Panier communautaire (Workshop) : l'anse se soulève, l'étincelle scintille. */
-:is(button, a):hover .ico-workshop .ico-anse {
-  transform: translateY(-1.3px);
+/* Panier communautaire (Workshop) : le panier se soulève, le croissant en sort, l'étincelle scintille. */
+.ico-workshop .ico-panier {
+  transform-origin: 0% 0%;
+}
+:is(button, a):hover .ico-workshop .ico-panier {
+  transform: translate(0.4px, -1.2px) rotate(-4deg);
+}
+:is(button, a):hover .ico-workshop .ico-lune {
+  transform: translateY(-1.6px) rotate(-18deg);
 }
 :is(button, a):hover .ico-workshop .ico-eclat {
   animation: ico-scintille 0.9s ease-in-out infinite;

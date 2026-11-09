@@ -57,10 +57,7 @@ export function PopupAchat({ appId, nom, prix, obtenir = false, onFermer }: Prop
           <span>Prix</span>
           <strong>{prix}</strong>
         </div>
-        <div className="achat__boutons">
-          <button type="button" className="btn btn--lien" onClick={fermer}>
-            Annuler
-          </button>
+        <div className="achat__boutons achat__boutons--choix">
           <button type="button" className="btn btn--secondaire btn--petit" onClick={client}>
             Dans le client Steam
           </button>
@@ -69,6 +66,9 @@ export function PopupAchat({ appId, nom, prix, obtenir = false, onFermer }: Prop
             Ouvrir le salon d’achat
           </button>
         </div>
+        <button type="button" className="btn btn--lien achat__annuler" onClick={fermer}>
+          Annuler
+        </button>
       </div>
     </>,
     document.body,

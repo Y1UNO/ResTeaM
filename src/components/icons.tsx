@@ -96,22 +96,23 @@ export function IconCommunity({ size = 22 }: IconProps) {
 }
 
 /**
- * Workshop : le « panier communautaire » stylisé (demande de Tom). Un panier tressé
- * à anse arrondie, un croissant accroché au sommet de l'anse et une étincelle.
- * Au survol, l'anse se soulève, le croissant tourne et l'étincelle scintille.
+ * Workshop : le « panier communautaire » (demande de Tom). Une personne tient
+ * un panier tressé ; un croissant de lune en dépasse, comme une création
+ * qu'on partage, avec une étincelle au-dessus.
+ * Au survol, le panier se soulève, le croissant en sort et l'étincelle scintille.
  */
 export function IconWorkshop({ size = 22 }: IconProps) {
   return (
     <svg className="ico ico-workshop" aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" {...stroke}>
-      <g className="ico-anse">
-        <path d="M6.8 10.2c.3-3.4 2.4-5.2 5.2-5.2s4.9 1.8 5.2 5.2" />
-        <path className="ico-lune" d="M11.2 1.2a2 2 0 1 0 1.8 3 1.6 1.6 0 1 1-1.8-3z" fill="currentColor" stroke="none" />
+      <circle cx="5.8" cy="6.4" r="2.4" />
+      <path d="M2.4 20.6v-4.2c0-2.3 1.5-3.9 3.4-3.9 1.4 0 2.6.6 3.5 1.7l1.4 1.4" />
+      <g className="ico-panier">
+        <path className="ico-lune" d="M15 8.4a2.5 2.5 0 1 0 2.7 3.9 2 2 0 1 1-2.7-3.9z" fill="currentColor" stroke="none" />
+        <path d="M10.2 14h10.6" />
+        <path d="M11 14l1 5.3a1.6 1.6 0 0 0 1.6 1.3h3.8a1.6 1.6 0 0 0 1.6-1.3l1-5.3" />
+        <path d="M11.9 17.1h7.2M14 14.3l.3 6.1M17 14.3l-.3 6.1" strokeWidth="1.1" opacity="0.6" />
       </g>
-      <path d="M3.2 10.4h17.6" />
-      <path d="M4.8 10.4l1.5 8.3a1.8 1.8 0 0 0 1.8 1.5h7.8a1.8 1.8 0 0 0 1.8-1.5l1.5-8.3" />
-      <path d="M7.4 14.2h9.2M7.9 17.2h8.2" strokeWidth="1.2" opacity="0.75" />
-      <path d="M10 10.6l-.9 9.4M14 10.6l.9 9.4" strokeWidth="1.2" opacity="0.75" />
-      <path className="ico-eclat" d="M20.2 4.6l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4z" fill="currentColor" stroke="none" />
+      <path className="ico-eclat" d="M20.4 3.6l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4z" fill="currentColor" stroke="none" />
     </svg>
   );
 }

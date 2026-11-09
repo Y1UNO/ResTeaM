@@ -1120,8 +1120,10 @@ pub fn ouvrir_youtube(app: AppHandle, id: String) -> Resultat<()> {
 // ——— Salon d'achat (pages officielles de Steam dans une fenêtre ResTeaM) ———
 
 /// Ouvre le salon d'achat : la fiche d'un jeu, ou une page de Steam vérifiée.
+/// Commande `async` : sous Windows, une fenêtre et ses webviews doivent être
+/// créées hors du fil principal, sinon WebView2 se bloque (fenêtre grise et vide).
 #[tauri::command]
-pub fn ouvrir_salon(app: AppHandle, app_id: Option<u32>, adresse: Option<String>) -> Resultat<()> {
+pub async fn ouvrir_salon(app: AppHandle, app_id: Option<u32>, adresse: Option<String>) -> Resultat<()> {
     let url = match (app_id, adresse) {
         (Some(id), _) => tauri::Url::parse(&format!("https://store.steampowered.com/app/{id}/")).ok(),
         (None, Some(a)) => crate::salon::adresse_depart(&a),
@@ -1138,7 +1140,9 @@ pub fn salon_etat() -> Option<crate::salon::EtatSalon> {
 }
 
 /// Boutons de la barre du salon (retour, recharger, panier, fenêtre…).
+/// `async` aussi : fermer la fenêtre depuis sa propre barre ne doit pas se faire
+/// pendant que le fil principal traite la commande de cette barre.
 #[tauri::command]
-pub fn salon_action(app: AppHandle, action: String) -> Resultat<()> {
+pub async fn salon_action(app: AppHandle, action: String) -> Resultat<()> {
     crate::salon::action(&app, &action).map_err(Erreur::Interne)
 }

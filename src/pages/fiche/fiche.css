@@ -711,6 +711,18 @@
   gap: 10px;
   justify-content: flex-end;
 }
+/* Popup d'achat : les deux choix se partagent la largeur, « Annuler » en lien dessous. */
+.achat__boutons--choix > .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 16px;
+}
+.achat__annuler {
+  align-self: center;
+  margin-top: -4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm, 8px);
+}
 
 /* Amis qui possèdent le jeu. */
 .fiche__amis {

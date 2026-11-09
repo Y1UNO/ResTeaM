@@ -742,6 +742,17 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Tests : `domaines`, `adresses_de_depart`, `navigation` du salon.
 - **À vérifier dans l'exe** : ouverture du salon depuis Acheter, connexion Steam, panier, puis un achat de bout en bout (un jeu gratuit ou très bon marché), et redimensionnement de la fenêtre.
 
+### Étape 12 bis — Salon gris, popup d'achat, icône Workshop (9 novembre 2026)
+
+- **Le salon d'achat s'ouvrait en gris vide** (ni barre, ni page de Steam) :
+  - cause : `ouvrir_salon` était une commande **synchrone**, donc exécutée sur le fil principal. Sous Windows, créer une webview depuis le fil principal bloque WebView2 (`Window::add_child` attend le fil principal ; Tauri le signale : « deadlocks when used in a synchronous command »). La fenêtre était créée, mais ses deux webviews jamais ;
+  - correctif : `ouvrir_salon` et `salon_action` sont maintenant des commandes `async` (hors du fil principal) ;
+  - la fenêtre reste **cachée** jusqu'à ce que la barre et Steam soient en place, sur le fond de la DA (`#09090A`, aussi pour les deux webviews avant leur premier affichage) : plus jamais de fenêtre grise. Si la création échoue, la fenêtre est détruite au lieu de rester vide ;
+  - sécurité inchangée : aucune capacité pour la page de Steam, dossier de données WebView2 à part (`salon-steam/`), HTTPS seulement, aucun script ni CSS ajouté (la couleur de fond est un réglage de WebView2, pas une injection), adresse fournie par Rust.
+- **Popup d'achat** : « Annuler » dépassait à gauche. Les deux choix (« Dans le client Steam », « Ouvrir le salon d'achat ») se partagent la largeur, et « Annuler » est un lien centré dessous.
+- **Icône Workshop** : une personne qui tient un panier tressé, d'où dépasse un croissant de lune (une création qu'on partage), avec une étincelle. Au survol, le panier se soulève, le croissant sort et l'étincelle scintille. Différente du sac du Magasin et des deux joueurs de la Communauté.
+- **À vérifier dans l'exe** : Acheter → « Ouvrir le salon d'achat » affiche la barre et la page du jeu sur Steam, puis redimensionner, réduire, agrandir et fermer le salon depuis sa barre.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

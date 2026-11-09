@@ -374,6 +374,38 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
   - l'usage du nom « Steam » dans une app payante.
 
 
+### 13. Économie des styles : structure proposée par Tom (à affiner)
+
+Idée de Tom :
+- des tickets payants, réservés aux joueurs **éligibles** (critères stricts, pays où c'est interdit masqués) ;
+- un bouton « Soutenir ResTeaM » ;
+- des **bundles** achetables pour certains styles précis ;
+- le reste s'obtient par le tirage ;
+- une **économie d'échange** entre joueurs, avec une **échelle de valeur** pour voir d'un coup d'œil si un échange est intéressant.
+
+**La règle à ne jamais casser** (avis de Claude) : un même objet ne doit jamais venir d'un **hasard payant** et être **échangeable**. Hasard payant + objets échangeables qui ont une valeur, c'est exactement ce que les régulateurs classent en jeu d'argent (affaire des « skins » de CS:GO, décisions aux Pays-Bas et au Royaume-Uni, surveillance de l'ANJ en France). Une échelle de valeur visible renforce encore cet argument, même sans retrait d'argent.
+
+Structure proposée, qui garde toutes les idées de Tom :
+
+| Source | Payant ? | Hasard ? | Échangeable ? |
+|---|---|---|---|
+| Ticket du jour (et tickets bonus gagnés en jouant) | non | oui | **oui**, entre amis |
+| Bundles et styles au choix | oui | non | non (liés au compte) |
+| Soutenir ResTeaM (badge ou cadre « soutien ») | oui | non | non |
+| Tickets payants (si on les garde) | oui | oui | **non**, jamais |
+
+- **Échanges** :
+  - seulement des objets gratuits, entre comptes ResTeaM, validés par le serveur (les deux acceptent, rien ne se perd) ;
+  - l'échelle de valeur est en **points de rareté** (commun 1, rare 5, épique 20, légendaire 80, lunaire 300, à régler), **jamais en euros** ;
+  - aucune revente contre de l'argent, aucun retrait.
+- **Tickets payants**, seulement si Tom les veut vraiment après avoir lu ces contraintes :
+  - réservés aux **18 ans et plus** : une case à cocher ne suffit pas, et une vraie vérification d'âge demande des données d'identité, à éviter ;
+  - masqués dans les pays où c'est interdit (Belgique, et ceux qui suivront). Le pays est donné par le prestataire de paiement (pays de facturation) plutôt que par l'adresse IP, trop facile à contourner avec un VPN ;
+  - chances de chaque rareté affichées avant l'achat, compteur de pitié (un épique garanti tous les N tirages), plafond de dépense mensuel ;
+  - les lois changent : la liste des pays et les règles devront être tenues à jour, idéalement après l'avis d'un juriste.
+  - **Recommandation de Claude** : commencer sans tickets payants (tirage gratuit, bundles, soutien), puis voir.
+- Tout passe par le serveur de partage : solde des tickets, collection, échanges, achats confirmés par le prestataire. L'app ne fait que lire ces données, ce qui empêche la triche.
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |

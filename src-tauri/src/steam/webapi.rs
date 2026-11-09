@@ -34,7 +34,7 @@ impl ClientSteam {
         Ok(Self { http })
     }
 
-    fn url(chemin: &str, params: &[(&str, &str)]) -> Resultat<Url> {
+    pub(crate) fn url(chemin: &str, params: &[(&str, &str)]) -> Resultat<Url> {
         Url::parse_with_params(&format!("{API}/{chemin}"), params).map_err(|_| Erreur::Interne("URL".into()))
     }
 

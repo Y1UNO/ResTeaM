@@ -418,6 +418,21 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     case "resteam_au_demarrage":
       PREFS_DEMARRAGE.actif = Boolean(args?.actif);
       return PREFS_DEMARRAGE.actif;
+    case "bilan_trophees": {
+      // `?niveau=N` : points choisis pour voir la lune d'un niveau donné dans l'aperçu.
+      const ami = args?.steamId != null;
+      return {
+        donnees: {
+          total: ami ? 214 : 712,
+          jeux: ami ? 21 : 57,
+          complets: ami ? [1145350] : [1145350, 413150, 2868840],
+          plusRare: { appId: 1145350, nom: "Fin de la nuit", icone: "", pourcentage: 0.7 },
+          dernier: { appId: 1903340, nom: "Expédition réussie", icone: null, date: Math.floor(Date.now() / 1000) - 3 * 86400 },
+        },
+        horsLigne: false,
+        majLe: Math.floor(Date.now() / 1000),
+      };
+    }
     case "notification_essai":
       return undefined;
     case "jeu_session": {

@@ -636,6 +636,49 @@ pub struct ProfilJoueur {
     pub recents: Option<Vec<JeuPossede>>,
 }
 
+const TTL_TROPHEES: i64 = 6 * 60 * 60;
+
+/// Trophées d'un joueur (le compte connecté si `steam_id` est absent) : total, jeux à
+/// 100 %, le plus rare et le dernier obtenu. Profil privé → erreur « privé ».
+#[tauri::command]
+pub async fn bilan_trophees(app: AppHandle, etat: State<'_, EtatApp>, steam_id: Option<String>) -> Resultat<Donnee<crate::steam::trophees::BilanTrophees>> {
+    let (moi, cle) = identifiants(&app)?;
+    let sid = steam_id.unwrap_or(moi);
+    if !session::steam_id_valide(&sid) {
+        return Err(Erreur::Interne("identifiant Steam invalide".into()));
+    }
+    etat.cache
+        .avec_cache(&format!("trophees:{sid}"), TTL_TROPHEES, || async {
+            let jeux = etat.steam.jeux_possedes(&cle, &sid).await?;
+            if jeux.is_empty() {
+                return Err(Erreur::Prive);
+            }
+            let joues: Vec<u32> = jeux.iter().filter(|j| j.minutes_total > 0).map(|j| j.app_id).collect();
+            let (progres, plus_rare) = etat.steam.bilan_trophees(&cle, &sid, &joues).await?;
+            // Dernier trophée : parmi les 5 jeux les plus récemment lancés qui en ont.
+            let mut recents: Vec<&crate::steam::webapi::JeuPossede> = jeux.iter().filter(|j| progres.iter().any(|p| p.app_id == j.app_id && p.debloques > 0)).collect();
+            recents.sort_by_key(|j| -j.dernier_lancement);
+            let mut dernier: Option<crate::steam::trophees::DernierTrophee> = None;
+            for j in recents.into_iter().take(5) {
+                let schema = etat
+                    .cache
+                    .avec_cache(&format!("schema:{}", j.app_id), TTL_SCHEMA, || etat.steam.schema_succes(&cle, j.app_id))
+                    .await
+                    .map(|d| d.donnees)
+                    .unwrap_or_default();
+                let Ok(Some(s)) = etat.steam.succes(&cle, &sid, j.app_id, &schema).await else { continue };
+                for x in s.succes.into_iter().filter(|x| x.debloque) {
+                    let date = x.debloque_le.unwrap_or(0);
+                    if dernier.as_ref().is_none_or(|d| date > d.date) {
+                        dernier = Some(crate::steam::trophees::DernierTrophee { app_id: j.app_id, nom: x.nom, icone: x.icone, date });
+                    }
+                }
+            }
+            Ok(crate::steam::trophees::BilanTrophees::depuis(&progres, plus_rare, dernier))
+        })
+        .await
+}
+
 /// Profil d'un autre joueur (un ami) : résumé, niveau et badges, jeux, jeux récents.
 /// Chaque partie privée revient vide au lieu de faire échouer le tout.
 #[tauri::command]

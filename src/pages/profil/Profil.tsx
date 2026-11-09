@@ -1,7 +1,7 @@
 import { useId, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSession } from "../../app/session";
-import { api } from "../../api/commandes";
+import { api, dansTauri } from "../../api/commandes";
 import {
   useAmis,
   useBibliotheque,
@@ -11,9 +11,13 @@ import {
   useProfilJoueur,
   useRecemmentJoues,
   useSuccesJeu,
+  useBilanTrophees,
+  useNomJeu,
 } from "../../api/requetes";
-import { estErreurApp, type Badge, type JeuPossede } from "../../api/types";
+import { estErreurApp, type Badge, type BilanTrophees, type JeuPossede } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
+import { LuneProfil } from "./LuneProfil";
+import { calculerPoints, niveauDepuisPoints } from "../../lib/niveauResteam";
 import { Smoke } from "../../components/Smoke";
 import { Compteur, Lucioles } from "../../components/Vivant";
 import { BadgeRang } from "../../components/BadgeRang";
@@ -75,6 +79,7 @@ function VueProfil({ ami }: { ami: string | null }) {
   const recents = useRecemmentJoues();
   const amis = useAmis();
   const profilAmi = useProfilJoueur(ami);
+  const bilan = useBilanTrophees(ami);
   const pa = profilAmi.data?.donnees;
   const j = ami ? pa?.joueur : joueur.data?.donnees;
   const n = ami ? (pa?.niveau ?? undefined) : niveau.data?.donnees;
@@ -98,6 +103,17 @@ function VueProfil({ ami }: { ami: string | null }) {
   const avatarAffiche = (!ami && perso.avatarPerso) || (perso.avatarAnime && objets?.avatarAnime?.image ? objets.avatarAnime.image : j?.avatar);
 
   const minutesRecentes = r.reduce((s, x) => s + x.minutesDeuxSemaines, 0);
+  // Niveau ResTeaM (1 à 30) : trophées, heures, jeux à 100 % et rangs. Trophées privés : 0.
+  const b = bilan.data?.donnees;
+  const tropheesPrives = !!bilan.error && estErreurApp(bilan.error) && bilan.error.code === "prive";
+  const points = useMemo(
+    () => calculerPoints(jeux.map((x) => x.minutesTotal), b?.total ?? 0, b?.complets.length ?? 0),
+    [jeux, b],
+  );
+  const luneCalculee = jeuxCharges && (b || bilan.isError) ? niveauDepuisPoints(points.total) : null;
+  // Aperçu navigateur seulement : `?lune=N` montre la lune d'un niveau donné.
+  const luneForcee = !dansTauri ? Number(new URLSearchParams(location.search).get("lune")) : 0;
+  const lune = luneCalculee && luneForcee >= 1 && luneForcee <= 30 ? { ...luneCalculee, niveau: luneForcee, fraction: 0.7 } : luneCalculee;
   const parRang = useMemo(() => {
     const groupes: JeuPossede[][] = RANGS.map(() => []);
     for (const jeu of jeux) groupes[rangDepuisMinutes(jeu.minutesTotal).niveau].push(jeu);
@@ -135,7 +151,9 @@ function VueProfil({ ami }: { ami: string | null }) {
             </span>
             <CadreAvatar p={perso} objets={objets} />
             {!ami && <PinceauMagique onClick={() => setPanneau(true)} />}
-            {n && <LuneNiveau pluie={perso.effet === "pluie"} niveau={n.niveau} fraction={n.xpPourSuivant + (n.xp - n.xpNiveauActuel) > 0 ? (n.xp - n.xpNiveauActuel) / (n.xp - n.xpNiveauActuel + n.xpPourSuivant) : 1} reste={n.xpPourSuivant} />}
+            {lune ? (
+              <LuneProfil lune={lune} points={points} niveauSteam={n?.niveau ?? null} moi={!ami} pluie={perso.effet === "pluie"} />
+            ) : n && <LuneNiveau pluie={perso.effet === "pluie"} niveau={n.niveau} fraction={n.xpPourSuivant + (n.xp - n.xpNiveauActuel) > 0 ? (n.xp - n.xpNiveauActuel) / (n.xp - n.xpNiveauActuel + n.xpPourSuivant) : 1} reste={n.xpPourSuivant} />}
           </div>
 
           <div className="profil__identite">
@@ -162,6 +180,7 @@ function VueProfil({ ami }: { ami: string | null }) {
                 <Chiffre icone={<IconeAmis />} valeur={nombreAmis ?? null} libelle={nombreAmis == null && amis.data ? "amis (privé)" : "amis"} />
               )}
               <Chiffre icone={<IconeMedaille />} valeur={n ? n.badges.length : null} libelle="badges" />
+              <ChiffreTrophees bilan={b ?? null} prive={tropheesPrives} />
             </div>
           </div>
 
@@ -346,6 +365,50 @@ function LuneNiveau({ niveau, fraction, reste, pluie = true }: { niveau: number;
 }
 
 // ——— Chiffres ———
+
+/** Case « Trophées » : le total qui défile, et au survol le détail (100 %, le plus rare, le dernier). */
+function ChiffreTrophees({ bilan, prive }: { bilan: BilanTrophees | null; prive: boolean }) {
+  const nomJeu = useNomJeu(bilan?.plusRare?.appId);
+  const nomDernier = useNomJeu(bilan?.dernier?.appId);
+  return (
+    <div className="profil-chiffre profil-trophees" data-lueur="" tabIndex={bilan ? 0 : -1}>
+      <IconeTrophee />
+      <div className="profil-chiffre__texte">
+        <strong>{prive ? "privé" : bilan ? <Compteur valeur={bilan.total} heures={false} /> : "—"}</strong>
+        <span>trophées</span>
+      </div>
+      {bilan && (
+        <div className="profil-trophees__detail" role="tooltip">
+          <span>
+            <strong>{bilan.complets.length}</strong> jeu{bilan.complets.length > 1 ? "x" : ""} à 100 % · {bilan.jeux} avec des trophées
+          </span>
+          {bilan.plusRare && (
+            <span>
+              Le plus rare : <strong>{bilan.plusRare.nom}</strong>
+              {nomJeu ? ` (${nomJeu})` : ""}, {bilan.plusRare.pourcentage.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % des joueurs
+            </span>
+          )}
+          {bilan.dernier && (
+            <span>
+              Dernier : <strong>{bilan.dernier.nom}</strong>
+              {nomDernier ? ` (${nomDernier})` : ""}, {date(bilan.dernier.date)}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IconeTrophee() {
+  return (
+    <svg aria-hidden="true" {...ICONE} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 4h10v5a5 5 0 0 1-10 0z" fill="rgba(238,242,255,.12)" />
+      <path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.4M17 6h2.5a2.5 2.5 0 0 1-2.6 3.4M12 14v3.5M8.5 20.5h7M9.5 17.5h5" />
+      <path d="M13.2 6.2a1.9 1.9 0 1 0 1.2 2.9 1.5 1.5 0 1 1-1.2-2.9z" fill="#EEF2FF" stroke="none" />
+    </svg>
+  );
+}
 
 function Chiffre({ icone, valeur, libelle, heures = false }: { icone: React.ReactNode; valeur: number | string | null; libelle: string; heures?: boolean }) {
   return (

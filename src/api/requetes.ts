@@ -164,6 +164,17 @@ export function useFileSteam() {
   });
 }
 
+/** Trophées d'un joueur (moi si `steamId` est nul) : total, 100 %, le plus rare, le dernier. */
+export function useBilanTrophees(steamId: string | null) {
+  const pret = useSession((s) => s.statut === "pret");
+  return useQuery({
+    queryKey: ["trophees", steamId ?? "moi"],
+    queryFn: () => api.bilanTrophees(steamId),
+    enabled: pret,
+    staleTime: 30 * 60_000,
+  });
+}
+
 /** Paramètres de Steam (disque) et ceux en attente ; relus toutes les 2 s tant qu'il y en a. */
 export function useParametresSteam() {
   return useQuery({

@@ -607,3 +607,43 @@
 .profil-rang.is-lointain:not(.a-des-jeux) .badge-rang {
   filter: grayscale(0.6) brightness(0.8);
 }
+
+/* ——— Case « Trophées » : détail au survol ——— */
+.profil-trophees {
+  position: relative;
+}
+.profil-trophees__detail {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  top: calc(100% + 10px);
+  width: max-content;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(14, 14, 17, 0.94);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(238, 242, 255, 0.16);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-3);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s var(--ease);
+}
+.profil-trophees__detail strong {
+  color: var(--text-1);
+  font-weight: 600;
+}
+.profil-trophees:hover .profil-trophees__detail,
+.profil-trophees:focus-within .profil-trophees__detail {
+  opacity: 1;
+  transform: none;
+}

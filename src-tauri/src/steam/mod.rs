@@ -12,6 +12,7 @@ pub mod proprietes;
 pub mod notes;
 pub mod parametres;
 pub mod redemarrage;
+pub mod trophees;
 pub mod vdf;
 pub mod webapi;
 pub mod workshop;

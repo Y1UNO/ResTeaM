@@ -149,6 +149,7 @@ pub fn run() {
             commandes::preferences_ecrire,
             commandes::resteam_au_demarrage,
             commandes::jeu_session,
+            commandes::bilan_trophees,
             commandes::notification_essai,
             commandes::parametres_steam,
             commandes::regler_steam,

@@ -1,0 +1,428 @@
+/* ——— Lune du profil à 30 niveaux (transform et opacité seulement) ——— */
+.lc {
+  position: relative;
+  flex: 0 0 auto;
+}
+.lc__echelle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 96px;
+  height: 96px;
+  transform-origin: 0 0;
+}
+.lc__echelle > * {
+  position: absolute;
+}
+.lc__disque {
+  inset: 8px;
+  border-radius: 50%;
+  background: rgba(9, 9, 10, 0.85);
+}
+.lc__svg {
+  inset: 0;
+  filter: drop-shadow(0 0 10px rgba(238, 242, 255, 0.35));
+}
+.lc__svg.is-vif {
+  filter: drop-shadow(0 0 14px rgba(238, 242, 255, 0.55));
+}
+.p10 .lc__svg,
+.p15 .lc__svg {
+  filter: drop-shadow(0 0 14px rgba(143, 207, 255, 0.55));
+}
+.p20 .lc__svg,
+.p25 .lc__svg,
+.p30 .lc__svg {
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.7));
+}
+.lc__arc {
+  animation: lc-arc 1.2s var(--ease) 0.3s both;
+}
+@keyframes lc-arc {
+  from {
+    stroke-dasharray: 0 999;
+  }
+}
+.lc__crateres {
+  opacity: 0.32;
+}
+.lc__etoile {
+  animation: lc-scintille 3.2s ease-in-out infinite;
+}
+.lc__etoile.is-2 {
+  animation-delay: 1.4s;
+}
+@keyframes lc-scintille {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Halo (4), qui respire (5), plus large (17). */
+.lc__halo {
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(238, 242, 255, 0.28), rgba(238, 242, 255, 0) 65%);
+  opacity: 0.7;
+}
+.p10 .lc__halo,
+.p15 .lc__halo {
+  background: radial-gradient(circle, rgba(143, 207, 255, 0.34), rgba(143, 207, 255, 0) 65%);
+}
+.lc__halo.is-respire {
+  animation: lc-respire 4.5s ease-in-out infinite;
+}
+.lc__halo.is-large {
+  inset: -30px;
+}
+@keyframes lc-respire {
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+/* Trois étoiles autour (5). */
+.lc__etoiles {
+  inset: 0;
+}
+.lc__etoiles span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #eef2ff;
+  box-shadow: 0 0 6px #eef2ff;
+  animation: lc-scintille 2.6s ease-in-out infinite;
+}
+.lc__etoiles span:nth-child(1) {
+  left: -8px;
+  top: 10px;
+}
+.lc__etoiles span:nth-child(2) {
+  left: 4px;
+  bottom: -6px;
+  animation-delay: 0.9s;
+}
+.lc__etoiles span:nth-child(3) {
+  right: -10px;
+  bottom: 18px;
+  animation-delay: 1.7s;
+}
+
+/* Poussière d'étoiles en orbite lente (6 à 9). */
+.lc__poussiere {
+  left: 48px;
+  top: 48px;
+  width: 0;
+  height: 0;
+  animation: lc-tourne 38s linear infinite;
+}
+.lc__poussiere span {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(238, 242, 255, 0.85);
+}
+@keyframes lc-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Anneaux (10, 11) : une ellipse inclinée dont un reflet fait le tour. */
+.lc__anneau {
+  left: -18px;
+  top: 34px;
+  width: 132px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(143, 207, 255, 0.55);
+  transform: rotate(-18deg);
+  box-shadow: 0 0 10px rgba(143, 207, 255, 0.25);
+}
+.lc__anneau::after {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  border-top-color: #e6f6ff;
+  animation: lc-tourne 6s linear infinite;
+}
+.lc__anneau.is-2 {
+  left: -28px;
+  top: 30px;
+  width: 152px;
+  height: 36px;
+  opacity: 0.55;
+}
+
+/* Petites lunes satellites (12 à 14). */
+.lc__satellites {
+  left: 48px;
+  top: 48px;
+  width: 0;
+  height: 0;
+}
+.lc__satellites > span {
+  position: absolute;
+  animation: lc-tourne 11s linear infinite;
+}
+.lc__satellites > span > span {
+  position: absolute;
+  left: 58px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #8fcfff);
+  box-shadow: 0 0 6px rgba(143, 207, 255, 0.8);
+}
+.lc__satellites .s1 {
+  animation-duration: 16s;
+  animation-direction: reverse;
+}
+.lc__satellites .s1 > span {
+  left: 64px;
+  width: 5px;
+  height: 5px;
+}
+.lc__satellites .s2 {
+  animation-duration: 23s;
+}
+.lc__satellites .s2 > span {
+  left: 70px;
+  width: 4px;
+  height: 4px;
+}
+
+/* Constellation qui se dessine (15). */
+.lc__constellation {
+  left: -27px;
+  top: -27px;
+  overflow: visible;
+}
+.lc__constellation polyline {
+  fill: none;
+  stroke: rgba(238, 242, 255, 0.45);
+  stroke-width: 0.8;
+  stroke-dasharray: 160;
+  animation: lc-trace 3s ease 0.6s both;
+}
+.lc__constellation circle {
+  fill: #eef2ff;
+  animation: lc-scintille 3s ease-in-out infinite;
+}
+@keyframes lc-trace {
+  from {
+    stroke-dashoffset: 160;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Étoiles filantes de temps en temps (16, 19). */
+.lc__filante {
+  left: 70px;
+  top: -20px;
+  width: 40px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(238, 242, 255, 0.95), rgba(238, 242, 255, 0));
+  transform: rotate(150deg);
+  opacity: 0;
+  animation: lc-filante 7s ease-in 2s infinite;
+}
+.lc__filante.is-2 {
+  left: -30px;
+  top: 10px;
+  animation-delay: 5.5s;
+  animation-duration: 9s;
+}
+@keyframes lc-filante {
+  0% {
+    opacity: 0;
+    transform: rotate(150deg) translateX(0);
+  }
+  4% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0;
+    transform: rotate(150deg) translateX(-70px);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(150deg) translateX(-70px);
+  }
+}
+
+/* Aurore en arrière-plan (20). */
+.lc__aurore {
+  left: -40px;
+  top: -34px;
+  width: 176px;
+  height: 120px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(126, 226, 168, 0.35), transparent 60%),
+    radial-gradient(ellipse at 70% 40%, rgba(143, 160, 255, 0.35), transparent 60%);
+  filter: blur(10px);
+  animation: lc-aurore 9s ease-in-out infinite alternate;
+}
+@keyframes lc-aurore {
+  from {
+    transform: translateX(-8px) scaleY(0.9);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(8px) scaleY(1.1);
+    opacity: 1;
+  }
+}
+
+/* Reflet qui tourne sur le croissant (21) et particules qui montent. */
+.lc__reflet {
+  opacity: 0.35;
+  animation: lc-reflet 4.5s ease-in-out infinite;
+}
+@keyframes lc-reflet {
+  from {
+    transform: translateX(0) skewX(-20deg);
+  }
+  to {
+    transform: translateX(110px) skewX(-20deg);
+  }
+}
+.lc__particules {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 96px;
+  pointer-events: none;
+}
+.lc__particules span {
+  position: absolute;
+  bottom: 6px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #eef2ff;
+  opacity: 0;
+  animation: lc-monte 3s ease-out infinite;
+}
+@keyframes lc-monte {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px);
+  }
+}
+
+/* Éclipse dorée : couronne de lumière derrière la lune (25), plus vive (26), vagues (27). */
+.lc__couronne {
+  inset: -12px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(255, 210, 122, 0), rgba(255, 210, 122, 0.85), rgba(255, 236, 190, 0.2), rgba(255, 210, 122, 0.75), rgba(255, 210, 122, 0));
+  -webkit-mask: radial-gradient(circle, transparent 54%, #000 58%, #000 66%, transparent 72%);
+  mask: radial-gradient(circle, transparent 54%, #000 58%, #000 66%, transparent 72%);
+  animation: lc-tourne 14s linear infinite;
+  opacity: 0.8;
+}
+.lc__couronne.is-vive {
+  inset: -18px;
+  opacity: 1;
+  animation-duration: 9s;
+}
+.lc__vagues {
+  inset: 0;
+}
+.lc__vagues span {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 220, 150, 0.6);
+  opacity: 0;
+  animation: lc-vague 4s ease-out infinite;
+}
+.lc__vagues span:nth-child(2) {
+  animation-delay: 2s;
+}
+@keyframes lc-vague {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+/* Lune céleste (30) : couleurs qui se relaient lentement, comète en orbite. */
+.lc__teinte {
+  opacity: 0;
+  animation: lc-teinte 12s ease-in-out infinite;
+}
+.lc__teinte.t2 {
+  animation-delay: 6s;
+}
+@keyframes lc-teinte {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  35%,
+  50% {
+    opacity: 0.55;
+  }
+}
+.lc__comete {
+  left: 48px;
+  top: 48px;
+  width: 0;
+  height: 0;
+  animation: lc-tourne 5s linear infinite;
+}
+.lc__comete::before {
+  content: "";
+  position: absolute;
+  left: 52px;
+  top: -2px;
+  width: 26px;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(270deg, #ffffff, rgba(255, 158, 216, 0));
+  box-shadow: 0 0 8px #ffffff;
+  transform: rotate(90deg);
+}
+
+/* Numéro du niveau dans le creux. */
+.lc__texte {
+  left: 34px;
+  top: 17px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lc * {
+    animation: none !important;
+  }
+}

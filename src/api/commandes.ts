@@ -49,6 +49,7 @@ import {
   Preferences,
   PreferencesEtat,
   EtatJeu,
+  BilanTrophees,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -124,6 +125,7 @@ export const api = {
   preferencesEcrire: (preferences: Preferences) => appeler<void>("preferences_ecrire", { preferences }),
   resteamAuDemarrage: (actif: boolean) => appeler<boolean>("resteam_au_demarrage", { actif }),
   jeuSession: () => appeler<EtatJeu>("jeu_session"),
+  bilanTrophees: (steamId: string | null) => appeler<Donnee<BilanTrophees>>("bilan_trophees", { steamId }),
   notificationEssai: () => appeler<void>("notification_essai"),
   parametresSteam: () => appeler<ParametresSteamEtat>("parametres_steam"),
   reglerSteam: (demande: Omit<ReglageSteam, "compte">) => appeler<FileSteam>("regler_steam", { demande }),

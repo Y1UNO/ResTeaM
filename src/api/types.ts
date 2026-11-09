@@ -220,6 +220,19 @@ export type PreferencesEtat = { preferences: Preferences; demarrageWindows: bool
 export type SessionJeu = { appId: number; debut: number; fin: number | null };
 export type EtatJeu = { enCours: SessionJeu | null; derniere: SessionJeu | null };
 
+// ——— Trophées du profil ———
+
+export type TropheeRare = { appId: number; nom: string; icone: string; pourcentage: number };
+export type DernierTrophee = { appId: number; nom: string; icone: string | null; date: number };
+export type BilanTrophees = {
+  total: number;
+  jeux: number;
+  /** Jeux terminés à 100 %. */
+  complets: number[];
+  plusRare: TropheeRare | null;
+  dernier: DernierTrophee | null;
+};
+
 // ——— Paramètres de Steam ———
 
 /** Changements demandés (seuls les champs non nuls sont écrits). */

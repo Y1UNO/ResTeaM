@@ -374,7 +374,16 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
   - l'usage du nom « Steam » dans une app payante.
 
 
-### 13. Économie des styles : structure proposée par Tom (à affiner)
+### 13. Économie des styles — décidé par Tom le 9 novembre 2026 au soir
+
+**Décision finale** :
+- **pas de tickets payants**, trop contraignants et trop risqués pour ce qu'ils rapportent ;
+- on garde le **ticket gratuit du jour** (et les tickets bonus), les **bundles** payants et le bouton **Soutenir ResTeaM** ;
+- presque tout s'échange (ticket du jour et bundles). Seul le soutien reste lié au compte.
+
+Les lignes « tickets payants » ci-dessous sont abandonnées, gardées pour mémoire.
+
+#### Réflexion d'origine
 
 Idée de Tom :
 - des tickets payants, réservés aux joueurs **éligibles** (critères stricts, pays où c'est interdit masqués) ;

@@ -21,6 +21,26 @@ const IMAGE_MAX: u64 = 25 * 1024 * 1024;
 pub struct CacheImages {
     dossier: PathBuf,
     http: Client,
+    /// Avatar et bannière choisis par Tom (`perso/`), servis sous `/__perso__/…`.
+    pub dossier_perso: PathBuf,
+}
+
+/// Fichiers perso autorisés : `avatar` ou `banniere`, extension d'image ou de vidéo.
+pub fn nom_perso_valide(nom: &str) -> bool {
+    let Some((base, ext)) = nom.split_once('.') else { return false };
+    matches!(base, "avatar" | "banniere") && matches!(ext, "png" | "jpg" | "gif" | "webp" | "mp4" | "webm")
+}
+
+fn type_par_extension(nom: &str) -> &'static str {
+    match nom.rsplit('.').next().unwrap_or_default() {
+        "png" => "image/png",
+        "jpg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "mp4" => "video/mp4",
+        "webm" => "video/webm",
+        _ => "application/octet-stream",
+    }
 }
 
 /// Hôtes autorisés : CDN d'images de Steam uniquement.
@@ -65,14 +85,25 @@ fn reponse(statut: StatusCode, corps: Vec<u8>, type_: &str) -> Response<Vec<u8>>
 }
 
 impl CacheImages {
-    pub fn nouveau(dossier: PathBuf, http: Client) -> Self {
+    pub fn nouveau(dossier: PathBuf, http: Client, dossier_perso: PathBuf) -> Self {
         let _ = fs::create_dir_all(&dossier);
-        Self { dossier, http }
+        let _ = fs::create_dir_all(&dossier_perso);
+        Self { dossier, http, dossier_perso }
     }
 
     /// Sert `/<adresse encodée>` : depuis le disque, sinon depuis Steam (puis rangée).
     pub async fn servir(&self, chemin: &str) -> Response<Vec<u8>> {
         let brut = chemin.trim_start_matches('/');
+        // Fichiers perso : un nom fixe, jamais un chemin venu de la requête.
+        if let Some(nom) = brut.strip_prefix("__perso__/") {
+            if !nom_perso_valide(nom) {
+                return reponse(StatusCode::FORBIDDEN, Vec::new(), "text/plain");
+            }
+            return match tokio::fs::read(self.dossier_perso.join(nom)).await {
+                Ok(o) => reponse(StatusCode::OK, o, type_par_extension(nom)),
+                Err(_) => reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain"),
+            };
+        }
         let adresse = percent_encoding::percent_decode_str(brut).decode_utf8_lossy().into_owned();
         if !hote_autorise(&adresse) {
             return reponse(StatusCode::FORBIDDEN, Vec::new(), "text/plain");
@@ -153,6 +184,16 @@ mod tests {
         assert!(!hote_autorise("https://evil.com/steamstatic.com/a.jpg"));
         assert!(!hote_autorise("https://steamstatic.com.evil.com/a.jpg"));
         assert!(!hote_autorise("file:///C:/Windows/win.ini"));
+    }
+
+    #[test]
+    fn fichiers_perso() {
+        assert!(nom_perso_valide("avatar.gif"));
+        assert!(nom_perso_valide("banniere.webm"));
+        assert!(!nom_perso_valide("../avatar.gif"));
+        assert!(!nom_perso_valide("autre.png"));
+        assert!(!nom_perso_valide("avatar.exe"));
+        assert!(!nom_perso_valide("avatar"));
     }
 
     #[test]

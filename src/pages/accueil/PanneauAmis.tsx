@@ -4,7 +4,7 @@ import { api } from "../../api/commandes";
 import { useAmis } from "../../api/requetes";
 import type { Ami } from "../../api/types";
 import { ilYA, statut } from "../../lib/format";
-import { viaCache } from "../../lib/imageLocale";
+import { AvatarSteam } from "../../components/AvatarSteam";
 
 const MAX = 7;
 
@@ -55,7 +55,7 @@ export function PanneauAmis() {
 
 function LigneAmi({ ami, ouvert }: { ami: Ami; ouvert: boolean }) {
   const navigate = useNavigate();
-  const [ratee, setRatee] = useState(false);
+  const [ratee] = useState(false);
   const enJeu = !!ami.jeuEnCours;
   const enLigne = ami.etat > 0;
   const sous =
@@ -74,7 +74,7 @@ function LigneAmi({ ami, ouvert }: { ami: Ami; ouvert: boolean }) {
   return (
     <div className="amis__ligne">
       <div className={`amis__avatar${enJeu || enLigne ? "" : " is-absent"}`} title={`${ami.pseudo} · ${sous}`}>
-        {ami.avatar && !ratee ? <img src={viaCache(ami.avatar)} alt="" onError={() => setRatee(true)} /> : null}
+        {ami.avatar && !ratee ? <AvatarSteam steamId={ami.steamId} avatar={ami.avatar} /> : null}
         <span className={`amis__point${enJeu ? " is-jeu" : enLigne ? " is-ligne" : ""}`} />
       </div>
       {ouvert && (

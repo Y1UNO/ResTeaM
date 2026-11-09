@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useMoletteHorizontale } from "../../lib/molette";
+import { MenuJeu } from "../bibliotheque/MenuJeu";
 import { useNavigate } from "react-router-dom";
 import type { ImagesJeu, JeuBibliotheque } from "../../api/types";
 import { heures } from "../../lib/format";
@@ -26,6 +27,7 @@ type Props = {
 export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet, nombreFavoris }: Props) {
   const navigate = useNavigate();
   const piste = useRef<HTMLDivElement>(null);
+  const [menu, setMenu] = useState<{ jeu: JeuBibliotheque; x: number; y: number } | null>(null);
   useMoletteHorizontale(piste, onglet);
   const onglets: { id: OngletRuban; libelle: string }[] = [
     { id: "favoris", libelle: `Favoris${nombreFavoris ? ` · ${nombreFavoris}` : ""}` },
@@ -65,6 +67,7 @@ export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet
             jaquette={imagesDe(j.appId, images).jaquette}
             choisie={i === choisi}
             onClick={() => onChoisir(i)}
+            onMenu={(x, y) => setMenu({ jeu: j, x, y })}
           />
         ))}
         <button
@@ -85,6 +88,7 @@ export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet
           </span>
         </button>
       </div>
+      {menu && <MenuJeu jeu={menu.jeu} x={menu.x} y={menu.y} images={images} onFermer={() => setMenu(null)} />}
     </section>
   );
 }
@@ -94,11 +98,13 @@ function CarteRuban({
   jaquette,
   choisie,
   onClick,
+  onMenu,
 }: {
   jeu: JeuBibliotheque;
   jaquette: string | null;
   choisie: boolean;
   onClick: () => void;
+  onMenu: (x: number, y: number) => void;
 }) {
   const [ratee, setRatee] = useState(false);
   const inst = jeu.installation;
@@ -117,6 +123,10 @@ function CarteRuban({
       className={`rib${choisie ? " is-choisie" : ""}`}
       data-lueur=""
       onClick={onClick}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onMenu(e.clientX, e.clientY);
+      }}
       aria-pressed={choisie}
       aria-label={`${jeu.nom}, ${heures(jeu.minutesTotal)}`}
     >

@@ -526,6 +526,20 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
   - les choix ResTeaM sont gardés sur ce PC ; les amis voient les objets Steam, car il faudrait un serveur pour partager les choix ResTeaM ;
   - CSP : `media-src` ouvert aux CDN d'objets Steam (`cdn.cloudflare/akamai/fastly.steamstatic.com`).
 
+### Lot 3 bis — Retours sur le profil (9 novembre 2026)
+
+- **Classements** : la lueur au centre de « En jeu maintenant » est retirée (et une accolade en trop dans `classements.css` qui cassait la compilation).
+- **Clic droit partout** : le menu du navigateur est bloqué dans toute l'app (sauf dans les champs de texte). Le menu du jeu marche aussi sur le ruban de l'accueil.
+- **Recherche** : au survol d'un jeu, son affiche s'installe en fond, floutée, en fondu.
+- **Cadre lianes** redessiné : tige ondulée, feuilles orientées, trois fleurs, léger balancement.
+- **Avatars animés partout** (`src/components/AvatarSteam.tsx`) : barre de gauche, amis (page et panneau), Recherche.
+- **Pluie lunaire et étoiles filantes en plein écran**. La pluie reprend les gouttes de la lune. Cause du « ça ne marche pas » : l'animation d'entrée des pages gardait un `transform` (`both`), ce qui enfermait tout élément `fixed` dans la page. Elle est passée en `backwards` (corrige aussi l'affiche floutée de la Recherche).
+- **Ma photo et ma bannière** (hors Steam) :
+  - choisies dans le pinceau magique : image, GIF animé ou vidéo MP4 / WebM, sans limite de poids ;
+  - envoyées en binaire brut (`enregistrer_media_perso`), rangées dans `perso/` du dossier de l'app, servies par le protocole `img` sous `/__perso__/` ;
+  - seuls les noms `avatar.*` et `banniere.*` sont acceptés, testés par `fichiers_perso` ;
+  - visibles dans ResTeaM sur ce PC. Pour que les amis les voient, il faudrait un serveur partagé (question posée à Tom).
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

@@ -109,3 +109,14 @@ export const api = {
   objetsProfil: (steamId: string) => appeler<Donnee<ObjetsProfil>>("objets_profil", { steamId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };
+
+/**
+ * Avatar ou bannière choisis sur le PC (image, GIF ou vidéo), envoyés en binaire brut
+ * au Rust qui les range dans le dossier de ResTeaM. Renvoie l'adresse à afficher.
+ * Dans l'aperçu navigateur, une adresse locale temporaire.
+ */
+export async function enregistrerMediaPerso(nom: "avatar" | "banniere", fichier: File): Promise<string> {
+  if (!dansTauri) return URL.createObjectURL(fichier);
+  const octets = new Uint8Array(await fichier.arrayBuffer());
+  return invoke<string>("enregistrer_media_perso", octets, { headers: { "x-nom": nom, "x-type": fichier.type } });
+}

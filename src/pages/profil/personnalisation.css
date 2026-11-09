@@ -138,17 +138,46 @@
     transform: rotate(360deg);
   }
 }
+/* Liane : elle se balance doucement (pas de rotation complète), les feuilles frémissent. */
+.cadre-avatar__liane {
+  animation: cadre-balance 7s ease-in-out infinite;
+}
+@keyframes cadre-balance {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
 .cadre-avatar__feuille {
   transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: cadre-feuille 3s ease-in-out infinite;
+  transform-origin: 0% 50%;
+  animation: cadre-feuille 3.2s ease-in-out infinite;
 }
 @keyframes cadre-feuille {
   0%,
   100% {
-    opacity: 0.6;
+    transform: rotate(-8deg) scale(0.92);
   }
   50% {
+    transform: rotate(10deg) scale(1.05);
+  }
+}
+.cadre-avatar__fleur {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cadre-fleur 2.8s ease-in-out infinite;
+}
+@keyframes cadre-fleur {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.15);
     opacity: 1;
   }
 }
@@ -195,36 +224,80 @@
   animation: cadre-tourne 6s linear infinite;
 }
 
-/* ——— Étoiles filantes ——— */
-.effet-etoiles {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 520px;
+/* ——— Ambiances plein écran ——— */
+.effet-plein {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--rail-w);
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
 }
+/* Pluie lunaire : les gouttes de la lune du niveau, sur tout l'écran. */
+.effet-pluie span {
+  position: absolute;
+  top: 0;
+  width: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent-profil) 85%, #fff));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent-profil) 60%, transparent);
+  opacity: 0.75;
+  will-change: transform;
+  animation-name: pluie-plein;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+}
+.effet-pluie span.is-point {
+  width: 3px;
+  border-radius: 50%;
+  background: var(--accent-profil);
+}
+@keyframes pluie-plein {
+  0% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(105vh);
+    opacity: 0.2;
+  }
+}
+/* Étoiles filantes : traînée lumineuse qui file en diagonale. */
 .effet-etoiles span {
   position: absolute;
-  width: 140px;
-  height: 1.5px;
-  background: linear-gradient(90deg, transparent, var(--accent-profil), #fff);
+  width: 220px;
+  height: 2px;
   border-radius: 2px;
+  background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--accent-profil) 80%, transparent) 30%, transparent);
+  filter: drop-shadow(0 0 6px var(--accent-profil));
   opacity: 0;
-  transform: rotate(-20deg);
-  animation: etoile-filante 7s ease-in infinite;
+  transform-origin: left center;
+  will-change: transform, opacity;
+  animation-name: etoile-filante;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in;
 }
 @keyframes etoile-filante {
-  0%,
-  80% {
+  0% {
     opacity: 0;
-    transform: rotate(-20deg) translateX(0);
+    transform: rotate(-28deg) translateX(0) scaleX(0.3);
   }
-  84% {
+  6% {
     opacity: 1;
+    transform: rotate(-28deg) translateX(-80px) scaleX(1);
+  }
+  22% {
+    opacity: 0;
+    transform: rotate(-28deg) translateX(-620px) scaleX(0.6);
   }
   100% {
     opacity: 0;
-    transform: rotate(-20deg) translateX(-420px);
+    transform: rotate(-28deg) translateX(-620px) scaleX(0.6);
   }
 }
 
@@ -506,4 +579,66 @@
 .perso__couleur.is-actif {
   border-color: #fff;
   box-shadow: 0 0 12px currentColor;
+}
+
+/* Mes fichiers (photo et bannière perso). */
+.fond-profil__perso {
+  opacity: 0.6;
+}
+.perso__fichiers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.perso__fichier {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.02);
+}
+.perso__fichier > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.perso__fichier strong {
+  font-size: 14px;
+}
+.perso__fichier span {
+  font-size: 11.5px;
+  color: var(--text-4);
+}
+.perso__fichier-apercu {
+  flex: 0 0 auto;
+  width: 92px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #18181b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-4) !important;
+  font-size: 18px !important;
+}
+.perso__fichier-apercu.is-rond {
+  width: 56px;
+  border-radius: 50%;
+}
+.perso__fichier-apercu img,
+.perso__fichier-apercu video,
+.perso__apercu video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perso__fichier-boutons {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }

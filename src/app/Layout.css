@@ -14,5 +14,5 @@
 .app__page {
   position: relative;
   min-height: 100vh;
-  animation: page-in var(--dur-2) var(--ease) both;
+  animation: page-in var(--dur-2) var(--ease) backwards; /* pas « both » : un transform resté figé casserait les éléments « fixed » (pluie, affiche floutée). */
 }

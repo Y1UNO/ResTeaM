@@ -24,6 +24,13 @@ import { installerInteractions } from "./lib/interactif";
 
 installerInteractions();
 
+// Pas de menu « Enregistrer l'image sous… » du navigateur : ResTeaM a ses propres menus
+// (clic droit sur un jeu). Les champs de texte gardent copier / coller.
+document.addEventListener("contextmenu", (e) => {
+  const cible = e.target as HTMLElement | null;
+  if (!cible?.closest("input, textarea, [contenteditable='true']")) e.preventDefault();
+});
+
 // Lecture de la session et de l'état de la clé, une fois au démarrage.
 void useSession.getState().initialiser();
 

@@ -36,7 +36,7 @@ import {
 } from "./Personnalisation";
 
 /** Un ami : ses objets Steam, avec les réglages par défaut (ses choix ResTeaM ne sont pas partagés). */
-const PERSO_AMI: Personnalisation = { fond: "steam", jeuFond: null, cadre: "steam", avatarAnime: true, effet: "pluie", accent: "#9fd8ff" };
+const PERSO_AMI: Personnalisation = { fond: "steam", jeuFond: null, cadre: "steam", avatarAnime: true, effet: "pluie", accent: "#9fd8ff", avatarPerso: null, bannierePerso: null, bannierePersoVideo: false };
 
 const RANGS = [
   { romain: "0", nom: "Novice", seuil: "< 10 h" },
@@ -95,7 +95,7 @@ function VueProfil({ ami }: { ami: string | null }) {
   const favoris = useMemo(() => jeuxMoi.filter((x) => x.favori), [jeuxMoi]);
   const imagesFavoris = useImages(panneau || perso.jeuFond ? favoris.map((x) => x.appId) : []);
   const heroFond = perso.fond === "jeu" && perso.jeuFond ? imagesDe(perso.jeuFond, imagesFavoris.data).hero : null;
-  const avatarAffiche = perso.avatarAnime && objets?.avatarAnime?.image ? objets.avatarAnime.image : j?.avatar;
+  const avatarAffiche = (!ami && perso.avatarPerso) || (perso.avatarAnime && objets?.avatarAnime?.image ? objets.avatarAnime.image : j?.avatar);
 
   const minutesRecentes = r.reduce((s, x) => s + x.minutesDeuxSemaines, 0);
   const parRang = useMemo(() => {
@@ -131,7 +131,7 @@ function VueProfil({ ami }: { ami: string | null }) {
         <section className="profil__haut" aria-labelledby="profil-nom">
           <div className="profil__avatar">
             <span className="profil__avatar-image" data-incline="">
-              {avatarAffiche ? <img src={viaCache(avatarAffiche)} alt="" draggable={false} /> : <span className="profil__avatar-vide" />}
+              {avatarAffiche ? <img src={avatarAffiche.startsWith("https://") ? viaCache(avatarAffiche) : avatarAffiche} alt="" draggable={false} /> : <span className="profil__avatar-vide" />}
             </span>
             <CadreAvatar p={perso} objets={objets} />
             {!ami && <PinceauMagique onClick={() => setPanneau(true)} />}

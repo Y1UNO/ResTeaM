@@ -805,3 +805,28 @@ html.defile .dl-zone__anneau {
   width: 42px;
   height: 42px;
 }
+
+/* Recherche : affiche du jeu survolé, floue et en fondu, derrière les résultats. */
+.recherche-page {
+  overflow: clip;
+}
+.recherche__affiche {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--rail-w);
+  height: 85vh;
+  background: center 25% / cover no-repeat;
+  filter: blur(14px) saturate(1.15);
+  opacity: 0.38;
+  -webkit-mask-image: radial-gradient(ellipse 80% 75% at 60% 30%, #000 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 75% at 60% 30%, #000 30%, transparent 80%);
+  pointer-events: none;
+  animation: recherche-affiche 0.6s ease both;
+}
+@keyframes recherche-affiche {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}

@@ -6,6 +6,7 @@ import { heures } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import { degradeJaquette, imagesDe } from "../lib/images";
 import { BlocPrix } from "./magasin/Boutique";
+import { AvatarSteam } from "../components/AvatarSteam";
 import "./pages.css";
 import "./magasin/boutique.css";
 import "./secondaires.css";
@@ -22,6 +23,7 @@ export function Recherche() {
   const champ = useRef<HTMLInputElement>(null);
   const [saisie, setSaisie] = useState("");
   const [terme, setTerme] = useState("");
+  const [survol, setSurvol] = useState<string | null>(null);
   useEffect(() => champ.current?.focus(), []);
   useEffect(() => {
     const t = window.setTimeout(() => setTerme(saisie.trim()), 220);
@@ -52,7 +54,8 @@ export function Recherche() {
   const rien = q.length >= 2 && !magasin.isFetching && mesJeux.length === 0 && duMagasin.length === 0 && mesAmis.length === 0;
 
   return (
-    <div className="page">
+    <div className="page recherche-page">
+      {survol && <div key={survol} className="recherche__affiche" aria-hidden="true" style={{ backgroundImage: `url("${survol}")` }} />}
       <Smoke variant="top" />
       <div className="page__content secondaire recherche">
         <label className="recherche__champ">
@@ -90,7 +93,14 @@ export function Recherche() {
               {mesJeux.map((j, i) => {
                 const url = imagesDe(j.appId, images.data).jaquettePetite;
                 return (
-                  <button key={j.appId} type="button" className="r-jeu" onClick={() => navigate(`/jeu/${j.appId}`)} style={{ animationDelay: `${i * 30}ms` }}>
+                  <button
+                    key={j.appId}
+                    type="button"
+                    className="r-jeu"
+                    onClick={() => navigate(`/jeu/${j.appId}`)}
+                    onMouseEnter={() => setSurvol(imagesDe(j.appId, images.data).hero)}
+                    style={{ animationDelay: `${i * 30}ms` }}
+                  >
                     <span className="r-jeu__art" data-incline="" style={url ? { backgroundImage: `url("${url}")` } : { background: degradeJaquette(j.nom) }} />
                     <strong>{j.nom}</strong>
                     <span>{j.minutesTotal > 0 ? heures(j.minutesTotal) : "Jamais lancé"}</span>
@@ -108,7 +118,14 @@ export function Recherche() {
             </h2>
             <div className="r-magasin">
               {duMagasin.map((p, i) => (
-                <button key={p.appId} type="button" className="brecherche__ligne r-magasin__ligne" onClick={() => navigate(`/jeu/${p.appId}`)} style={{ animationDelay: `${i * 30}ms` }}>
+                <button
+                  key={p.appId}
+                  type="button"
+                  className="brecherche__ligne r-magasin__ligne"
+                  onClick={() => navigate(`/jeu/${p.appId}`)}
+                  onMouseEnter={() => setSurvol(p.hero ? viaCache(p.hero) : null)}
+                  style={{ animationDelay: `${i * 30}ms` }}
+                >
                   <span className="brecherche__image">{p.banniere && <img src={viaCache(p.banniere)} alt="" loading="lazy" draggable={false} />}</span>
                   <span className="brecherche__texte">
                     <strong>{p.nom}</strong>
@@ -129,7 +146,7 @@ export function Recherche() {
             <div className="r-amis">
               {mesAmis.map((a) => (
                 <button key={a.steamId} type="button" className="r-ami" onClick={() => navigate(`/profil/${a.steamId}`)}>
-                  <span className="r-ami__avatar">{a.avatar && <img src={viaCache(a.avatar)} alt="" />}</span>
+                  <span className="r-ami__avatar">{a.avatar && <AvatarSteam steamId={a.steamId} avatar={a.avatar} />}</span>
                   <strong>{a.pseudo}</strong>
                   <span>{a.jeuEnCours ?? (a.etat > 0 ? "En ligne" : "Hors ligne")}</span>
                 </button>

@@ -6,7 +6,7 @@ import { estErreurApp, type Ami } from "../api/types";
 import { Smoke } from "../components/Smoke";
 import { Lucioles } from "../components/Vivant";
 import { date, ilYA, statut } from "../lib/format";
-import { viaCache } from "../lib/imageLocale";
+import { AvatarSteam } from "../components/AvatarSteam";
 import "./pages.css";
 import "./secondaires.css";
 
@@ -97,7 +97,7 @@ export function Amis() {
 
 function CarteAmi({ ami, index }: { ami: Ami; index: number }) {
   const navigate = useNavigate();
-  const [ratee, setRatee] = useState(false);
+  const [ratee] = useState(false);
   const enJeu = !!ami.jeuEnCours;
   const enLigne = ami.etat > 0;
   const appId = Number(ami.jeuEnCoursId);
@@ -118,7 +118,7 @@ function CarteAmi({ ami, index }: { ami: Ami; index: number }) {
       {/* Toute la carte ouvre le profil de l'ami ; les boutons d'action restent au-dessus. */}
       <button type="button" className="ami-carte__ouvrir" aria-label={`Voir le profil de ${ami.pseudo}`} onClick={() => navigate(`/profil/${ami.steamId}`)} />
       <span className="ami-carte__avatar">
-        {ami.avatar && !ratee && <img src={viaCache(ami.avatar)} alt="" loading="lazy" onError={() => setRatee(true)} />}
+        {ami.avatar && !ratee && <AvatarSteam steamId={ami.steamId} avatar={ami.avatar} />}
         <span className="ami-carte__point" />
       </span>
       <span className="ami-carte__texte">

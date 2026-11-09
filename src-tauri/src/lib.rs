@@ -37,7 +37,7 @@ pub fn run() {
             let cache = Cache::ouvrir(&dossier.join("cache.sqlite")).map_err(|e| e.to_string())?;
             let steam = ClientSteam::nouveau().map_err(|e| e.to_string())?;
             let dossier_images = dossier.join("images");
-            app.manage(images_locales::CacheImages::nouveau(dossier_images.clone(), steam.http.clone()));
+            app.manage(images_locales::CacheImages::nouveau(dossier_images.clone(), steam.http.clone(), dossier.join("perso")));
             std::thread::spawn(move || images_locales::elaguer(&dossier_images));
             app.manage(EtatApp { cache, steam, annulation: Mutex::new(None), redemarrage: Default::default() });
             // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
@@ -65,6 +65,7 @@ pub fn run() {
             commandes::ouvrir_dossier_jeu,
             commandes::dlc_jeu,
             commandes::objets_profil,
+            commandes::enregistrer_media_perso,
             commandes::file_steam,
             commandes::annuler_file_steam,
             commandes::connexion_steam,

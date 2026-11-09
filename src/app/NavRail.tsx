@@ -14,6 +14,7 @@ import { LogoMenu } from "./LogoMenu";
 import { PATHS } from "./paths";
 import "./NavRail.css";
 import { viaCache } from "../lib/imageLocale";
+import { AvatarSteam } from "../components/AvatarSteam";
 
 type RailItem = {
   label: string;
@@ -116,14 +117,7 @@ export function NavRail() {
         <span aria-hidden="true" className="rail__bar rail__bar--avatar" />
         <span className="rail__avatar-img">
           {avatarUrl && !avatarCasse ? (
-            <img
-              key={avatarUrl}
-              className="rail__avatar-photo"
-              src={avatarUrl}
-              alt=""
-              draggable={false}
-              onError={() => setAvatarCasse(true)}
-            />
+            <AvatarSteam steamId={joueur.data?.donnees.steamId} avatar={joueur.data?.donnees.avatar} className="rail__avatar-photo" />
           ) : (
             <IconPerson />
           )}

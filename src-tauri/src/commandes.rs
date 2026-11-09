@@ -762,3 +762,40 @@ pub async fn objets_profil(etat: State<'_, EtatApp>, steam_id: String) -> Result
         .avec_cache(&format!("objets-profil:{steam_id}"), 60 * 60, || etat.steam.objets_profil(&steam_id))
         .await
 }
+
+// ——— Avatar et bannière perso (fichiers choisis par Tom) ———
+
+/// Enregistre l'avatar ou la bannière choisis sur le PC (image, GIF ou vidéo, sans
+/// limite de poids). Le fichier arrive en binaire brut ; les en-têtes `x-nom`
+/// (`avatar` / `banniere`) et `x-type` (type MIME) disent ce que c'est.
+/// Renvoie l'adresse locale à afficher.
+#[tauri::command]
+pub async fn enregistrer_media_perso(app: AppHandle, request: tauri::ipc::Request<'_>) -> Resultat<String> {
+    let entete = |n: &str| request.headers().get(n).and_then(|v| v.to_str().ok()).unwrap_or_default().to_string();
+    let nom = entete("x-nom");
+    if nom != "avatar" && nom != "banniere" {
+        return Err(Erreur::Interne("média inconnu".into()));
+    }
+    let ext = match entete("x-type").as_str() {
+        "image/png" => "png",
+        "image/jpeg" => "jpg",
+        "image/gif" => "gif",
+        "image/webp" => "webp",
+        "video/mp4" => "mp4",
+        "video/webm" => "webm",
+        _ => return Err(Erreur::Interne("format non pris en charge (PNG, JPG, GIF, WebP, MP4, WebM)".into())),
+    };
+    let tauri::ipc::InvokeBody::Raw(octets) = request.body() else {
+        return Err(Erreur::Interne("fichier manquant".into()));
+    };
+    let cache = app.state::<crate::images_locales::CacheImages>();
+    let dossier = cache.dossier_perso.clone();
+    std::fs::create_dir_all(&dossier)?;
+    // Un seul fichier par média : l'ancien (autre format) est retiré.
+    for autre in ["png", "jpg", "gif", "webp", "mp4", "webm"] {
+        let _ = std::fs::remove_file(dossier.join(format!("{nom}.{autre}")));
+    }
+    let fichier = format!("{nom}.{ext}");
+    tokio::fs::write(dossier.join(&fichier), octets).await?;
+    Ok(format!("http://img.localhost/__perso__/{fichier}?v={}", crate::cache::maintenant()))
+}

@@ -1,0 +1,77 @@
+/* Rappel des touches de la manette, en haut au centre. */
+.aide-manette {
+  position: fixed;
+  z-index: 60;
+  top: 18px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(14, 14, 17, 0.82);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(238, 242, 255, 0.18);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+  font-size: 12.5px;
+  color: var(--text-2);
+  translate: -50% 0;
+  pointer-events: none;
+  animation:
+    aide-manette-entre 0.5s var(--ease) both,
+    aide-manette-sort 0.6s ease 4.9s forwards;
+}
+.aide-manette strong {
+  color: var(--text-1);
+  font-weight: 600;
+}
+.aide-manette span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.aide-manette kbd {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(238, 242, 255, 0.1);
+  border: 1px solid rgba(238, 242, 255, 0.22);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+@keyframes aide-manette-entre {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+@keyframes aide-manette-sort {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Focus bien visible quand la manette sert : un anneau de clair de lune. */
+html.manette :focus {
+  outline: 2px solid #eef2ff;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 6px rgba(159, 216, 255, 0.18), 0 0 26px rgba(159, 216, 255, 0.35);
+  transition:
+    outline-offset 0.2s var(--ease),
+    box-shadow 0.25s ease;
+}
+html.manette * {
+  cursor: none;
+}
+
+/* Mode Salon : plein écran, barre de titre masquée (Menu ou F11 pour sortir). */
+html.mode-salon .titlebar {
+  opacity: 0;
+  pointer-events: none;
+}

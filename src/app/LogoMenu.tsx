@@ -6,6 +6,7 @@ import { api } from "../api/commandes";
 import { IconLogout, IconSettings } from "../components/icons";
 import { useSession } from "./session";
 import { PATHS } from "./paths";
+import { basculerModeSalon, modeSalonActif } from "../lib/manette";
 import "./LogoMenu.css";
 
 type MenuState = "closed" | "open" | "closing";
@@ -92,6 +93,23 @@ export function LogoMenu() {
           >
             <IconSettings />
             Paramètres
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="logo-menu__item"
+            onClick={() => {
+              close();
+              void basculerModeSalon();
+            }}
+          >
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="5" width="18" height="12" rx="2.5" />
+              <path d="M8 21h8M12 17v4" />
+              <path d="M13.6 8.2a2.6 2.6 0 1 0 1.8 4 2.1 2.1 0 1 1-1.8-4z" fill="currentColor" stroke="none" />
+            </svg>
+            {modeSalonActif() ? "Quitter le mode Salon" : "Mode Salon"}
+            <span className="logo-menu__raccourci">F11</span>
           </button>
           <div className="logo-menu__separateur" role="separator" />
           <button type="button" role="menuitem" className="logo-menu__item" onClick={seDeconnecter}>

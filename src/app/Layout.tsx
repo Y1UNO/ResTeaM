@@ -7,6 +7,8 @@ import { HorsLigne } from "./HorsLigne";
 import { Lancement } from "./Lancement";
 import { PATHS } from "./paths";
 import { PastilleJeu } from "./PastilleJeu";
+import { AideManette } from "./AideManette";
+import { installerManette } from "../lib/manette";
 import { installerSuiviJeu } from "./sessionJeu";
 import { listen } from "@tauri-apps/api/event";
 import { dansTauri } from "../api/commandes";
@@ -37,6 +39,15 @@ export function Layout() {
     return () => stop?.();
   }, [navigate]);
 
+  // Manette : navigation dans toute l'app, pages de la barre de gauche avec LB / RB.
+  useEffect(() => {
+    installerManette(
+      (p) => navigate(p),
+      [PATHS.accueil, PATHS.magasin, PATHS.classements, PATHS.communaute, PATHS.workshop, PATHS.souhaits],
+      PATHS.recherche,
+    );
+  }, [navigate]);
+
   // Ctrl+K : recherche (libellé de la maquette 01).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -57,6 +68,7 @@ export function Layout() {
       <HorsLigne />
       <Lancement />
       <PastilleJeu />
+      <AideManette />
       <main className="app__main">
         <div key={pathname} className="app__page">
           <Outlet />

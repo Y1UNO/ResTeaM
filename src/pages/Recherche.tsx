@@ -91,7 +91,7 @@ export function Recherche() {
                 const url = imagesDe(j.appId, images.data).jaquettePetite;
                 return (
                   <button key={j.appId} type="button" className="r-jeu" onClick={() => navigate(`/jeu/${j.appId}`)} style={{ animationDelay: `${i * 30}ms` }}>
-                    <span className="r-jeu__art" style={url ? { backgroundImage: `url("${url}")` } : { background: degradeJaquette(j.nom) }} />
+                    <span className="r-jeu__art" data-incline="" style={url ? { backgroundImage: `url("${url}")` } : { background: degradeJaquette(j.nom) }} />
                     <strong>{j.nom}</strong>
                     <span>{j.minutesTotal > 0 ? heures(j.minutesTotal) : "Jamais lancé"}</span>
                   </button>
@@ -128,7 +128,7 @@ export function Recherche() {
             </h2>
             <div className="r-amis">
               {mesAmis.map((a) => (
-                <button key={a.steamId} type="button" className="r-ami" onClick={() => navigate("/amis")}>
+                <button key={a.steamId} type="button" className="r-ami" onClick={() => navigate(`/profil/${a.steamId}`)}>
                   <span className="r-ami__avatar">{a.avatar && <img src={viaCache(a.avatar)} alt="" />}</span>
                   <strong>{a.pseudo}</strong>
                   <span>{a.jeuEnCours ?? (a.etat > 0 ? "En ligne" : "Hors ligne")}</span>

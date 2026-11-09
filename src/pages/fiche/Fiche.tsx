@@ -352,7 +352,7 @@ function Section({
 }) {
   const ouvert = ouverte === id;
   return (
-    <div className={`fiche-section${ouvert ? " is-ouverte" : ""}`}>
+    <div data-lueur="" className={`fiche-section${ouvert ? " is-ouverte" : ""}`}>
       <button type="button" className="fiche-section__tete" aria-expanded={ouvert} onClick={() => onBasculer(ouvert ? null : id)}>
         <span className="fiche-section__titres">
           <span className="fiche-section__titre">{titre}</span>

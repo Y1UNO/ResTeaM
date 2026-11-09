@@ -119,6 +119,8 @@ export type NiveauBadges = {
 };
 
 export type Ami = Joueur & { amiDepuis: number };
+/** Profil d'un autre joueur : les parties privées sont `null`. */
+export type ProfilJoueur = { joueur: Joueur; niveau: NiveauBadges | null; jeux: JeuPossede[] | null; recents: JeuPossede[] | null };
 export type ListeAmis = { prive: boolean; amis: Ami[] };
 
 export type Succes = {

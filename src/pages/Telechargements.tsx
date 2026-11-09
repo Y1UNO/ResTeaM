@@ -5,6 +5,7 @@ import { api } from "../api/commandes";
 import { useBibliotheque, useFileSteam, useImages, useJeuxInstalles, useNomJeu, useStatsSysteme } from "../api/requetes";
 import type { JeuInstalle } from "../api/types";
 import { Smoke } from "../components/Smoke";
+import { Lucioles } from "../components/Vivant";
 import { useInstallation } from "../installation/store";
 import { date, taille } from "../lib/format";
 import { degradeJaquette, imagesDe } from "../lib/images";
@@ -49,6 +50,7 @@ export function Telechargements() {
   return (
     <div className="page">
       <Smoke variant="top" />
+      <Lucioles graine={23} nombre={10} />
       <div className="page__content secondaire">
         <div className="page__header">
           <h1 className="page__title">Téléchargements</h1>
@@ -168,7 +170,7 @@ function LigneTelechargement({ jeu, index, jaquette, hero }: { jeu: JeuInstalle;
   const fraction = jeu.aTelecharger > 0 ? Math.min(1, jeu.telecharge / jeu.aTelecharger) : 0;
   const reste = vitesse && vitesse > 0 && jeu.aTelecharger > 0 ? (jeu.aTelecharger - jeu.telecharge) / vitesse : Infinity;
   return (
-    <div className="dl-ligne dl-ligne--active" style={{ animationDelay: `${index * 40}ms` }}>
+    <div data-lueur="" className="dl-ligne dl-ligne--active" style={{ animationDelay: `${index * 40}ms` }}>
       <Jaquette url={jaquette} nom={jeu.nom} />
       <div className="dl-ligne__texte">
         <strong>{jeu.nom}</strong>

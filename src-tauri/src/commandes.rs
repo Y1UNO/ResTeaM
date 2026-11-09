@@ -615,3 +615,43 @@ pub async fn amis_possedant(app: AppHandle, etat: State<'_, EtatApp>, app_id: u3
     }
     Ok(resultat)
 }
+
+// ——— Profil d'un ami ———
+
+const TTL_PROFIL_AMI: i64 = 10 * 60;
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProfilJoueur {
+    pub joueur: Joueur,
+    /// `None` si Steam ne le montre pas (profil privé).
+    pub niveau: Option<NiveauBadges>,
+    pub jeux: Option<Vec<JeuPossede>>,
+    pub recents: Option<Vec<JeuPossede>>,
+}
+
+/// Profil d'un autre joueur (un ami) : résumé, niveau et badges, jeux, jeux récents.
+/// Chaque partie privée revient vide au lieu de faire échouer le tout.
+#[tauri::command]
+pub async fn profil_joueur(app: AppHandle, etat: State<'_, EtatApp>, steam_id: String) -> Resultat<Donnee<ProfilJoueur>> {
+    if steam_id.len() != 17 || !steam_id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(Erreur::Interne("identifiant Steam invalide".into()));
+    }
+    let (_, cle) = identifiants(&app)?;
+    etat.cache
+        .avec_cache(&format!("profil:{steam_id}"), TTL_PROFIL_AMI, || async {
+            let (joueur, niveau, jeux, recents) = tokio::join!(
+                etat.steam.resume_joueur(&cle, &steam_id),
+                etat.steam.niveau_badges(&cle, &steam_id),
+                etat.steam.jeux_possedes(&cle, &steam_id),
+                etat.steam.jeux_recents(&cle, &steam_id),
+            );
+            Ok(ProfilJoueur {
+                joueur: joueur?,
+                niveau: niveau.ok(),
+                jeux: jeux.ok().filter(|j| !j.is_empty()),
+                recents: recents.ok(),
+            })
+        })
+        .await
+}

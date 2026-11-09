@@ -12,6 +12,7 @@ import {
   type DemandeInstallation,
   type FicheJeu,
   type Produit,
+  type ProfilJoueur,
   type Souhait,
   type VitrineMagasin,
   type FileSteam,
@@ -97,5 +98,6 @@ export const api = {
   classements: () => appeler<Donnee<Classements>>("classements"),
   enLigne: () => appeler<Donnee<EnLigne>>("en_ligne"),
   amisPossedant: (appId: number) => appeler<string[]>("amis_possedant", { appId }),
+  profilJoueur: (steamId: string) => appeler<Donnee<ProfilJoueur>>("profil_joueur", { steamId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

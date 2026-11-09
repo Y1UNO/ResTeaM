@@ -4,6 +4,7 @@ import { api } from "../api/commandes";
 import { useProduits, useSouhaits } from "../api/requetes";
 import { estErreurApp, type Produit } from "../api/types";
 import { Smoke } from "../components/Smoke";
+import { Lucioles } from "../components/Vivant";
 import { date, entier } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import { degradeJaquette } from "../lib/images";
@@ -47,6 +48,7 @@ export function Souhaits() {
   return (
     <div className="page">
       <Smoke variant="top" />
+      <Lucioles graine={41} nombre={12} />
       <div className="page__content souhaits">
         <header className="souhaits__entete">
           <div className="page__header">
@@ -134,7 +136,7 @@ function Ligne({
   const promo = (p.prix?.reduction ?? 0) > 0;
   const image = p.capsule ?? p.banniere;
   return (
-    <article className={`souhait${promo ? " is-promo" : ""}`} style={{ animationDelay: `${Math.min(index, 14) * 40}ms` }}>
+    <article data-lueur="" className={`souhait${promo ? " is-promo" : ""}`} style={{ animationDelay: `${Math.min(index, 14) * 40}ms` }}>
       <button type="button" className="souhait__image" onClick={onOuvrir} aria-label={`${p.nom} : ouvrir la fiche`} style={image && !ratee ? undefined : { background: degradeJaquette(p.nom) }}>
         {image && !ratee && <img src={viaCache(image)} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setRatee(true)} />}
       </button>

@@ -47,6 +47,7 @@ export const router = createHashRouter([
       { path: PATHS.telechargements, element: <Telechargements /> },
       { path: PATHS.amis, element: <Amis /> },
       { path: PATHS.profil, element: <Profil /> },
+      { path: PATHS.profilAmi, element: <Profil /> },
       { path: PATHS.parametres, element: <Parametres /> },
       { path: PATHS.donnees, element: <DonneesTest /> },
       { path: "*", element: <Navigate to={PATHS.accueil} replace /> },

@@ -31,7 +31,8 @@ export function Accueil() {
   // Une installation suivie par l'app : on relit le disque en continu.
   const installationSuivie = useInstallation((s) => s.jeu != null);
 
-  const [onglet, setOnglet] = useState<OngletRuban>("reprendre");
+  // Tes favoris d'abord (demande de Tom) ; « Reprendre » s'il n'y en a aucun.
+  const [ongletChoisi, setOnglet] = useState<OngletRuban | null>(null);
   const favoris = useMemo(
     () =>
       (b?.jeux ?? [])
@@ -39,6 +40,7 @@ export function Accueil() {
         .sort((x, y) => y.dernierLancement - x.dernierLancement || x.nom.localeCompare(y.nom)),
     [b],
   );
+  const onglet: OngletRuban = ongletChoisi ?? (favoris.length > 0 ? "favoris" : "reprendre");
   const base = useMemo(() => {
     if (onglet === "favoris") return favoris;
     const visibles = (b?.jeux ?? []).filter((j) => !j.cache);

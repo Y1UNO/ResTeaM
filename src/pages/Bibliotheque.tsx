@@ -228,6 +228,7 @@ const Tuile = memo(function Tuile({
       <button
         type="button"
         className="tuile__art"
+        data-incline=""
         style={image ? undefined : { background: degradeJaquette(jeu.nom) }}
         onClick={() => navigate(`/jeu/${jeu.appId}`)}
         aria-label={`${jeu.nom} : ouvrir la fiche`}

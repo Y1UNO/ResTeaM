@@ -1,5 +1,6 @@
 import { useId, useMemo, useState, type CSSProperties } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSession } from "../../app/session";
 import { api } from "../../api/commandes";
 import {
   useAmis,
@@ -7,12 +8,14 @@ import {
   useImages,
   useJoueurMoi,
   useNiveauBadges,
+  useProfilJoueur,
   useRecemmentJoues,
   useSuccesJeu,
 } from "../../api/requetes";
-import { estErreurApp, type Badge, type JeuBibliotheque, type JeuPossede } from "../../api/types";
+import { estErreurApp, type Badge, type JeuPossede } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
 import { Smoke } from "../../components/Smoke";
+import { Compteur, Lucioles } from "../../components/Vivant";
 import { usePalette } from "../../lib/couleurs";
 import { date, entier, heures, statut } from "../../lib/format";
 import { degradeJaquette, imagesDe } from "../../lib/images";
@@ -42,21 +45,38 @@ const pays = (code: string | null) => {
  * 4 chiffres, rangs de temps de jeu cliquables, activité récente et badges.
  */
 export function Profil() {
+  const { steamId } = useParams();
+  const moi = useSession((s) => s.steamId);
+  const ami = steamId && steamId !== moi ? steamId : null;
+  // Une clé par profil : l'état (rang choisi…) repart de zéro en changeant de joueur.
+  return <VueProfil key={ami ?? "moi"} ami={ami} />;
+}
+
+function VueProfil({ ami }: { ami: string | null }) {
   const navigate = useNavigate();
   const joueur = useJoueurMoi();
   const niveau = useNiveauBadges();
   const biblio = useBibliotheque();
   const recents = useRecemmentJoues();
   const amis = useAmis();
-  const j = joueur.data?.donnees;
-  const n = niveau.data?.donnees;
-  const jeux = useMemo(() => (biblio.data?.donnees.jeux ?? []).filter((x) => !x.cache), [biblio.data]);
-  const r = recents.data?.donnees ?? [];
+  const profilAmi = useProfilJoueur(ami);
+  const pa = profilAmi.data?.donnees;
+  const j = ami ? pa?.joueur : joueur.data?.donnees;
+  const n = ami ? (pa?.niveau ?? undefined) : niveau.data?.donnees;
+  const jeuxMoi = useMemo(() => (biblio.data?.donnees.jeux ?? []).filter((x) => !x.cache), [biblio.data]);
+  const jeux: JeuPossede[] = ami ? (pa?.jeux ?? []) : jeuxMoi;
+  const jeuxPrives = !!ami && !!pa && !pa.jeux;
+  const r = (ami ? pa?.recents : recents.data?.donnees) ?? [];
+  const recentsCharges = ami ? !!pa : !!recents.data;
+  const jeuxCharges = ami ? !!pa : !!biblio.data;
+  const erreur = ami ? profilAmi.error : joueur.error;
+  const chargement = ami ? profilAmi.isLoading : joueur.isLoading;
+  const fiche = amis.data?.donnees.amis.find((a) => a.steamId === ami);
   const palette = usePalette(viaCache(j?.avatar) ?? null, j?.pseudo ?? "Profil");
 
   const minutesRecentes = r.reduce((s, x) => s + x.minutesDeuxSemaines, 0);
   const parRang = useMemo(() => {
-    const groupes: JeuBibliotheque[][] = RANGS.map(() => []);
+    const groupes: JeuPossede[][] = RANGS.map(() => []);
     for (const jeu of jeux) groupes[rangDepuisMinutes(jeu.minutesTotal).niveau].push(jeu);
     for (const g of groupes) g.sort((a, b) => b.minutesTotal - a.minutesTotal);
     return groupes;
@@ -82,17 +102,25 @@ export function Profil() {
       <div className="profil__fond" aria-hidden="true" />
       <div className="profil__voile" aria-hidden="true" />
       <Smoke variant="hero" className="profil__fumee" />
+      <Lucioles couleur={palette[0]} graine={ami ? Number(ami.slice(-6)) : 11} nombre={18} />
 
       <div className="profil__contenu">
         <section className="profil__haut" aria-labelledby="profil-nom">
           <div className="profil__avatar">
-            {j?.avatar ? <img src={viaCache(j.avatar)} alt="" draggable={false} /> : <div className="profil__avatar-vide" />}
+            <span className="profil__orbite" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+            <span className="profil__avatar-image" data-incline="">
+              {j?.avatar ? <img src={viaCache(j.avatar)} alt="" draggable={false} /> : <span className="profil__avatar-vide" />}
+            </span>
             {n && <LuneNiveau niveau={n.niveau} fraction={n.xpPourSuivant + (n.xp - n.xpNiveauActuel) > 0 ? (n.xp - n.xpNiveauActuel) / (n.xp - n.xpNiveauActuel + n.xpPourSuivant) : 1} reste={n.xpPourSuivant} />}
           </div>
 
           <div className="profil__identite">
             <h1 id="profil-nom" className="profil__nom">
-              {j?.pseudo ?? (joueur.isLoading ? "…" : "Profil")}
+              {j?.pseudo ?? (chargement ? "…" : "Profil")}
             </h1>
             {j && (
               <span className="profil__sous-titre">
@@ -103,34 +131,51 @@ export function Profil() {
                 </span>
               </span>
             )}
-            {joueur.isError && <p className="message">{estErreurApp(joueur.error) ? joueur.error.message : String(joueur.error)}</p>}
+            {erreur && <p className="message">{estErreurApp(erreur) ? erreur.message : String(erreur)}</p>}
 
             <div className="profil__chiffres">
-              <Chiffre icone={<IconeManette />} valeur={biblio.data ? entier(jeux.length) : "—"} libelle="jeux" />
-              <Chiffre icone={<IconeSablier />} valeur={recents.data ? heures(minutesRecentes) : "—"} libelle="ces 2 semaines" />
-              <Chiffre icone={<IconeAmis />} valeur={nombreAmis != null ? entier(nombreAmis) : "—"} libelle={nombreAmis == null && amis.data ? "amis (privé)" : "amis"} />
-              <Chiffre icone={<IconeMedaille />} valeur={n ? entier(n.badges.length) : "—"} libelle="badges" />
+              <Chiffre icone={<IconeManette />} valeur={jeuxPrives ? "privé" : jeuxCharges ? jeux.length : null} libelle="jeux" />
+              <Chiffre icone={<IconeSablier />} valeur={recentsCharges ? minutesRecentes : null} heures libelle="ces 2 semaines" />
+              {ami ? (
+                <Chiffre icone={<IconeAmis />} valeur={fiche?.amiDepuis ? date(fiche.amiDepuis) : "—"} libelle="ami depuis" />
+              ) : (
+                <Chiffre icone={<IconeAmis />} valeur={nombreAmis ?? null} libelle={nombreAmis == null && amis.data ? "amis (privé)" : "amis"} />
+              )}
+              <Chiffre icone={<IconeMedaille />} valeur={n ? n.badges.length : null} libelle="badges" />
             </div>
           </div>
 
           {j?.urlProfil && (
-            <button
-              type="button"
-              className="btn btn--secondaire btn--petit profil__modifier"
-              onClick={() => void api.steamLien({ type: "page", url: `${j.urlProfil.replace(/\/?$/, "/")}edit/info` })}
-            >
-              Modifier dans Steam
-            </button>
+            <div className="profil__boutons">
+              {ami && (
+                <button type="button" className="btn btn--secondaire btn--petit" onClick={() => navigate("/amis")}>
+                  ← Amis
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn btn--secondaire btn--petit"
+                onClick={() =>
+                  void api.steamLien({ type: "page", url: ami ? j.urlProfil : `${j.urlProfil.replace(/\/?$/, "/")}edit/info` })
+                }
+              >
+                {ami ? "Voir sur Steam" : "Modifier dans Steam"}
+              </button>
+            </div>
           )}
         </section>
 
         <section className="profil__section" aria-labelledby="profil-rangs">
           <div className="profil__entete">
             <h2 id="profil-rangs" className="profil__titre">
-              Tes rangs de temps de jeu
+              {ami ? "Ses rangs de temps de jeu" : "Tes rangs de temps de jeu"}
             </h2>
             <span className="profil__indice">Clique un rang pour voir les jeux qui l’ont atteint</span>
           </div>
+          {jeuxPrives ? (
+            <p className="placeholder-note">Sa bibliothèque est privée : Steam ne montre pas ses jeux.</p>
+          ) : (
+            <>
           <div className="profil-rangs" role="group" aria-label="Rangs">
             {RANGS.map((x, i) => {
               const nb = parRang[i]?.length ?? 0;
@@ -141,6 +186,7 @@ export function Profil() {
                   type="button"
                   aria-pressed={rangChoisi === i}
                   className={`profil-rang${rangChoisi === i ? " is-actif" : ""}${nb ? " a-des-jeux" : ""}${atteint ? "" : " is-lointain"}`}
+                  data-lueur=""
                   onClick={() => choisirRang(i)}
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
@@ -166,6 +212,8 @@ export function Profil() {
             ))}
             {dansRang.length > MAX_PUCES && <span className="profil-rangs__libelle">et {dansRang.length - MAX_PUCES} autres</span>}
           </div>
+            </>
+          )}
         </section>
 
         <section className="profil__section" aria-labelledby="profil-activite">
@@ -173,9 +221,9 @@ export function Profil() {
             <h2 id="profil-activite" className="profil__titre">
               Activité récente
             </h2>
-            <span className="profil__indice">{recents.data ? `${heures(minutesRecentes)} ces 2 dernières semaines` : ""}</span>
+            <span className="profil__indice">{recentsCharges ? `${heures(minutesRecentes)} ces 2 dernières semaines` : ""}</span>
           </div>
-          {recents.data && r.length === 0 && <p className="placeholder-note">Aucun jeu lancé ces deux dernières semaines.</p>}
+          {recentsCharges && r.length === 0 && <p className="placeholder-note">Aucun jeu lancé ces deux dernières semaines.</p>}
           <div className="profil-activite">
             {r.map((jeu, i) => (
               <CarteActivite
@@ -184,6 +232,7 @@ export function Profil() {
                 dernier={parId.get(jeu.appId)?.dernierLancement ?? jeu.dernierLancement}
                 jaquette={imagesDe(jeu.appId, imagesRecents.data).jaquettePetite ?? null}
                 index={i}
+                avecSucces={!ami}
                 onOuvrir={() => navigate(`/jeu/${jeu.appId}`)}
               />
             ))}
@@ -277,12 +326,12 @@ function LuneNiveau({ niveau, fraction, reste }: { niveau: number; fraction: num
 
 // ——— Chiffres ———
 
-function Chiffre({ icone, valeur, libelle }: { icone: React.ReactNode; valeur: string; libelle: string }) {
+function Chiffre({ icone, valeur, libelle, heures = false }: { icone: React.ReactNode; valeur: number | string | null; libelle: string; heures?: boolean }) {
   return (
-    <div className="profil-chiffre">
+    <div className="profil-chiffre" data-lueur="">
       {icone}
       <div className="profil-chiffre__texte">
-        <strong>{valeur}</strong>
+        <strong>{valeur == null ? "—" : typeof valeur === "number" ? <Compteur valeur={valeur} heures={heures} /> : valeur}</strong>
         <span>{libelle}</span>
       </div>
     </div>
@@ -338,20 +387,23 @@ function CarteActivite({
   dernier,
   jaquette,
   index,
+  avecSucces,
   onOuvrir,
 }: {
   jeu: JeuPossede;
   dernier: number;
   jaquette: string | null;
   index: number;
+  /** Les succès lus sont ceux du compte connecté : pas sur le profil d'un ami. */
+  avecSucces: boolean;
   onOuvrir: () => void;
 }) {
-  const succes = useSuccesJeu(jeu.appId);
+  const succes = useSuccesJeu(avecSucces ? jeu.appId : null);
   const s = succes.data?.donnees;
   const r = rangDepuisMinutes(jeu.minutesTotal);
   const [ratee, setRatee] = useState(false);
   return (
-    <button type="button" className="profil-carte" onClick={onOuvrir} style={{ animationDelay: `${index * 70}ms` }}>
+    <button type="button" className="profil-carte" data-lueur="" onClick={onOuvrir} style={{ animationDelay: `${index * 70}ms` }}>
       <div className="profil-carte__art" style={jaquette && !ratee ? undefined : { background: degradeJaquette(jeu.nom) }}>
         {jaquette && !ratee && <img src={jaquette} alt="" loading="lazy" draggable={false} onError={() => setRatee(true)} />}
       </div>

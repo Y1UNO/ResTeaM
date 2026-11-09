@@ -54,8 +54,16 @@
   height: 168px;
   flex: 0 0 auto;
 }
-.profil__avatar img,
+.profil__avatar-image {
+  position: relative;
+  display: block;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+}
+.profil__avatar-image img,
 .profil__avatar-vide {
+  display: block;
   width: 168px;
   height: 168px;
   border-radius: 50%;
@@ -126,9 +134,7 @@
   font-size: 12px;
   color: var(--text-3);
 }
-.profil__modifier {
-  align-self: flex-start;
-}
+
 
 /* ——— Croissant de niveau + pluie lunaire ——— */
 .lune-niveau {
@@ -506,4 +512,85 @@
 .profil-badge__detail {
   font-size: 11px;
   color: var(--text-4);
+}
+
+/* Orbites : trois petites lunes qui tournent lentement autour de l'avatar. */
+.profil__orbite {
+  position: absolute;
+  inset: -18px;
+  border-radius: 50%;
+  border: 1px solid rgba(238, 242, 255, 0.07);
+  pointer-events: none;
+  animation: profil-orbite 26s linear infinite;
+}
+.profil__orbite span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent), 0 0 18px color-mix(in srgb, var(--profil-c1) 70%, transparent);
+  transform: rotate(var(--a)) translateX(102px);
+}
+.profil__orbite span:nth-child(1) {
+  --a: 20deg;
+}
+.profil__orbite span:nth-child(2) {
+  --a: 150deg;
+  width: 4px;
+  height: 4px;
+  margin: -2px;
+  opacity: 0.7;
+}
+.profil__orbite span:nth-child(3) {
+  --a: 255deg;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
+  opacity: 0.5;
+}
+@keyframes profil-orbite {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.profil__boutons {
+  align-self: flex-start;
+  display: flex;
+  gap: 10px;
+}
+.profil-chiffre {
+  transition:
+    transform var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.profil-chiffre:hover {
+  transform: translateY(-3px);
+  border-color: rgba(238, 242, 255, 0.24);
+}
+.profil-chiffre:hover .profil-chiffre__icone {
+  animation: profil-icone 0.6s var(--ease);
+}
+@keyframes profil-icone {
+  40% {
+    transform: scale(1.15) rotate(-8deg);
+  }
+}
+.profil-rang.is-actif .profil-rang__anneau {
+  animation: profil-anneau 2.4s ease-in-out infinite;
+}
+@keyframes profil-anneau {
+  0%,
+  100% {
+    box-shadow: 0 0 14px rgba(238, 242, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(238, 242, 255, 0.55), 0 0 0 5px rgba(238, 242, 255, 0.06);
+  }
+}
+.profil__contenu {
+  z-index: 1;
 }

@@ -175,7 +175,7 @@ export function ResultatsRecherche({ terme, onFermer }: { terme: string; onFerme
 export function CarteProduit({ p, index, badge }: { p: Produit; index: number; badge?: string }) {
   const navigate = useNavigate();
   return (
-    <button type="button" className="bcarte" onClick={() => navigate(`/jeu/${p.appId}`)} style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}>
+    <button type="button" className="bcarte" data-lueur="" onClick={() => navigate(`/jeu/${p.appId}`)} style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}>
       <span className="bcarte__visuel">
         <Capsule url={p.capsule ?? p.banniere} nom={p.nom} className="bcarte__image" />
         {badge && <span className="bcarte__badge">{badge}</span>}
@@ -315,6 +315,7 @@ function LigneProduit({ p, index, actif, onSurvol }: { p: Produit; index: number
       type="button"
       role="listitem"
       className={`bligne${actif ? " is-actif" : ""}`}
+      data-lueur=""
       onMouseEnter={onSurvol}
       onFocus={onSurvol}
       onClick={() => navigate(`/jeu/${p.appId}`)}

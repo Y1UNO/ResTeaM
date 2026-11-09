@@ -402,6 +402,25 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Les dernières pages vides sont remplacées ; `EmptyPage.tsx` est supprimé.
 - **Reste pour l'étape 9** : audit de sécurité, suppression de la page de test `/donnees`.
 
+### Étape 8 bis — Profil des amis, favoris d'abord, app plus vivante (9 novembre 2026)
+
+- **Profil d'un ami** (`/profil/:steamId`, commande `profil_joueur`) :
+  - on l'ouvre en cliquant une carte de la page Amis, un nom dans le panneau de l'accueil ou un ami dans la Recherche ;
+  - même page que le tien : niveau, rangs, activité, badges, avec « ← Amis » et « Voir sur Steam » ;
+  - une partie privée (bibliothèque, badges) s'affiche vide proprement, sans faire échouer le reste ;
+  - pas de croissant de succès dans son activité : l'API ne donne que les tiens ;
+  - cache de 10 min.
+- **Favoris d'abord** : l'accueil s'ouvre sur l'onglet Favoris (en premier dans le ruban), ou sur Reprendre s'il n'y a aucun favori.
+- **Interactivité** (`src/lib/interactif.ts`, `src/styles/interactif.css`, un seul écouteur pour toute l'app) :
+  - `data-incline` : inclinaison 3D vers la souris, avec un reflet, sur les jaquettes de la bibliothèque, l'avatar du profil, le n°1 des classements et les jaquettes de la recherche ;
+  - `data-lueur` : halo qui suit la souris sur les cartes (ruban, boutique, souhaits, classements, amis, profil, téléchargements, sections de la fiche).
+- **Vie** (`src/components/Vivant.tsx`) :
+  - lucioles qui dérivent et s'allument doucement dans le fond de Profil (à la couleur de l'avatar), Amis, Souhaits, Classements et Téléchargements ;
+  - compteurs qui défilent jusqu'à leur valeur (chiffres du profil, « En jeu maintenant ») ;
+  - trois petites lunes en orbite autour de l'avatar ;
+  - anneau du rang choisi qui respire, icônes des chiffres qui bougent au survol ;
+  - anneau vert tournant autour des amis en jeu, pouls autour des amis en ligne.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

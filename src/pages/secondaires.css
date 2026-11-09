@@ -345,6 +345,7 @@
   animation: rise-in 0.4s var(--ease) both;
 }
 .r-jeu__art {
+  position: relative;
   aspect-ratio: 3 / 4;
   border-radius: var(--radius-md);
   border: 2px solid rgba(238, 242, 255, 0.06);
@@ -354,7 +355,6 @@
     border-color var(--dur-fast) ease;
 }
 .r-jeu:hover .r-jeu__art {
-  transform: translateY(-4px);
   border-color: var(--accent);
 }
 .r-jeu strong {
@@ -440,4 +440,71 @@
   border-radius: 50%;
   background: #f08a74;
   box-shadow: 0 0 8px #f08a74;
+}
+
+/* Carte d'ami cliquable (profil) + anneau d'état vivant. */
+.ami-carte {
+  position: relative;
+  cursor: pointer;
+}
+.ami-carte__ouvrir {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: none;
+  border-radius: inherit;
+  background: none;
+  cursor: pointer;
+}
+.ami-carte__actions,
+.ami-carte__jeu {
+  position: relative;
+  z-index: 2;
+}
+.ami-carte__avatar::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity var(--dur-1) ease;
+}
+.ami-carte.is-jeu .ami-carte__avatar::before {
+  opacity: 1;
+  background: conic-gradient(from 0deg, #3fe08a, transparent 40%, #3fe08a 70%, transparent);
+  -webkit-mask: radial-gradient(circle, transparent 27px, #000 28px);
+  mask: radial-gradient(circle, transparent 27px, #000 28px);
+  animation: ami-anneau 3.2s linear infinite;
+}
+.ami-carte.is-ligne .ami-carte__avatar::before {
+  opacity: 1;
+  border: 1.5px solid rgba(238, 242, 255, 0.5);
+  animation: ami-pouls 2.8s ease-out infinite;
+}
+@keyframes ami-anneau {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ami-pouls {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+.ami-carte:hover .ami-carte__avatar img {
+  transform: scale(1.06);
+}
+.ami-carte__avatar img {
+  transition: transform var(--dur-1) var(--ease);
+}
+.ami-carte__texte strong {
+  transition: color var(--dur-fast) ease;
+}
+.ami-carte:hover .ami-carte__texte strong {
+  color: #fff;
 }

@@ -274,6 +274,7 @@ function CarteOffre({
     <button
       type="button"
       className={`rib rib--offre${choisie ? " is-choisie" : ""}`}
+      data-lueur=""
       onClick={onClick}
       aria-pressed={choisie}
       aria-label={`${offre.nom}, ${offre.prixFinal > 0 ? euros(offre.prixFinal) : "gratuit"}`}

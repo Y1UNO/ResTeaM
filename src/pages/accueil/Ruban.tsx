@@ -28,8 +28,8 @@ export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet
   const piste = useRef<HTMLDivElement>(null);
   useMoletteHorizontale(piste, onglet);
   const onglets: { id: OngletRuban; libelle: string }[] = [
-    { id: "reprendre", libelle: "Reprendre" },
     { id: "favoris", libelle: `Favoris${nombreFavoris ? ` · ${nombreFavoris}` : ""}` },
+    { id: "reprendre", libelle: "Reprendre" },
   ];
   return (
     <section aria-labelledby="ruban-titre" className="ruban">
@@ -115,6 +115,7 @@ function CarteRuban({
     <button
       type="button"
       className={`rib${choisie ? " is-choisie" : ""}`}
+      data-lueur=""
       onClick={onClick}
       aria-pressed={choisie}
       aria-label={`${jeu.nom}, ${heures(jeu.minutesTotal)}`}

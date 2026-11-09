@@ -237,7 +237,7 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
           ["AtoxXy", 0, null],
           ["Furios-KL", 0, null],
         ].map(([pseudo, etat, jeu], i) => ({
-          steamId: `7656119800000000${i}`,
+          steamId: `7656119800000010${i}`,
           pseudo,
           avatar: "",
           urlProfil: "",
@@ -520,8 +520,23 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         })),
       });
     }
+    case "profil_joueur": {
+      const i = Number(String(args?.steamId).slice(-1));
+      const noms = ["Meguru Bachira", "Tututemobile", "AtoxXy", "Furios-KL"];
+      const jeux = JEUX.map((j, k) => ({ appId: j.appId, nom: j.nom, minutesTotal: j.minutes * (k + i + 1), minutesDeuxSemaines: k < 2 ? 300 : 0, icone: "", dernierLancement: maintenant() - 86400 * k }));
+      return enveloppe({
+        joueur: {
+          steamId: String(args?.steamId), pseudo: noms[i] ?? "Ami", avatar: "", urlProfil: "https://steamcommunity.com/id/ami/",
+          etat: i < 2 ? 1 : 0, visibilite: 3, nomReel: null, pays: "FR", jeuEnCours: i === 0 ? "Apex Legends" : null, jeuEnCoursId: i === 0 ? "1172470" : null,
+          derniereDeconnexion: maintenant() - 3600, lobby: null, serveur: null,
+        },
+        niveau: { niveau: 23 + i, xp: 4200, xpNiveauActuel: 4000, xpPourSuivant: 300, badges: [{ id: 1, appId: null, niveau: 6, xp: 300, obtenuLe: maintenant() - 86400 * 30, rarete: 0 }] },
+        jeux: i === 3 ? null : jeux,
+        recents: jeux.filter((j) => j.minutesDeuxSemaines > 0),
+      });
+    }
     case "amis_possedant":
-      return ["76561198000000000", "76561198000000001", "76561198000000003"];
+      return ["76561198000000100", "76561198000000101", "76561198000000103"];
     case "patch_notes":
       return enveloppe({
         id: "1",

@@ -976,3 +976,16 @@
   font-size: 12px;
   color: var(--text-3);
 }
+/* Le nom d'un ami ouvre son profil. */
+.amis__texte--lien {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.amis__texte--lien:hover .amis__nom {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

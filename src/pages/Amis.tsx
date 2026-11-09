@@ -4,6 +4,7 @@ import { api } from "../api/commandes";
 import { useAmis } from "../api/requetes";
 import { estErreurApp, type Ami } from "../api/types";
 import { Smoke } from "../components/Smoke";
+import { Lucioles } from "../components/Vivant";
 import { date, ilYA, statut } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import "./pages.css";
@@ -35,6 +36,7 @@ export function Amis() {
   return (
     <div className="page">
       <Smoke variant="top" />
+      <Lucioles graine={17} nombre={16} />
       <div className="page__content secondaire">
         <header className="secondaire__entete">
           <div className="page__header">
@@ -108,7 +110,13 @@ function CarteAmi({ ami, index }: { ami: Ami; index: number }) {
   };
 
   return (
-    <article className={`ami-carte${enJeu ? " is-jeu" : enLigne ? " is-ligne" : ""}`} style={{ animationDelay: `${Math.min(index, 16) * 30}ms` }}>
+    <article
+      data-lueur=""
+      className={`ami-carte${enJeu ? " is-jeu" : enLigne ? " is-ligne" : ""}`}
+      style={{ animationDelay: `${Math.min(index, 16) * 30}ms` }}
+    >
+      {/* Toute la carte ouvre le profil de l'ami ; les boutons d'action restent au-dessus. */}
+      <button type="button" className="ami-carte__ouvrir" aria-label={`Voir le profil de ${ami.pseudo}`} onClick={() => navigate(`/profil/${ami.steamId}`)} />
       <span className="ami-carte__avatar">
         {ami.avatar && !ratee && <img src={viaCache(ami.avatar)} alt="" loading="lazy" onError={() => setRatee(true)} />}
         <span className="ami-carte__point" />

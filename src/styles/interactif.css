@@ -1,0 +1,91 @@
+/* Interactions vivantes (voir src/lib/interactif.ts). */
+
+/* Inclinaison 3D vers la souris. */
+[data-incline] {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform 0.6s var(--ease),
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+[data-incline].is-survol {
+  transition:
+    transform 0.12s linear,
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+
+/* Reflet qui suit la souris (sur les éléments inclinables et les cartes à lueur). */
+[data-incline]::after,
+[data-lueur]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+[data-incline]::after {
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.16), transparent 45%);
+  mix-blend-mode: soft-light;
+}
+[data-lueur] {
+  position: relative;
+}
+[data-lueur]::after {
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgba(238, 242, 255, 0.075), transparent 60%);
+}
+[data-incline].is-survol::after,
+[data-lueur].is-survol::after {
+  opacity: 1;
+}
+
+/* ——— Lucioles : de petites lueurs qui dérivent lentement dans le fond ——— */
+.lucioles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.luciole {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--luciole, #eef2ff);
+  box-shadow:
+    0 0 6px var(--luciole, #eef2ff),
+    0 0 14px var(--luciole, #eef2ff);
+  opacity: 0;
+  animation:
+    luciole-derive var(--duree, 18s) ease-in-out var(--delai, 0s) infinite,
+    luciole-brille var(--brille, 4s) ease-in-out var(--delai, 0s) infinite;
+}
+@keyframes luciole-derive {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(var(--dx, 30px), calc(var(--dy, -40px) * 0.6));
+  }
+  50% {
+    transform: translate(calc(var(--dx, 30px) * -0.4), var(--dy, -40px));
+  }
+  75% {
+    transform: translate(calc(var(--dx, 30px) * -0.8), calc(var(--dy, -40px) * 0.3));
+  }
+}
+@keyframes luciole-brille {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  30%,
+  70% {
+    opacity: var(--force, 0.7);
+  }
+  50% {
+    opacity: calc(var(--force, 0.7) * 0.4);
+  }
+}

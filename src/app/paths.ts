@@ -9,6 +9,7 @@ export const PATHS = {
   telechargements: "/telechargements",
   amis: "/amis",
   profil: "/profil",
+  profilAmi: "/profil/:steamId",
   jeu: "/jeu/:appId",
   parametres: "/parametres",
   connexion: "/connexion",

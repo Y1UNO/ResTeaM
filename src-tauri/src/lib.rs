@@ -59,6 +59,7 @@ pub fn run() {
             commandes::classements,
             commandes::en_ligne,
             commandes::amis_possedant,
+            commandes::profil_joueur,
             commandes::file_steam,
             commandes::annuler_file_steam,
             commandes::connexion_steam,

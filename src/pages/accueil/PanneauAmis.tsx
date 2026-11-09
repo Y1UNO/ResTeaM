@@ -54,6 +54,7 @@ export function PanneauAmis() {
 }
 
 function LigneAmi({ ami, ouvert }: { ami: Ami; ouvert: boolean }) {
+  const navigate = useNavigate();
   const [ratee, setRatee] = useState(false);
   const enJeu = !!ami.jeuEnCours;
   const enLigne = ami.etat > 0;
@@ -78,10 +79,10 @@ function LigneAmi({ ami, ouvert }: { ami: Ami; ouvert: boolean }) {
       </div>
       {ouvert && (
         <>
-          <div className="amis__texte">
+          <button type="button" className="amis__texte amis__texte--lien" onClick={() => navigate(`/profil/${ami.steamId}`)} title="Voir son profil">
             <span className="amis__nom">{ami.pseudo}</span>
             <span className={`amis__sous${enJeu || enLigne ? " is-actif" : ""}`}>{sous}</span>
-          </div>
+          </button>
           {peutRejoindre && (
             <button type="button" className="amis__rejoindre" onClick={rejoindre}>
               Rejoindre

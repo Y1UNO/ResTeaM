@@ -253,3 +253,14 @@ export function useAmisPossedant(appId: number | null) {
     staleTime: 30 * 60_000,
   });
 }
+
+/** Profil d'un ami (null : pas de requête). */
+export function useProfilJoueur(steamId: string | null) {
+  const { pret } = usePret();
+  return useQuery({
+    queryKey: ["profil-joueur", steamId],
+    queryFn: () => api.profilJoueur(steamId as string),
+    enabled: pret && steamId != null,
+    staleTime: 5 * 60_000,
+  });
+}

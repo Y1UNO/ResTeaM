@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useClassements, useEnLigne, useProduits } from "../api/requetes";
 import { estErreurApp, type Classe, type Produit, type Releve } from "../api/types";
 import { Smoke } from "../components/Smoke";
+import { Compteur, Lucioles } from "../components/Vivant";
 import { entier } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import { degradeHero, degradeJaquette } from "../lib/images";
@@ -45,6 +46,7 @@ export function Classements() {
   return (
     <div className="page">
       <Smoke variant="top" />
+      <Lucioles graine={61} />
       <div className="page__content classements">
         <header className="classements__entete">
           <h1 className="page__title">Classements</h1>
@@ -68,7 +70,7 @@ export function Classements() {
 
         {premier && (
           <section key={cle} className="classement" aria-label={onglet === "ventes" ? "Meilleures ventes" : "Les plus joués"}>
-            <button type="button" className="classement__un" onClick={() => navigate(`/jeu/${premier.appId}`)} style={{ background: degradeHero(p1?.nom ?? String(premier.appId)) }}>
+            <button type="button" className="classement__un" data-incline="" onClick={() => navigate(`/jeu/${premier.appId}`)} style={{ background: degradeHero(p1?.nom ?? String(premier.appId)) }}>
               {p1?.hero && <img src={viaCache(p1.hero)} alt="" draggable={false} />}
               <span className="classement__voile" aria-hidden="true" />
               <span className="classement__un-texte">
@@ -85,7 +87,7 @@ export function Classements() {
               {visibles.slice(1).map((x, i) => {
                 const p = parId.get(x.appId);
                 return (
-                  <button key={x.appId} type="button" className="classement__ligne" onClick={() => navigate(`/jeu/${x.appId}`)} style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}>
+                  <button key={x.appId} type="button" className="classement__ligne" data-lueur="" onClick={() => navigate(`/jeu/${x.appId}`)} style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}>
                     <span className="classement__rang">{x.rang}</span>
                     <Evolution x={x} />
                     <span className="classement__image" style={p?.banniere ? undefined : { background: degradeJaquette(p?.nom ?? String(x.appId)) }}>
@@ -140,13 +142,13 @@ function EnJeu({ donnees, chargement }: { donnees: { joueurs: number; releves: R
   const pic = valeurs.length ? Math.max(...valeurs) : null;
   const derniere = barres.reduce((m, b, i) => (b != null ? i : m), -1);
   return (
-    <section className="en-jeu" aria-label="Joueurs en jeu">
+    <section className="en-jeu" data-lueur="" aria-label="Joueurs en jeu">
       <div className="en-jeu__texte">
         <span className="en-jeu__titre">
           <span className="en-jeu__point" />
           En jeu maintenant
         </span>
-        <span className="en-jeu__nombre">{donnees ? entier(donnees.joueurs) : chargement ? "…" : "—"}</span>
+        <span className="en-jeu__nombre">{donnees ? <Compteur valeur={donnees.joueurs} duree={1400} /> : chargement ? "…" : "—"}</span>
         <span className="en-jeu__note">
           {pic != null ? `Pic relevé sur 24 h : ${entier(pic)}` : "Sur les 10 jeux les plus joués de Steam"}
         </span>

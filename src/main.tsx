@@ -15,10 +15,14 @@ import "./styles/tokens.css";
 import "./styles/animations.css";
 import "./styles/base.css";
 import "./styles/composants.css";
+import "./styles/interactif.css";
 
 import { router } from "./app/router";
 import { clientRequetes } from "./api/requetes";
 import { useSession } from "./app/session";
+import { installerInteractions } from "./lib/interactif";
+
+installerInteractions();
 
 // Lecture de la session et de l'état de la clé, une fois au démarrage.
 void useSession.getState().initialiser();

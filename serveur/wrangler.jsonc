@@ -1,0 +1,21 @@
+{
+  // Serveur de partage des profils ResTeaM (voir README.md de ce dossier).
+  "name": "resteam-profils",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "resteam-profils",
+      "database_id": "d44a97d6-11e1-4865-a06e-153f5b84b409"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FICHIERS",
+      "bucket_name": "resteam-profils"
+    }
+  ],
+  "observability": { "enabled": true }
+}

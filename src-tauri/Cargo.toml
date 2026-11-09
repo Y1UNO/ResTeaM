@@ -33,9 +33,14 @@ reqwest = { version = "0.13", default-features = false, features = ["json", "nat
 keyring = { version = "3", features = ["windows-native"] }
 winreg = "0.56.0"
 percent-encoding = "2"
-windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_Security", "Win32_Security_Cryptography"] }
+base64 = "0.22"
 sysinfo = { version = "0.40.1", default-features = false, features = ["disk", "network", "system"] }
 
+
+[dev-dependencies]
+# Campagne « tout faire planter » : entrées tirées au hasard (voir src/robustesse.rs).
+proptest = "1"
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

@@ -41,14 +41,16 @@ fn ip_port_valide(s: &str) -> bool {
         && ip != "0.0.0.0"
 }
 
-/// Pages Steam autorisées (HTTPS, domaines officiels).
-fn page_autorisee(url: &str) -> bool {
-    let Ok(u) = url::Url::parse(url) else { return false };
-    u.scheme() == "https"
-        && matches!(
-            u.host_str(),
-            Some("store.steampowered.com" | "steamcommunity.com" | "help.steampowered.com")
-        )
+/// Pages Steam autorisées (HTTPS, domaines officiels, sans identifiants). Renvoie
+/// l'adresse **normalisée** (espaces et guillemets encodés) : c'est elle qui part à
+/// Steam, jamais le texte brut reçu du front.
+fn page_autorisee(url: &str) -> Option<String> {
+    let u = url::Url::parse(url).ok()?;
+    let ok = u.scheme() == "https"
+        && u.username().is_empty()
+        && u.password().is_none()
+        && matches!(u.host_str(), Some("store.steampowered.com" | "steamcommunity.com" | "help.steampowered.com"));
+    ok.then(|| u.to_string())
 }
 
 /// Construit le lien, ou `None` si un paramètre est invalide.
@@ -65,7 +67,7 @@ pub fn construire(action: &ActionSteam) -> Option<String> {
         ActionSteam::Amis => Some("steam://open/friends".into()),
         ActionSteam::Telechargements => Some("steam://open/downloads".into()),
         ActionSteam::Verifier { app_id } => Some(format!("steam://validate/{app_id}")),
-        ActionSteam::Page { url } => page_autorisee(url).then(|| format!("steam://openurl/{url}")),
+        ActionSteam::Page { url } => page_autorisee(url).map(|u| format!("steam://openurl/{u}")),
     }
 }
 
@@ -97,6 +99,12 @@ mod tests {
         assert!(construire(&ActionSteam::Page { url: "https://store.steampowered.com/news/app/1".into() }).is_some());
         assert!(construire(&ActionSteam::Page { url: "http://store.steampowered.com/".into() }).is_none());
         assert!(construire(&ActionSteam::Page { url: "https://steamcommunity.com.evil.io/".into() }).is_none());
+        // Adresse normalisée : rien de brut (espaces, guillemets) ne part vers Steam.
+        assert_eq!(
+            construire(&ActionSteam::Page { url: "https://store.steampowered.com/a b\"c".into() }).unwrap(),
+            "steam://openurl/https://store.steampowered.com/a%20b%22c"
+        );
+        assert!(construire(&ActionSteam::Page { url: "https://x:y@store.steampowered.com/".into() }).is_none());
     }
 
     #[test]

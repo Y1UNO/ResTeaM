@@ -1,4 +1,5 @@
 mod cache;
+mod coffre;
 mod commandes;
 mod erreur;
 mod images_locales;
@@ -6,6 +7,8 @@ mod jeu;
 mod notifications;
 mod preferences;
 mod salon;
+#[cfg(test)]
+mod robustesse;
 mod secrets;
 mod session;
 mod steam;
@@ -122,6 +125,16 @@ pub fn run() {
                 }
             }
             jeu::surveiller(app.handle().clone());
+            // Coffre-fort : les données d'avant (session, cache) sont chiffrées une fois.
+            let h = app.handle().clone();
+            std::thread::spawn(move || {
+                if let Err(e) = session::migrer(&h) {
+                    eprintln!("coffre-fort (session) : {e}");
+                }
+                if let Err(e) = h.state::<EtatApp>().cache.chiffrer_anciennes() {
+                    eprintln!("coffre-fort (cache) : {e}");
+                }
+            });
             notifications::installer(app.handle(), &dossier);
             // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
             let handle = app.handle().clone();

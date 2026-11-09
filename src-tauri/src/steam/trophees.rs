@@ -157,7 +157,7 @@ mod tests {
     fn essai_reel() {
         let cle = crate::secrets::lire().unwrap().unwrap();
         let dossier = std::path::PathBuf::from(std::env::var("APPDATA").unwrap()).join("com.yiuno.resteam");
-        let session: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dossier.join("session.json")).unwrap()).unwrap();
+        let session: serde_json::Value = serde_json::from_str(&crate::coffre::lire(&std::fs::read_to_string(dossier.join("session.json")).unwrap()).unwrap()).unwrap();
         let sid = session["steamId"].as_str().or(session["steam_id"].as_str()).unwrap().to_string();
         tauri::async_runtime::block_on(async {
             let c = ClientSteam::nouveau().unwrap();

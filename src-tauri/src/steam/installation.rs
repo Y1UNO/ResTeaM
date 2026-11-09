@@ -466,7 +466,7 @@ mod test_reel {
         assert_eq!(jeu_en_cours(), None, "un jeu tourne : on ne redémarre pas Steam");
         let appdata = std::env::var("APPDATA").unwrap();
         let session = fs::read_to_string(format!("{appdata}/com.yiuno.resteam/session.json")).unwrap();
-        let sid = serde_json::from_str::<serde_json::Value>(&session).unwrap()["steamId"].as_str().unwrap().to_string();
+        let sid = serde_json::from_str::<serde_json::Value>(&crate::coffre::lire(&session).unwrap()).unwrap()["steamId"].as_str().unwrap().to_string();
         let biblio = local::dossiers_bibliotheque(&steam)
             .into_iter()
             .find(|d| d.chemin.to_lowercase().starts_with("e:"))

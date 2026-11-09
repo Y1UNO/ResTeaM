@@ -71,7 +71,7 @@ impl Cache {
 
     fn lire(&self, cle: &str) -> Resultat<Option<Entree>> {
         let conn = self.verrou()?;
-        Ok(conn
+        let entree = conn
             .query_row(
                 "SELECT json, recupere_le, expire_le FROM cache WHERE cle = ?1",
                 params![cle],
@@ -83,17 +83,39 @@ impl Cache {
                     })
                 },
             )
-            .optional()?)
+            .optional()?;
+        // Coffre-fort : chaque valeur est chiffrée par Windows. Une valeur illisible
+        // (autre session Windows, ligne abîmée) compte comme absente.
+        Ok(entree.and_then(|e| crate::coffre::lire(&e.json).map(|json| Entree { json, ..e })))
     }
 
     fn ecrire(&self, cle: &str, json: &str, ttl_secondes: i64) -> Resultat<()> {
         let t = maintenant();
+        let json = crate::coffre::chiffrer(json)?;
         self.verrou()?.execute(
             "INSERT INTO cache (cle, json, recupere_le, expire_le) VALUES (?1, ?2, ?3, ?4)
              ON CONFLICT(cle) DO UPDATE SET json = ?2, recupere_le = ?3, expire_le = ?4",
             params![cle, json, t, t + ttl_secondes],
         )?;
         Ok(())
+    }
+
+    /// Coffre-fort : chiffre les valeurs encore en clair (cache d'avant le coffre-fort),
+    /// puis compacte la base pour effacer leurs anciennes pages. Renvoie le nombre de lignes.
+    pub fn chiffrer_anciennes(&self) -> Resultat<usize> {
+        let conn = self.verrou()?;
+        let anciennes: Vec<(String, String)> = {
+            let mut req = conn.prepare("SELECT cle, json FROM cache WHERE json NOT LIKE 'rstm1:%'")?;
+            let lignes = req.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?;
+            lignes.filter_map(|l| l.ok()).collect()
+        };
+        for (cle, json) in &anciennes {
+            conn.execute("UPDATE cache SET json = ?2 WHERE cle = ?1", params![cle, crate::coffre::chiffrer(json)?])?;
+        }
+        if !anciennes.is_empty() {
+            conn.execute_batch("VACUUM")?;
+        }
+        Ok(anciennes.len())
     }
 
     /// Valeur encore fraîche, sans rien recharger.
@@ -156,6 +178,21 @@ mod tests {
 
     fn bloquer<F: Future>(f: F) -> F::Output {
         tauri::async_runtime::block_on(f)
+    }
+
+    #[test]
+    fn migration_du_coffre_fort() {
+        let c = Cache::en_memoire().unwrap();
+        // Ligne écrite en clair (ancien format), puis migrée.
+        c.verrou().unwrap().execute("INSERT INTO cache (cle, json, recupere_le, expire_le) VALUES ('a', '[1,2]', 0, 9999999999)", []).unwrap();
+        c.ranger("b", &3, 60).unwrap();
+        assert_eq!(c.frais::<Vec<u8>>("a").unwrap(), Some(vec![1, 2]));
+        assert_eq!(c.chiffrer_anciennes().unwrap(), 1);
+        assert_eq!(c.chiffrer_anciennes().unwrap(), 0);
+        let brut: String = c.verrou().unwrap().query_row("SELECT json FROM cache WHERE cle = 'a'", [], |r| r.get(0)).unwrap();
+        assert!(brut.starts_with("rstm1:"));
+        assert_eq!(c.frais::<Vec<u8>>("a").unwrap(), Some(vec![1, 2]));
+        assert_eq!(c.frais::<i32>("b").unwrap(), Some(3));
     }
 
     #[test]

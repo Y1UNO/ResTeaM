@@ -714,7 +714,7 @@ mod tests {
     fn donnees_reelles_du_compte() {
         let appdata = std::env::var("APPDATA").unwrap();
         let session = std::fs::read_to_string(format!("{appdata}/com.yiuno.resteam/session.json")).unwrap();
-        let sid = serde_json::from_str::<serde_json::Value>(&session).unwrap()["steamId"].as_str().unwrap().to_string();
+        let sid = serde_json::from_str::<serde_json::Value>(&crate::coffre::lire(&session).unwrap()).unwrap()["steamId"].as_str().unwrap().to_string();
         let cle = crate::secrets::lire().unwrap().expect("aucune clé enregistrée");
         let c = ClientSteam::nouveau().unwrap();
         use tauri::async_runtime::block_on as b;

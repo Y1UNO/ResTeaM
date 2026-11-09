@@ -149,8 +149,9 @@ pub fn texte_simple(brut: &str, max: usize) -> String {
     let mut dans_img = false;
     let mut reste = brut;
     while let Some(c) = reste.chars().next() {
-        if c == '[' {
-            let fin = reste.find(']').unwrap_or(reste.len() - 1);
+        // Un « [ » sans « ] » reste du texte. Avant la campagne « tout faire planter »,
+        // il faisait couper la chaîne au milieu d'un caractère (plantage de ResTeaM).
+        if let (true, Some(fin)) = (c == '[', reste.find(']')) {
             let balise = reste[1..fin].to_ascii_lowercase();
             if balise == "img" || balise.starts_with("previewyoutube") {
                 dans_img = true;

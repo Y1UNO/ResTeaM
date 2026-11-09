@@ -31,7 +31,8 @@ pub fn lire(app: &AppHandle) -> Resultat<Option<Session>> {
     if !chemin.exists() {
         return Ok(None);
     }
-    let texte = fs::read_to_string(chemin)?;
+    // Coffre-fort : déchiffré par Windows (ancien fichier en clair : lu tel quel).
+    let Some(texte) = crate::coffre::lire(&fs::read_to_string(chemin)?) else { return Ok(None) };
     match serde_json::from_str::<Session>(&texte) {
         Ok(s) if steam_id_valide(&s.steam_id) => Ok(Some(s)),
         // Fichier abîmé ou modifié : on repart d'une session vide.
@@ -43,8 +44,21 @@ pub fn ecrire(app: &AppHandle, session: &Session) -> Resultat<()> {
     if !steam_id_valide(&session.steam_id) {
         return Err(Erreur::VerificationEchouee);
     }
-    fs::write(chemin(app)?, serde_json::to_string_pretty(session)?)?;
+    fs::write(chemin(app)?, crate::coffre::chiffrer(&serde_json::to_string(session)?)?)?;
     Ok(())
+}
+
+/// Coffre-fort : une session gardée en clair (avant le coffre-fort) est réécrite chiffrée.
+pub fn migrer(app: &AppHandle) -> Resultat<()> {
+    let chemin = chemin(app)?;
+    let Ok(texte) = fs::read_to_string(&chemin) else { return Ok(()) };
+    if crate::coffre::est_chiffre(&texte) {
+        return Ok(());
+    }
+    match lire(app)? {
+        Some(s) => ecrire(app, &s),
+        None => Ok(()),
+    }
 }
 
 pub fn effacer(app: &AppHandle) -> Resultat<()> {

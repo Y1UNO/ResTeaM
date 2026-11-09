@@ -107,7 +107,25 @@ fn decouper(source: &str) -> Vec<Jeton> {
     jetons
 }
 
-fn objet(jetons: &[Jeton], i: &mut usize) -> Vec<(String, Vdf)> {
+/// Profondeur maximale d'imbrication lue (les fichiers de Steam dépassent rarement 10).
+/// Au-delà, le contenu est sauté sans récursion : un fichier piégé avec des milliers
+/// d'accolades imbriquées ne peut pas faire déborder la pile (campagne « tout faire planter »).
+pub const PROFONDEUR_MAX: usize = 64;
+
+/// Saute un bloc déjà ouvert (jusqu'à son accolade fermante), sans récursion.
+fn sauter_bloc(jetons: &[Jeton], i: &mut usize) {
+    let mut niveau = 1usize;
+    while *i < jetons.len() && niveau > 0 {
+        match jetons[*i] {
+            Jeton::Ouvre => niveau += 1,
+            Jeton::Ferme => niveau -= 1,
+            Jeton::Chaine(_) => {}
+        }
+        *i += 1;
+    }
+}
+
+fn objet(jetons: &[Jeton], i: &mut usize, profondeur: usize) -> Vec<(String, Vdf)> {
     let mut paires = Vec::new();
     while *i < jetons.len() {
         match &jetons[*i] {
@@ -128,7 +146,12 @@ fn objet(jetons: &[Jeton], i: &mut usize) -> Vec<(String, Vdf)> {
                     }
                     Some(Jeton::Ouvre) => {
                         *i += 1;
-                        paires.push((cle.clone(), Vdf::Objet(objet(jetons, i))));
+                        if profondeur + 1 >= PROFONDEUR_MAX {
+                            sauter_bloc(jetons, i);
+                            paires.push((cle.clone(), Vdf::Objet(Vec::new())));
+                        } else {
+                            paires.push((cle.clone(), Vdf::Objet(objet(jetons, i, profondeur + 1))));
+                        }
                     }
                     _ => {}
                 }
@@ -142,7 +165,7 @@ fn objet(jetons: &[Jeton], i: &mut usize) -> Vec<(String, Vdf)> {
 pub fn lire(source: &str) -> Vdf {
     let jetons = decouper(source.trim_start_matches('\u{feff}'));
     let mut i = 0;
-    Vdf::Objet(objet(&jetons, &mut i))
+    Vdf::Objet(objet(&jetons, &mut i, 0))
 }
 
 // ——— Modification en place (étape 10 : propriétés d'un jeu) ———

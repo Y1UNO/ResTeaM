@@ -17,3 +17,6 @@ src-tauri/gen/schemas/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Captures de mon vrai compte Steam (données perso) : gardées sur le PC, jamais publiées
+kit/references/steam-actuel/

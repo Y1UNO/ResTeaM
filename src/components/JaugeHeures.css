@@ -86,3 +86,47 @@
   background: var(--accent);
   transition: width 0.8s var(--ease);
 }
+
+/* Vague très légère sur la partie remplie (blanche) ; les paliers vides ne bougent pas. */
+.jauge__segment {
+  overflow: visible;
+}
+.jauge__segment > div {
+  position: relative;
+  overflow: hidden;
+  transform-origin: 50% 50%;
+}
+.jauge__segment.is-plein > div,
+.jauge__segment.is-partiel > div {
+  animation: jauge-vague 2.8s ease-in-out calc(var(--i) * 0.16s) infinite;
+  box-shadow: 0 0 8px rgba(238, 242, 255, 0.35);
+}
+.jauge__segment.is-plein > div::after,
+.jauge__segment.is-partiel > div::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: jauge-reflet 2.8s ease-in-out calc(var(--i) * 0.16s) infinite;
+  mix-blend-mode: soft-light;
+}
+@keyframes jauge-vague {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-1px) scaleY(1.25);
+  }
+}
+@keyframes jauge-reflet {
+  0%,
+  30% {
+    transform: translateX(-100%);
+  }
+  70%,
+  100% {
+    transform: translateX(100%);
+  }
+}

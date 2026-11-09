@@ -1,0 +1,171 @@
+/* Badge de rang animé : plus le rang est haut, plus il vit. */
+.badge-rang {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  isolation: isolate;
+}
+.badge-rang__svg {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+  filter: drop-shadow(0 0 calc(2px + 6px * var(--br-force)) color-mix(in srgb, var(--br-fonce) 70%, transparent));
+}
+.br-chiffre {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Aura : halo coloré qui respire derrière le badge. */
+.badge-rang__aura {
+  position: absolute;
+  inset: calc(-6% - 22% * var(--br-force));
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--br-fonce) 70%, transparent) 0%, transparent 65%);
+  opacity: calc(0.25 + 0.55 * var(--br-force));
+  filter: blur(calc(2px + 4px * var(--br-force)));
+}
+.badge-rang.is-anime .badge-rang__aura {
+  animation: br-aura calc(4.2s - 1.6s * var(--br-force)) ease-in-out infinite;
+}
+@keyframes br-aura {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: calc(0.2 + 0.45 * var(--br-force));
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: calc(0.35 + 0.6 * var(--br-force));
+  }
+}
+
+/* Flammes : langues de lumière qui dansent autour (rang V et plus). */
+.badge-rang__flammes {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.badge-rang__flammes span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18%;
+  height: 34%;
+  margin: -17% 0 0 -9%;
+  border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+  background: linear-gradient(0deg, color-mix(in srgb, var(--br-fonce) 90%, transparent) 0%, color-mix(in srgb, var(--br-clair) 80%, transparent) 55%, transparent 100%);
+  filter: blur(1.5px);
+  opacity: 0.75;
+  transform-origin: 50% 100%;
+  transform: rotate(var(--a)) translateY(-62%) scaleY(0.8);
+}
+.badge-rang.is-anime .badge-rang__flammes span {
+  animation: br-flamme 1.4s ease-in-out var(--d) infinite;
+}
+@keyframes br-flamme {
+  0%,
+  100% {
+    transform: rotate(var(--a)) translateY(-62%) scaleY(0.75) scaleX(1);
+    opacity: 0.55;
+  }
+  35% {
+    transform: rotate(calc(var(--a) + 4deg)) translateY(-66%) scaleY(1.15) scaleX(0.85);
+    opacity: 0.95;
+  }
+  70% {
+    transform: rotate(calc(var(--a) - 3deg)) translateY(-63%) scaleY(0.9) scaleX(1.05);
+    opacity: 0.7;
+  }
+}
+
+/* Éléments qui tournent, scintillent ou pulsent. */
+.br-tour,
+.br-engrenage,
+.br-rayons {
+  transform-box: view-box;
+  transform-origin: 32px 32px;
+}
+.badge-rang.is-anime .br-tour {
+  animation: br-tourne 14s linear infinite;
+}
+.badge-rang.is-anime .br-engrenage {
+  animation: br-tourne 22s linear infinite reverse;
+}
+.badge-rang.is-anime .br-rayons {
+  animation: br-rayons 3.2s ease-in-out infinite;
+}
+@keyframes br-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes br-rayons {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.97) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04) rotate(8deg);
+  }
+}
+.badge-rang.is-anime .br-etoile {
+  animation: br-scintille 2.4s ease-in-out infinite;
+}
+.badge-rang.is-anime .br-etoile.e2 {
+  animation-delay: 0.8s;
+}
+.badge-rang.is-anime .br-etoile.e3 {
+  animation-delay: 1.6s;
+}
+@keyframes br-scintille {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+.badge-rang.is-anime .br-lianes {
+  animation: br-lianes 4s ease-in-out infinite;
+  transform-origin: 32px 50px;
+  transform-box: view-box;
+}
+@keyframes br-lianes {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04) translateY(-0.4px);
+  }
+}
+
+/* IX Éternel : le badge entier change lentement de teinte (irisé). */
+.badge-rang.n9.is-anime .badge-rang__svg {
+  animation: br-irise 8s linear infinite;
+}
+@keyframes br-irise {
+  from {
+    filter: drop-shadow(0 0 8px #9fe6ff) hue-rotate(0deg);
+  }
+  to {
+    filter: drop-shadow(0 0 8px #9fe6ff) hue-rotate(360deg);
+  }
+}
+
+/* Survol : le badge se redresse et brille un peu plus. */
+.badge-rang.is-anime:hover .badge-rang__svg {
+  transform: scale(1.08);
+}
+.badge-rang__svg {
+  transition: transform 0.4s var(--ease);
+}

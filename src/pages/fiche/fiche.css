@@ -123,7 +123,7 @@
   align-items: center;
   gap: 20px;
   flex-wrap: wrap;
-  max-width: 560px;
+  max-width: 660px;
 }
 .fiche-bloc__prix {
   flex: 1;
@@ -945,7 +945,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  text-align: left;
   font-size: 14px;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.prop__dlc-ligne:hover {
+  background: var(--fill-hover);
+  border-color: var(--line-2);
 }
 .prop__dlc-image {
   flex: 0 0 auto;
@@ -972,4 +984,45 @@
   border: 1px solid var(--line-2);
   font-size: 13px;
   color: var(--text-2);
+}
+
+/* Affiche du jeu, à peine floutée, en fond de la fiche (demande de Tom). */
+.fiche__affiche {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 900px;
+  background: center 20% / cover no-repeat;
+  filter: blur(7px) saturate(1.1);
+  opacity: 0.42;
+  transform: scale(1.04);
+  -webkit-mask: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+  mask: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+  animation: fiche-affiche 1.2s ease both;
+}
+@keyframes fiche-affiche {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Bloc d'action plus compact : Jouer, Propriétés et Désinstaller tiennent sur une ligne. */
+.fiche-bloc {
+  gap: 14px;
+  padding: 18px 18px 18px 20px;
+}
+.fiche-bloc .fiche-bloc__etoile {
+  width: 52px;
+  height: 52px;
+}
+.fiche-bloc .fiche-bloc__acheter {
+  height: 54px;
+  padding: 0 24px;
+}
+.fiche-bloc .fiche-bloc__possede {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.fiche-bloc__possede .kicker {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

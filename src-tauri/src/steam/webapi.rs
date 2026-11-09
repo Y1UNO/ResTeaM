@@ -273,9 +273,11 @@ impl ClientSteam {
             .into_iter()
             .map(|n| Actu {
                 patch: n.tags.iter().any(|t| t == "patchnotes"),
+                // L'adresse donnée par l'API (steamstore-a.akamaihd.net/news/externalpost/…)
+                // ne s'ouvre pas dans Steam : on vise la page de l'annonce dans le magasin.
+                url: format!("https://store.steampowered.com/news/app/{app_id}/view/{}", n.gid),
                 id: n.gid,
                 titre: n.title,
-                url: n.url,
                 auteur: n.author.filter(|a| !a.is_empty()),
                 contenu: n.contents,
                 date: n.date,
@@ -480,7 +482,6 @@ struct ActuBrute {
     #[serde(default)]
     title: String,
     #[serde(default)]
-    url: String,
     author: Option<String>,
     #[serde(default)]
     contents: String,

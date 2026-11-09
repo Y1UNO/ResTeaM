@@ -293,3 +293,11 @@
 .tuile__point.is-installe {
   background: var(--accent);
 }
+/* Badge de rang (immobile sur les jaquettes : la grille reste fluide). */
+.tuile__rang-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+}

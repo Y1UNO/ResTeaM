@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/commandes";
-import { useFileSteam, useNomJeu, useProduits, useProprietesJeu } from "../../api/requetes";
+import { useDlcJeu, useFileSteam, useNomJeu, useProprietesJeu } from "../../api/requetes";
+import { useNavigate } from "react-router-dom";
+import { BlocPrix } from "../magasin/Boutique";
 import { estErreurApp } from "../../api/types";
 import { date, taille } from "../../lib/format";
 import { viaCache } from "../../lib/imageLocale";
@@ -58,7 +60,10 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
   const [erreur, setErreur] = useState<string | null>(null);
   const [sortie, setSortie] = useState(false);
   const minuterie = useRef<number | undefined>(undefined);
-  const dlc = useProduits(d?.dlc ?? []);
+  const dlc = useDlcJeu(appId);
+  const navigate = useNavigate();
+  const installes = new Set(d?.dlc ?? []);
+  const listeDlc = [...(dlc.data ?? [])].sort((a, b) => Number(installes.has(b.appId)) - Number(installes.has(a.appId)));
 
   // Valeurs affichées : la demande en attente si elle existe, sinon le fichier de Steam.
   const base = useMemo(
@@ -133,7 +138,7 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
     { id: "general", libelle: "Général" },
     { id: "maj", libelle: "Mises à jour", muet: d && !d.installe },
     { id: "fichiers", libelle: "Fichiers", muet: d && !d.installe },
-    { id: "dlc", libelle: `DLC${d?.dlc.length ? ` · ${d.dlc.length}` : ""}` },
+    { id: "dlc", libelle: `DLC${dlc.data?.length ? ` · ${dlc.data.length}` : ""}` },
   ];
 
   return createPortal(
@@ -226,21 +231,33 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
               <p className="achat__texte">Le jeu n’est pas installé sur ce PC.</p>
             ))}
 
-          {d && onglet === "dlc" &&
-            (d.dlc.length === 0 ? (
-              <p className="achat__texte">{d.installe ? "Aucun DLC installé pour ce jeu." : "Le jeu n’est pas installé : pas de DLC sur ce PC."}</p>
-            ) : (
-              <div className="prop__dlc">
-                {(dlc.data ?? []).map((x) => (
-                  <div key={x.appId} className="prop__dlc-ligne">
-                    <span className="prop__dlc-image" style={x.banniere ? { backgroundImage: `url("${viaCache(x.banniere)}")` } : undefined} />
-                    <span>{x.nom}</span>
-                    <span className="prop__dlc-etat">Installé</span>
-                  </div>
-                ))}
-                {dlc.isLoading && <p className="achat__texte">Lecture des DLC…</p>}
-              </div>
-            ))}
+          {onglet === "dlc" && (
+            <div className="prop__dlc">
+              {dlc.isLoading && <p className="achat__texte">Lecture des DLC du magasin…</p>}
+              {dlc.data && listeDlc.length === 0 && <p className="achat__texte">Le magasin ne liste aucun DLC pour ce jeu.</p>}
+              {listeDlc.map((x) => (
+                <button
+                  key={x.appId}
+                  type="button"
+                  className="prop__dlc-ligne"
+                  onClick={() => {
+                    onFermer();
+                    navigate(`/jeu/${x.appId}`);
+                  }}
+                >
+                  <span className="prop__dlc-image" style={x.banniere ? { backgroundImage: `url("${viaCache(x.banniere)}")` } : undefined} />
+                  <span>{x.nom}</span>
+                  {installes.has(x.appId) ? <span className="prop__dlc-etat">Installé</span> : <BlocPrix p={x} />}
+                </button>
+              ))}
+              {listeDlc.length > 0 && (
+                <p className="prop__aide">
+                  Steam ne dit pas aux autres apps quels DLC tu possèdes : seuls ceux qui ont des fichiers sur ce PC sont marqués « Installé ».
+                  Les DLC cosmétiques (skins, packs) n’en ont pas.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {erreur && <p className="message">{erreur}</p>}

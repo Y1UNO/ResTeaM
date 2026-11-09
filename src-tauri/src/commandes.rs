@@ -248,7 +248,7 @@ pub async fn succes_jeu(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32) -
 /// Dernières actus et patch notes d'un jeu.
 #[tauri::command]
 pub async fn actus_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<Vec<Actu>>> {
-    etat.cache.avec_cache(&format!("actus:{app_id}"), TTL_ACTUS, || etat.steam.actus(app_id)).await
+    etat.cache.avec_cache(&format!("actus2:{app_id}"), TTL_ACTUS, || etat.steam.actus(app_id)).await
 }
 
 // ——— Étape 3 : accueil ———
@@ -300,7 +300,7 @@ pub fn steam_lien(app: AppHandle, action: ActionSteam) -> Resultat<()> {
 /// Dernières patch notes d'un jeu, nettoyées et triées par catégorie.
 #[tauri::command]
 pub async fn patch_notes(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<Option<PatchNotes>>> {
-    let actus = etat.cache.avec_cache(&format!("actus:{app_id}"), TTL_ACTUS, || etat.steam.actus(app_id)).await?;
+    let actus = etat.cache.avec_cache(&format!("actus2:{app_id}"), TTL_ACTUS, || etat.steam.actus(app_id)).await?;
     Ok(Donnee {
         donnees: notes::depuis_actus(&actus.donnees),
         hors_ligne: actus.hors_ligne,
@@ -433,7 +433,7 @@ const TTL_VITRINE: i64 = 30 * 60;
 /// Fiche du magasin d'un jeu (description, prix, médias, configuration requise).
 #[tauri::command]
 pub async fn fiche_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donnee<FicheJeu>> {
-    etat.cache.avec_cache(&format!("fiche:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await
+    etat.cache.avec_cache(&format!("fiche2:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await
 }
 
 /// Évaluations des joueurs (toutes langues et en français).
@@ -726,4 +726,30 @@ pub async fn ouvrir_dossier_jeu(app: AppHandle, app_id: u32) -> Resultat<()> {
     app.opener()
         .open_path(dossier, None::<&str>)
         .map_err(|e| Erreur::Interne(format!("ouverture du dossier : {e}")))
+}
+
+/// Nom simplifié pour comparer « Apex Legends™ » et « Apex Legends™ - Pack… ».
+fn nom_simple(s: &str) -> String {
+    s.chars().filter(|c| c.is_alphanumeric() || *c == ' ').collect::<String>().to_lowercase().split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// DLC d'un jeu : la liste du magasin, ou à défaut une recherche par nom dans la
+/// catégorie DLC (gardée si le nom du DLC commence par celui du jeu).
+#[tauri::command]
+pub async fn dlc_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Vec<Produit>> {
+    let fiche = etat.cache.avec_cache(&format!("fiche2:{app_id}"), TTL_FICHE, || etat.steam.fiche_jeu(app_id)).await?.donnees;
+    if !fiche.dlc.is_empty() {
+        return produits_caches(&etat, &fiche.dlc).await;
+    }
+    let base = nom_simple(&fiche.nom);
+    if base.is_empty() {
+        return Ok(vec![]);
+    }
+    let ids = etat
+        .cache
+        .avec_cache(&format!("dlc-recherche:{app_id}"), 24 * 3600, || etat.steam.dlc_par_recherche(&fiche.nom))
+        .await?
+        .donnees;
+    let produits = produits_caches(&etat, &ids).await?;
+    Ok(produits.into_iter().filter(|p| p.app_id != app_id && nom_simple(&p.nom).starts_with(&base)).collect())
 }

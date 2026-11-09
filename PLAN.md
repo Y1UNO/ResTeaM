@@ -463,6 +463,23 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
   - DLC installés, avec leurs images.
 - Garde-fous : options sur une seule ligne, 1024 caractères au plus ; valeurs 0 à 2 ; compte à 17 chiffres.
 
+### Étape 10 bis — DLC, lien des annonces, affiche de la fiche, badges et lune animés (9 novembre 2026)
+
+- **DLC** :
+  - l'API de Steam ne donne jamais les DLC possédés : vérifié avec la clé de Tom sur Isaac, `GetOwnedGames` renvoie le jeu mais pas ses DLC ;
+  - l'onglet DLC liste donc **tous les DLC du jeu** : ceux de `appdetails`, ou à défaut une recherche dans la catégorie DLC filtrée sur le nom du jeu (pour Apex, dont la fiche ne liste rien) ;
+  - les DLC qui ont des fichiers sont marqués « Installé », les autres ont leur prix et mènent à leur fiche ;
+  - une note explique la limite (les DLC cosmétiques n'ont pas de fichiers).
+- **Lien « Lire l'annonce complète »** : `GetNewsForApp` donne une adresse `steamstore-a.akamaihd.net`, refusée par la liste des pages autorisées. L'annonce pointe maintenant vers `store.steampowered.com/news/app/<id>/view/<gid>` (cache `actus2:`).
+- **Fiche** : l'affiche du jeu est en fond, à peine floutée (7 px), en fondu vers le bas. Le bloc d'action est plus compact, pour que Jouer, Propriétés et Désinstaller tiennent sur une ligne.
+- **Badge de rang** (`src/components/BadgeRang.tsx`) : un badge SVG maison qui évolue avec le rang :
+  - 0 : anneau gris ; I : petit croissant ; II : graduations ; III : anneau tournant ; IV : bouclier ;
+  - V : lianes et flammes ; VI : engrenage ; VII : croissant et étoiles ; VIII : rayons dorés ; IX : irisé ;
+  - l'aura et les flammes grandissent avec le rang ;
+  - il est sur l'accueil, la fiche, le profil, et sur les jaquettes de la bibliothèque (immobile là, pour la fluidité).
+- **Jauge d'heures** : vague très légère et reflet sur les paliers remplis ; les paliers vides ne bougent pas.
+- **Lune des succès** (`Croissant`) : elle se remplit à l'arrivée, sa lueur respire et un reflet parcourt l'arc. **À 100 %** : bleu lunaire brillant, cratères, halo qui tourne, éclats d'étoiles, légère flottaison.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

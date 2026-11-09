@@ -1,5 +1,6 @@
 import { heures } from "../lib/format";
 import { NOMS_RANGS, PALIERS, rangDepuisMinutes } from "../lib/rangs";
+import { BadgeRang } from "./BadgeRang";
 import "./JaugeHeures.css";
 
 /**
@@ -20,14 +21,17 @@ export function JaugeHeures({ minutes }: { minutes: number }) {
             <strong>{r.nom}</strong>
             <span>Rang {r.romain}</span>
           </div>
-          <div className="jauge__cercle" title={`Rang ${r.romain} · ${r.nom}`}>
-            {r.romain}
-          </div>
+          <BadgeRang niveau={r.niveau} taille={50} />
         </div>
       </div>
       <div className="jauge__segments" role="img" aria-label={`Rang ${r.nom}, ${heures(minutes)}`}>
         {r.segments.map((s, i) => (
-          <div key={i} className="jauge__segment" title={`${NOMS_RANGS[i]} · ${PALIERS[i]} h`}>
+          <div
+            key={i}
+            className={`jauge__segment${s >= 1 ? " is-plein" : s > 0 ? " is-partiel" : ""}`}
+            title={`${NOMS_RANGS[i]} · ${PALIERS[i]} h`}
+            style={{ "--i": i } as React.CSSProperties}
+          >
             <div style={{ width: `${Math.round(s * 100)}%` }} />
           </div>
         ))}

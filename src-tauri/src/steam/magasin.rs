@@ -61,6 +61,9 @@ pub struct FicheJeu {
     pub config_minimale: Vec<LigneConfig>,
     pub config_recommandee: Vec<LigneConfig>,
     pub metacritic: Option<u32>,
+    /// DLC du jeu listés par le magasin (appids).
+    #[serde(default)]
+    pub dlc: Vec<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -236,6 +239,8 @@ struct FicheBrute {
     release_date: Option<SortieBrute>,
     demos: Option<serde_json::Value>,
     metacritic: Option<serde_json::Value>,
+    #[serde(default)]
+    dlc: Vec<u32>,
 }
 
 impl FicheBrute {
@@ -284,6 +289,7 @@ impl FicheBrute {
             config_minimale: req["minimum"].as_str().map(config).unwrap_or_default(),
             config_recommandee: req["recommended"].as_str().map(config).unwrap_or_default(),
             metacritic: self.metacritic.and_then(|m| m["score"].as_u64()).map(|s| s as u32),
+            dlc: self.dlc,
         }
     }
 }

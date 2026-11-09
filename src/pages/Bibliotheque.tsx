@@ -8,6 +8,7 @@ import { entier, heures } from "../lib/format";
 import { degradeJaquette, imagesDe } from "../lib/images";
 import { rangDepuisMinutes } from "../lib/rangs";
 import { useInstallation } from "../installation/store";
+import { BadgeRang } from "../components/BadgeRang";
 import "./pages.css";
 import "./Bibliotheque.css";
 
@@ -242,8 +243,8 @@ const Tuile = memo(function Tuile({
           </span>
         )}
         {r.niveau > 0 && (
-          <span className="tuile__rang" title={`Rang ${r.romain} · ${r.nom}`}>
-            {r.romain}
+          <span className="tuile__rang-badge">
+            <BadgeRang niveau={r.niveau} taille={36} anime={false} />
           </span>
         )}
         {!image && <span className="tuile__titre">{jeu.nom}</span>}

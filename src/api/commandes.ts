@@ -104,5 +104,6 @@ export const api = {
   proprietesJeu: (appId: number) => appeler<ProprietesJeu>("proprietes_jeu", { appId }),
   reglerJeu: (demande: Omit<Reglage, "compte">) => appeler<FileSteam>("regler_jeu", { demande }),
   ouvrirDossierJeu: (appId: number) => appeler<void>("ouvrir_dossier_jeu", { appId }),
+  dlcJeu: (appId: number) => appeler<Produit[]>("dlc_jeu", { appId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

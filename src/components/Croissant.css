@@ -1,0 +1,158 @@
+/* Croissant des succès, animé (demande de Tom). */
+.croissant {
+  position: relative;
+  flex: 0 0 auto;
+}
+.croissant__svg {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  transition: transform 0.5s var(--ease);
+}
+.croissant:hover .croissant__svg {
+  transform: rotate(-8deg) scale(1.04);
+}
+/* Remplissage à l'arrivée, puis lueur qui respire. */
+.croissant__arc {
+  animation:
+    croissant-remplit 1.2s var(--ease) both,
+    croissant-lueur 3.6s ease-in-out 1.2s infinite;
+}
+@keyframes croissant-remplit {
+  from {
+    stroke-dasharray: 0 999;
+  }
+}
+@keyframes croissant-lueur {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px rgba(238, 242, 255, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 7px rgba(238, 242, 255, 0.85));
+  }
+}
+.croissant__reflet {
+  mix-blend-mode: soft-light;
+  animation: croissant-remplit 1.2s var(--ease) both;
+}
+.croissant__texte {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* ——— 100 % : lune bleue, brillante, avec halo et éclats ——— */
+.croissant.is-complet .croissant__arc {
+  animation:
+    croissant-remplit 1.4s var(--ease) both,
+    croissant-lueur-bleue 2.6s ease-in-out 1.4s infinite;
+}
+@keyframes croissant-lueur-bleue {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px rgba(124, 200, 255, 0.7));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(160, 220, 255, 1));
+  }
+}
+.croissant.is-complet .croissant__reflet {
+  mix-blend-mode: screen;
+}
+.croissant.is-complet .croissant__svg {
+  animation: croissant-flotte 5s ease-in-out infinite;
+}
+@keyframes croissant-flotte {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+}
+.croissant.is-complet .croissant__texte {
+  color: #dff3ff;
+  text-shadow: 0 0 10px rgba(124, 200, 255, 0.9);
+}
+.croissant__halo {
+  position: absolute;
+  inset: -10%;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(160, 220, 255, 0.45);
+  box-shadow:
+    0 0 18px rgba(124, 200, 255, 0.35),
+    inset 0 0 18px rgba(124, 200, 255, 0.2);
+  animation: croissant-halo 12s linear infinite;
+}
+@keyframes croissant-halo {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.croissant__eclats {
+  position: absolute;
+  inset: -14%;
+  z-index: 2;
+  pointer-events: none;
+}
+.croissant__eclats span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e6f6ff;
+  box-shadow:
+    0 0 6px #9fd8ff,
+    0 0 12px #7cc8ff;
+  animation: croissant-eclat 2.4s ease-in-out infinite;
+}
+.croissant__eclats span::before,
+.croissant__eclats span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  margin: -0.5px 0 0 -6px;
+  background: linear-gradient(90deg, transparent, #e6f6ff, transparent);
+}
+.croissant__eclats span::after {
+  transform: rotate(90deg);
+}
+.croissant__eclats span:nth-child(1) {
+  top: 4%;
+  right: 18%;
+}
+.croissant__eclats span:nth-child(2) {
+  bottom: 10%;
+  left: 6%;
+  animation-delay: 0.6s;
+}
+.croissant__eclats span:nth-child(3) {
+  top: 40%;
+  right: -2%;
+  animation-delay: 1.2s;
+}
+.croissant__eclats span:nth-child(4) {
+  bottom: -2%;
+  right: 30%;
+  animation-delay: 1.8s;
+}
+@keyframes croissant-eclat {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+}

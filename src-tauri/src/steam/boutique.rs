@@ -246,6 +246,27 @@ impl ClientSteam {
             .unwrap_or_default())
     }
 
+    /// DLC cherchés par nom (catégorie DLC du magasin), pour les jeux dont la fiche
+    /// ne liste pas les DLC (ex. Apex Legends).
+    pub async fn dlc_par_recherche(&self, nom: &str) -> Resultat<Vec<u32>> {
+        let params: Vec<(&str, &str)> = vec![
+            ("term", nom),
+            ("category1", "21"),
+            ("count", "50"),
+            ("json", "1"),
+            ("cc", "FR"),
+            ("l", "french"),
+        ];
+        let url = Url::parse_with_params("https://store.steampowered.com/search/results/", &params)
+            .map_err(|_| Erreur::Interne("URL".into()))?;
+        let corps: serde_json::Value = self.obtenir(url).await?;
+        let mut vus = std::collections::HashSet::new();
+        Ok(corps["items"]
+            .as_array()
+            .map(|l| l.iter().filter_map(|i| app_id_depuis_logo(i["logo"].as_str()?)).filter(|id| vus.insert(*id)).collect())
+            .unwrap_or_default())
+    }
+
     /// Liste de souhaits du compte (publique ou la sienne).
     pub async fn souhaits(&self, steam_id: &str) -> Resultat<Vec<Souhait>> {
         let url = Url::parse_with_params(
@@ -323,5 +344,16 @@ mod tests {
         assert!(!g.is_empty());
         let a = tauri::async_runtime::block_on(c.rayon_ids("tag:19")).unwrap();
         assert!(!a.is_empty());
+    }
+
+    #[test]
+    #[ignore = "réseau"]
+    fn dlc_d_apex_par_recherche() {
+        let c = ClientSteam::nouveau().unwrap();
+        let ids = tauri::async_runtime::block_on(c.dlc_par_recherche("Apex Legends")).unwrap();
+        let p = tauri::async_runtime::block_on(c.produits(&ids, &HashMap::new())).unwrap();
+        let noms: Vec<&str> = p.iter().map(|x| x.nom.as_str()).take(6).collect();
+        println!("{} DLC trouvés, ex. {noms:?}", p.len());
+        assert!(!p.is_empty());
     }
 }

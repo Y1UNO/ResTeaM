@@ -274,3 +274,8 @@ export function useProprietesJeu(appId: number | null) {
     staleTime: 0,
   });
 }
+
+/** Tous les DLC d'un jeu (magasin), avec images et prix. */
+export function useDlcJeu(appId: number | null) {
+  return useQuery({ queryKey: ["dlc", appId], queryFn: () => api.dlcJeu(appId as number), enabled: appId != null, staleTime: 30 * 60_000 });
+}

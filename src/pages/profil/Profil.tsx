@@ -16,6 +16,7 @@ import { estErreurApp, type Badge, type JeuPossede } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
 import { Smoke } from "../../components/Smoke";
 import { Compteur, Lucioles } from "../../components/Vivant";
+import { BadgeRang } from "../../components/BadgeRang";
 import { usePalette } from "../../lib/couleurs";
 import { date, entier, heures, statut } from "../../lib/format";
 import { degradeJaquette, imagesDe } from "../../lib/images";
@@ -190,7 +191,7 @@ function VueProfil({ ami }: { ami: string | null }) {
                   onClick={() => choisirRang(i)}
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
-                  <span className="profil-rang__anneau">{x.romain}</span>
+                  <BadgeRang niveau={i} taille={48} anime={atteint} />
                   <span className="profil-rang__nom">{x.nom}</span>
                   <span className="profil-rang__seuil">{x.seuil}</span>
                   <span className="profil-rang__nombre">{nb ? `${nb} jeu${nb > 1 ? "x" : ""}` : "—"}</span>

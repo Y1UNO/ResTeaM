@@ -360,6 +360,8 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     }
     case "ouvrir_dossier_jeu":
       return null;
+    case "dlc_jeu":
+      return donneesApercu("produits_magasin", { appIds: Number(args?.appId) === 1145350 ? [2868840, 413150, 367520] : [] });
     case "file_steam":
       return fileSteam();
     case "stats_systeme": {

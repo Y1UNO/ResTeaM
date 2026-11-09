@@ -25,6 +25,7 @@ import { imagesDe } from "../../lib/images";
 import { rangDepuisMinutes } from "../../lib/rangs";
 import { viaCache } from "../../lib/imageLocale";
 import { Medias } from "./Medias";
+import { BadgeRang } from "../../components/BadgeRang";
 import { PopupAchat } from "./PopupAchat";
 import { FenetreProprietes } from "./Proprietes";
 import "../pages.css";
@@ -71,6 +72,7 @@ export function Fiche() {
   return (
     <div className="fiche" style={style}>
       <div className="fiche__fond" aria-hidden="true" />
+      {im.hero && <div key={im.hero} className="fiche__affiche" aria-hidden="true" style={{ backgroundImage: `url("${im.hero}")` }} />}
       <div className="fiche__voile" aria-hidden="true" />
       <Smoke variant="hero" className="fiche__fumee" />
 
@@ -272,7 +274,7 @@ function BlocPossede({
           </span>
           <span className="fiche-bloc__temps">
             {jeu.minutesTotal > 0 ? heures(jeu.minutesTotal) : "Jamais lancé"}
-            {r.niveau > 0 && <span className="fiche-bloc__rang" title={`Rang ${r.romain} · ${r.nom}`}>{r.romain}</span>}
+            {r.niveau > 0 && <BadgeRang niveau={r.niveau} taille={42} />}
           </span>
         </div>
         {aSupprimer ? (

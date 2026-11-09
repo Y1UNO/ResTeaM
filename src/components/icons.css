@@ -73,3 +73,8 @@
     transform: translateY(2px);
   }
 }
+
+/* Panier communautaire : les joueurs sortent la tête au survol. */
+:is(button, a):hover .ico-communaute .ico-tetes {
+  transform: translateY(-1.4px);
+}

@@ -83,13 +83,22 @@ export function IconDownloads({ size = 21 }: IconProps) {
 }
 
 /** Communauté : deux silhouettes sous un croissant. */
+/**
+ * Communauté : le « panier communautaire » (demande de Tom). Un panier tressé,
+ * deux joueurs qui en dépassent, et le croissant au-dessus. Au survol, les deux
+ * têtes sortent un peu du panier et le croissant tourne.
+ */
 export function IconCommunity({ size = 22 }: IconProps) {
   return (
     <svg className="ico ico-communaute" aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" {...stroke}>
-      <circle cx="8.5" cy="10" r="2.8" />
-      <circle cx="16" cy="10.6" r="2.3" />
-      <path d="M3.5 20c.6-3 2.5-4.6 5-4.6s4.4 1.6 5 4.6M14 15.6c2.6-.2 4.6 1.3 5.3 4.4" />
-      <path className="ico-lune" d="M12.3 2.4a2.6 2.6 0 1 0 2.2 3.9 2.1 2.1 0 1 1-2.2-3.9z" fill="currentColor" stroke="none" />
+      <g className="ico-tetes">
+        <circle cx="8.6" cy="8.4" r="2.1" />
+        <circle cx="15.4" cy="8.9" r="1.8" />
+      </g>
+      <path d="M3 12.2h18" />
+      <path d="M4.4 12.2l1.5 7.1a1.6 1.6 0 0 0 1.6 1.3h9a1.6 1.6 0 0 0 1.6-1.3l1.5-7.1" />
+      <path d="M9.3 15.2l.4 3M14.7 15.2l-.4 3M12 15v3.2" strokeWidth="1.3" />
+      <path className="ico-lune" d="M11.3 1.6a2.2 2.2 0 1 0 1.9 3.3 1.8 1.8 0 1 1-1.9-3.3z" fill="currentColor" stroke="none" />
     </svg>
   );
 }

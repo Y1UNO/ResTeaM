@@ -172,6 +172,40 @@ Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bi
 
 **Ensuite** : rangées de la boutique façon Steam (carrousels à flèches, « Car tu as joué à… », « Moins de 10 € », rangées par tag), puis les étapes 11, 13, 14 et 15.
 
+### À faire — Acheter sans quitter ResTeaM (idée de Tom, 9 novembre 2026)
+
+**Ce qui est possible, et ce qui ne l'est pas**
+- Steam n'a **aucune API** pour qu'une autre app paie à sa place. Même l'API Steamworks ne permet aux jeux que leurs propres achats internes, ou d'ouvrir l'overlay, qui demande une fenêtre de jeu. Une page de paiement « 100 % ResTeaM » voudrait dire que ResTeaM touche aux cookies de connexion et aux moyens de paiement. **C'est non**, c'est précisément ce qu'il faut éviter.
+- **Solution proposée : un « salon d'achat » dans ResTeaM.**
+  - C'est une fenêtre ResTeaM à part, avec notre barre de titre, nos animations d'ouverture et de fermeture, et un fond assorti.
+  - Elle affiche **les vraies pages officielles de Steam** : fiche, panier, connexion (QR code avec l'app Steam, ou mot de passe tapé directement chez Steam), paiement.
+  - Steam gère tout : la connexion, la carte, PayPal, le Steam Guard.
+  - Une barre de sécurité ResTeaM, au-dessus de la page, montre en permanence le vrai domaine (cadenas, `store.steampowered.com`) et le signale si la page sort de Steam.
+
+**Sécurité du salon** (à valider dans l'audit)
+1. La fenêtre n'a **aucun accès aux commandes de ResTeaM**. Les capacités Tauri ne concernent que la fenêtre principale.
+2. Elle a son **propre dossier de données WebView2**. Les cookies de Steam y sont isolés, et chiffrés par Windows (DPAPI).
+3. La navigation est limitée aux domaines de Steam (`store`, `checkout`, `login`, `help.steampowered.com`, `steamcommunity.com`). Tout autre lien, comme PayPal, s'ouvre dans le navigateur de Windows.
+4. **Aucun script ni CSS injecté** dans les pages de connexion et de paiement. Ce sont les pages authentiques de Steam : une page de paiement qui ne ressemble plus à Steam habituerait à faire confiance à de fausses pages.
+
+**Vérification dans l'exe** : acheter un jeu gratuit ou à 0,99 € de bout en bout, et vérifier qu'aucune donnée de Steam n'est accessible depuis la fenêtre principale.
+
+### À faire — Coffre-fort et campagne « tout faire planter » (idée de Tom)
+
+1. **Coffre-fort** :
+   - chiffrer avec la protection de données de Windows (DPAPI, liée à la session Windows de Tom) ce que ResTeaM garde sur le disque : `session.json`, choix de profil, file d'attente Steam, cache SQLite ;
+   - la clé API reste dans le Gestionnaire d'identifiants ;
+   - les cookies du salon d'achat restent dans leur dossier isolé.
+2. **Tests pour tout faire planter**, avec un rapport `AUDIT-SECURITE-2.md` :
+   - **fuzzing** des analyseurs (`vdf.rs`, `appworkshop`, `screenshots.vdf`, BBCode, en-tête Range, noms de fichiers, réponses Steam) avec `cargo-fuzz` / `proptest` ;
+   - **fichiers piégés** : VDF corrompus, énormes ou en boucle, chemins Unicode, liens symboliques, dossiers Steam absents ;
+   - **attaques du protocole `img`** : `..`, `%2e%2e`, chemins Windows, plages d'octets géantes ou négatives, fichiers de plusieurs Go ;
+   - **commandes appelées avec n'importe quoi** : identifiants trop longs, négatifs, Unicode, injections dans les arguments de l'aide Workshop ;
+   - **pannes** : Internet coupé, Steam fermé en pleine action, clé révoquée, quota Steam (429), disque plein ;
+   - **charge** : des milliers d'images, une bibliothèque de 5 000 jeux, 1 000 mods ;
+   - relecture de la CSP, des capacités Tauri et de l'isolement des fenêtres.
+   - Chaque plantage trouvé donne une correction et un test qui l'empêche de revenir.
+
 ### À faire — Profil : total des trophées et lune à 30 niveaux
 
 Noté le 9 novembre 2026 (idée de Tom), rien de commencé. À placer juste avant ou juste après la Communauté, selon ce que Tom préfère.
@@ -676,6 +710,16 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
   - Retirer : demande de confirmation, puis désabonnement. « Installé » est aussi marqué dans la vitrine « Découvrir ».
   - Si Steam refuse (jeu non possédé, Steam fermé), le message propose « Ouvrir dans Steam ».
 - Tests : `plages`, `noms_et_types_locaux`, `galerie_et_youtube` (59 tests en tout).
+
+### Lot 4 — Retours sur le Workshop, icônes maison (9 novembre 2026)
+
+- **Fenêtre d'un objet** : plus de fond flouté « mouillé ». L'image remplit toute la scène (agrandie si l'aperçu est petit, sans être coupée), sur un fond sombre avec un léger halo lunaire. Ordre des images : vidéo locale, puis galerie HD, puis aperçu de Steam (souvent un GIF animé), puis image du disque seulement s'il n'y a rien d'autre, sans doublons.
+- **Panier communautaire** : nouvelle icône de la Communauté. Un panier tressé, deux joueurs qui en dépassent, et le croissant. Au survol, les têtes sortent.
+- **Boutons de la fenêtre dans la DA** :
+  - Réduire : un croissant qui se couche derrière l'horizon ;
+  - Agrandir / Restaurer : quatre coins qui s'écartent ou se resserrent autour d'une étoile ;
+  - Fermer : une croix qui tourne dans une orbite, avec une petite lune qui en fait le tour, et un rouge doux au lieu du rouge de Windows.
+- Plans notés : salon d'achat officiel de Steam dans ResTeaM, coffre-fort et campagne de tests « tout faire planter ».
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

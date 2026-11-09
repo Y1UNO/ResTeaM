@@ -103,10 +103,12 @@ export function FenetreObjet({ objet: depart, appId, fermer }: { objet: ObjetWor
   const medias: Media[] = useMemo(() => {
     const l: Media[] = [];
     if (local?.video) l.push({ type: "video", src: local.video });
+    // Images en grande taille de l'auteur ; sinon l'aperçu de Steam (souvent un GIF
+    // animé), et l'image du disque seulement s'il n'y a rien d'autre.
     const galerie = objet.galerie ?? [];
-    if (galerie.length) for (const g of galerie) l.push({ type: "image", src: viaCache(g) });
-    else if (local?.image) l.push({ type: "image", src: local.image });
-    if (objet.apercu && !galerie.length) l.push({ type: "image", src: viaCache(objet.apercu) });
+    for (const g of galerie) l.push({ type: "image", src: viaCache(g) });
+    if (!galerie.length && objet.apercu) l.push({ type: "image", src: viaCache(objet.apercu) });
+    if (!galerie.length && !objet.apercu && local?.image) l.push({ type: "image", src: local.image });
     for (const y of [...(objet.video ? [objet.video] : []), ...(objet.youtube ?? [])])
       if (!l.some((m) => m.youtube === y)) l.push({ type: "image", src: viaCache(`https://img.youtube.com/vi/${y}/hqdefault.jpg`), youtube: y });
     return l;
@@ -148,7 +150,6 @@ export function FenetreObjet({ objet: depart, appId, fermer }: { objet: ObjetWor
       <div className="com-voile" onClick={fermer} aria-hidden="true" />
       <div role="dialog" aria-modal="true" aria-label={objet.titre} className="com-fenetre">
         <div className="com-fenetre__scene">
-          {media && media.type === "image" && <div className="com-fenetre__flou" style={{ backgroundImage: `url("${media.src}")` }} aria-hidden="true" />}
           <div className="com-fenetre__media" style={media ? undefined : { background: degradeJaquette(objet.titre) }}>
             {media?.type === "video" && <video key={media.src} src={media.src} autoPlay loop muted playsInline />}
             {media?.type === "image" && <img key={media.src} src={media.src} alt="" draggable={false} />}

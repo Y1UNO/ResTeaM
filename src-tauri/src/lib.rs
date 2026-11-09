@@ -5,6 +5,7 @@ mod erreur;
 mod images_locales;
 mod jeu;
 mod notifications;
+mod partage;
 mod preferences;
 mod salon;
 #[cfg(test)]
@@ -163,6 +164,13 @@ pub fn run() {
             commandes::resteam_au_demarrage,
             commandes::jeu_session,
             commandes::bilan_trophees,
+            commandes::partage_etat,
+            commandes::partage_connecter,
+            commandes::partage_publier,
+            commandes::partage_fichier,
+            commandes::partage_retirer_fichier,
+            commandes::partage_arreter,
+            commandes::profil_partage,
             commandes::notification_essai,
             commandes::parametres_steam,
             commandes::regler_steam,

@@ -253,7 +253,7 @@ Noté le 9 novembre 2026 (idée de Tom), rien de commencé. À placer juste avan
 
 **Vérification dans l'exe** : le total des trophées correspond à Steam (à comparer sur 2 ou 3 jeux), et la lune change bien d'aspect selon le niveau.
 
-### Plus tard — Serveur de partage des profils (pour que les amis voient photo, bannière et style ResTeaM)
+### Serveur de partage des profils (pour que les amis voient photo, bannière et style ResTeaM) — fait le 10 novembre 2026, voir le journal « Étape 19 »
 
 Noté le 9 novembre 2026, à faire plus tard. **Oui, c'est faisable gratuitement**, et c'est largement assez puissant pour Tom et ses amis.
 
@@ -1025,6 +1025,27 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 ### Étape 18 bis — Menu du logo (9 novembre 2026)
 
 - Au survol, les lignes du menu du logo (Paramètres, Mode Salon, Se déconnecter) prenaient le style de la petite étiquette « F11 » : bordure, marge réduite, décalage à droite. Le style de l'étiquette avait été inséré au milieu de la règle commune « survol + focus ». Les deux règles sont de nouveau séparées : lignes alignées, fond clair au survol.
+
+### Étape 19 — Serveur de partage des profils (10 novembre 2026)
+
+- **Compte Cloudflare** créé par Tom, R2 activé, sous-domaine neutre `resteam` (pas de pseudo ni d'adresse mail dans le code public). `wrangler` est connecté sur son PC.
+- **Serveur** (`serveur/`, voir son `README.md`) : un Worker en ligne à `https://resteam-profils.resteam.workers.dev`, avec une base D1 `resteam-profils` (jetons, profils) et un stockage R2 `resteam-profils` (photos, bannières).
+  - Connexion : ResTeaM ouvre `/auth/debut` dans le navigateur. Le **serveur vérifie lui-même** la réponse OpenID de Steam (champs, signature qui couvre tout, `check_authentication`), puis renvoie un jeton de 256 bits vers `127.0.0.1` (port et état validés). Seule l'empreinte SHA-256 du jeton est gardée, et 5 jetons au plus par compte.
+  - Chacun n'écrit que dans son profil. Le style est **nettoyé** : seules les clés et valeurs connues sont gardées, 16 Ko au plus.
+  - Les fichiers sont **vérifiés par leurs premiers octets** (PNG, JPEG, GIF, WebP, MP4, WebM : un HTML ou un SVG déguisé est refusé). La photo est limitée à 15 Mo et la bannière à 60 Mo. Ils sont servis avec `nosniff`, une CSP `sandbox`, des plages d'octets (vidéo) et un cache immuable (adresse versionnée `?v=`).
+  - « Arrêter le partage » efface tout : profil, fichiers et jetons.
+  - Aucune erreur interne n'est détaillée dans les réponses. La clé API Steam n'est jamais envoyée.
+  - Tests : `npm test` (règles), essais complets en local (`wrangler dev`), puis sur le vrai serveur avec un compte fictif, effacé ensuite.
+- **ResTeaM** (`partage.rs`, `pages/profil/PartageProfil.tsx`) :
+  - dans le pinceau magique, **« Partager avec mes amis »**, coupé par défaut. « Partager mon profil » ouvre la connexion Steam dans le navigateur ;
+  - le jeton est rangé dans le Gestionnaire d'identifiants Windows, et ResTeaM vérifie qu'il appartient bien au compte connecté (sinon il est rendu tout de suite) ;
+  - ensuite, chaque changement de style, de photo ou de bannière part tout seul au bout d'1,2 s, et seulement ce qui a changé ;
+  - « Arrêter le partage » demande une confirmation, puis efface tout ;
+  - sur le profil d'un ami qui partage : son fond, son cadre, son effet, sa couleur, sa photo (via le cache disque, une fois par version) et sa bannière (lue en direct, CSP ouverte pour le serveur seulement). Cache de 10 minutes ;
+  - les adresses de fichiers reçues doivent pointer vers le serveur, sinon elles sont refusées.
+- Aperçu : un ami sur deux partage son profil (aurore, cadre de lunes, couleur dorée).
+
+**À vérifier dans l'exe** : pinceau magique, puis « Partager mon profil », valider dans le navigateur, choisir une photo et une bannière. Un ami qui a ResTeaM doit voir ton profil ResTeaM. Vérifier aussi « Arrêter le partage ».
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

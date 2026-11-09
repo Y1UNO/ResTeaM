@@ -642,3 +642,55 @@
   align-items: center;
   gap: 10px;
 }
+
+/* ——— Partager avec mes amis ——— */
+.partage {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: rgba(238, 242, 255, 0.04);
+  border: 1px solid rgba(238, 242, 255, 0.1);
+}
+.partage.is-actif {
+  border-color: rgba(126, 226, 168, 0.4);
+  background: rgba(126, 226, 168, 0.06);
+}
+.partage .btn {
+  align-self: flex-start;
+}
+.partage__etat {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.partage__point {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #7ee2a8;
+  box-shadow: 0 0 10px rgba(126, 226, 168, 0.7);
+}
+.partage__point.is-envoi {
+  animation: partage-envoi 1s ease-in-out infinite;
+}
+@keyframes partage-envoi {
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+.partage__boutons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.partage__arreter {
+  align-self: flex-start;
+}

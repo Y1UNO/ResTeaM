@@ -636,6 +636,63 @@ pub struct ProfilJoueur {
     pub recents: Option<Vec<JeuPossede>>,
 }
 
+// ——— Partage du profil ResTeaM (serveur Cloudflare) ———
+
+const TTL_PROFIL_PARTAGE: i64 = 10 * 60;
+
+/// État du partage : mon profil partagé (style, fichiers), ou `None` s'il est coupé.
+#[tauri::command]
+pub async fn partage_etat(etat: State<'_, EtatApp>) -> Resultat<Option<serde_json::Value>> {
+    crate::partage::moi(&etat.steam.http).await
+}
+
+/// Active le partage : connexion Steam vérifiée par le serveur (navigateur).
+#[tauri::command]
+pub async fn partage_connecter(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<Option<serde_json::Value>> {
+    let session = session_requise(&app)?;
+    crate::partage::connecter(&app, &etat.steam.http, &session.steam_id).await?;
+    crate::partage::moi(&etat.steam.http).await
+}
+
+/// Envoie le style du pinceau magique (le serveur ne garde que les clés connues).
+#[tauri::command]
+pub async fn partage_publier(etat: State<'_, EtatApp>, style: serde_json::Value) -> Resultat<serde_json::Value> {
+    crate::partage::publier_style(&etat.steam.http, &style).await
+}
+
+/// Envoie la photo ou la bannière choisie sur ce PC.
+#[tauri::command]
+pub async fn partage_fichier(app: AppHandle, nom: String) -> Resultat<serde_json::Value> {
+    let dossier = app.state::<crate::images_locales::CacheImages>().dossier_perso.clone();
+    crate::partage::envoyer_fichier(&dossier, &nom).await
+}
+
+#[tauri::command]
+pub async fn partage_retirer_fichier(etat: State<'_, EtatApp>, nom: String) -> Resultat<()> {
+    crate::partage::retirer_fichier(&etat.steam.http, &nom).await
+}
+
+/// Arrête le partage : tout est effacé du serveur.
+#[tauri::command]
+pub async fn partage_arreter(etat: State<'_, EtatApp>) -> Resultat<()> {
+    crate::partage::arreter(&etat.steam.http).await
+}
+
+/// Profil partagé d'un ami (`None` s'il ne partage pas). Cache de 10 minutes.
+#[tauri::command]
+pub async fn profil_partage(etat: State<'_, EtatApp>, steam_id: String) -> Resultat<Option<serde_json::Value>> {
+    if !session::steam_id_valide(&steam_id) {
+        return Err(Erreur::Interne("identifiant Steam invalide".into()));
+    }
+    let cle = format!("partage:{steam_id}");
+    if let Some(p) = etat.cache.frais::<Option<serde_json::Value>>(&cle)? {
+        return Ok(p);
+    }
+    let p = crate::partage::profil(&etat.steam.http, &steam_id).await?;
+    etat.cache.ranger(&cle, &p, TTL_PROFIL_PARTAGE)?;
+    Ok(p)
+}
+
 const TTL_TROPHEES: i64 = 6 * 60 * 60;
 
 /// Trophées d'un joueur (le compte connecté si `steam_id` est absent) : total, jeux à

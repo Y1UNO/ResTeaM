@@ -1,5 +1,6 @@
 import { useId, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "../../app/session";
 import { api, dansTauri } from "../../api/commandes";
 import {
@@ -17,6 +18,7 @@ import {
 import { estErreurApp, type Badge, type BilanTrophees, type JeuPossede } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
 import { LuneProfil } from "./LuneProfil";
+import { persoDepuisPartage } from "./PartageProfil";
 import { calculerPoints, niveauDepuisPoints } from "../../lib/niveauResteam";
 import { Smoke } from "../../components/Smoke";
 import { Compteur, Lucioles } from "../../components/Vivant";
@@ -80,6 +82,8 @@ function VueProfil({ ami }: { ami: string | null }) {
   const amis = useAmis();
   const profilAmi = useProfilJoueur(ami);
   const bilan = useBilanTrophees(ami);
+  // Profil ResTeaM partagé par l'ami (style, photo, bannière), s'il en a un.
+  const partageAmi = useQuery({ queryKey: ["profil-partage", ami], queryFn: () => api.profilPartage(ami as string), enabled: !!ami, staleTime: 5 * 60_000 });
   const pa = profilAmi.data?.donnees;
   const j = ami ? pa?.joueur : joueur.data?.donnees;
   const n = ami ? (pa?.niveau ?? undefined) : niveau.data?.donnees;
@@ -95,12 +99,12 @@ function VueProfil({ ami }: { ami: string | null }) {
   const palette = usePalette(viaCache(j?.avatar) ?? null, j?.pseudo ?? "Profil");
   const objets = useObjetsProfil(ami ?? moiId).data?.donnees;
   const persoMoi = usePersonnalisation((s) => s.p);
-  const perso = ami ? PERSO_AMI : persoMoi;
+  const perso = ami ? persoDepuisPartage(PERSO_AMI, partageAmi.data) : persoMoi;
   const [panneau, setPanneau] = useState(false);
   const favoris = useMemo(() => jeuxMoi.filter((x) => x.favori), [jeuxMoi]);
-  const imagesFavoris = useImages(panneau || perso.jeuFond ? favoris.map((x) => x.appId) : []);
+  const imagesFavoris = useImages(panneau || perso.jeuFond ? [...favoris.map((x) => x.appId), ...(perso.jeuFond ? [perso.jeuFond] : [])] : []);
   const heroFond = perso.fond === "jeu" && perso.jeuFond ? imagesDe(perso.jeuFond, imagesFavoris.data).hero : null;
-  const avatarAffiche = (!ami && perso.avatarPerso) || (perso.avatarAnime && objets?.avatarAnime?.image ? objets.avatarAnime.image : j?.avatar);
+  const avatarAffiche = perso.avatarPerso || (perso.avatarAnime && objets?.avatarAnime?.image ? objets.avatarAnime.image : j?.avatar);
 
   const minutesRecentes = r.reduce((s, x) => s + x.minutesDeuxSemaines, 0);
   // Niveau ResTeaM (1 à 30) : trophées, heures, jeux à 100 % et rangs. Trophées privés : 0.

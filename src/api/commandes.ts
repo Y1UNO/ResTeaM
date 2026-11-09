@@ -50,6 +50,8 @@ import {
   PreferencesEtat,
   EtatJeu,
   BilanTrophees,
+  EtatPartage,
+  ProfilPartage,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -125,6 +127,13 @@ export const api = {
   preferencesEcrire: (preferences: Preferences) => appeler<void>("preferences_ecrire", { preferences }),
   resteamAuDemarrage: (actif: boolean) => appeler<boolean>("resteam_au_demarrage", { actif }),
   jeuSession: () => appeler<EtatJeu>("jeu_session"),
+  partageEtat: () => appeler<EtatPartage>("partage_etat"),
+  partageConnecter: () => appeler<EtatPartage>("partage_connecter"),
+  partagePublier: (style: object) => appeler<unknown>("partage_publier", { style }),
+  partageFichier: (nom: "avatar" | "banniere") => appeler<unknown>("partage_fichier", { nom }),
+  partageRetirerFichier: (nom: "avatar" | "banniere") => appeler<void>("partage_retirer_fichier", { nom }),
+  partageArreter: () => appeler<void>("partage_arreter"),
+  profilPartage: (steamId: string) => appeler<ProfilPartage | null>("profil_partage", { steamId }),
   bilanTrophees: (steamId: string | null) => appeler<Donnee<BilanTrophees>>("bilan_trophees", { steamId }),
   notificationEssai: () => appeler<void>("notification_essai"),
   parametresSteam: () => appeler<ParametresSteamEtat>("parametres_steam"),

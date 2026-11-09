@@ -7,13 +7,14 @@ import { estErreurApp } from "../../api/types";
 import { imagesDe } from "../../lib/images";
 import type { ImagesJeu } from "../../api/types";
 import "./personnalisation.css";
+import { PartageProfil } from "./PartageProfil";
 
 /*
  * Personnalisation du profil (demande de Tom) : fond, cadre autour de l'avatar,
  * effet d'ambiance et couleur. Les objets Steam équipés (fond animé, cadre,
  * avatar animé) sont proposés en premier ; ResTeaM ajoute ses propres styles.
- * Gardée sur ce PC (les amis voient tes objets Steam, pas les choix ResTeaM :
- * il faudrait un serveur pour les partager).
+ * Gardée sur ce PC ; partagée avec les amis seulement si Tom l'active (serveur
+ * de partage des profils, voir `PartageProfil.tsx`).
  */
 
 export type ChoixFond = "steam" | "banniere" | "avatar" | "nebuleuse" | "aurore" | "jeu";
@@ -315,7 +316,9 @@ export function PanneauPersonnalisation({
           ×
         </button>
       </div>
-      <p className="perso__note">Tes objets Steam (fond, cadre, avatar animé) viennent de la boutique des points Steam. Les styles ResTeaM restent sur ce PC.</p>
+      <p className="perso__note">Tes objets Steam (fond, cadre, avatar animé) viennent de la boutique des points Steam. Tes styles ResTeaM restent sur ce PC, sauf si tu les partages.</p>
+
+      <PartageProfil p={p} />
 
       <MesFichiers />
 
@@ -445,7 +448,7 @@ function MesFichiers() {
           </span>
           <div>
             <strong>Ma bannière</strong>
-            <span>Image, GIF ou vidéo (MP4, WebM), sans limite</span>
+            <span>Image, GIF ou vidéo (MP4, WebM) ; 60 Mo au plus pour la partager</span>
             <div className="perso__fichier-boutons">
               <button type="button" className="btn btn--secondaire btn--petit" disabled={envoi === "banniere"} onClick={() => choisir("banniere")}>
                 {envoi === "banniere" ? "Envoi…" : "Choisir…"}
@@ -460,7 +463,7 @@ function MesFichiers() {
         </div>
       </div>
       {erreur && <p className="message">{erreur}</p>}
-      <p className="perso__note">Ta photo et ta bannière sont visibles dans ResTeaM, sur ce PC. Steam garde ton avatar Steam.</p>
+      <p className="perso__note">Ta photo et ta bannière sont visibles dans ResTeaM (et par tes amis si tu partages). Steam garde ton avatar Steam.</p>
     </div>
   );
 }

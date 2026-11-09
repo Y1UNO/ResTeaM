@@ -76,7 +76,9 @@ pub fn hote_autorise(adresse: &str) -> bool {
     let Ok(u) = url::Url::parse(adresse) else { return false };
     u.scheme() == "https"
         && u.host_str().is_some_and(|h| {
-            h.ends_with(".steamstatic.com")
+            // Photos partagées par les amis (serveur de partage des profils).
+            h == "resteam-profils.resteam.workers.dev"
+                || h.ends_with(".steamstatic.com")
                 || h == "steamcdn-a.akamaihd.net"
                 || h == "steamuserimages-a.akamaihd.net"
                 // Miniatures des vidéos du Workshop.
@@ -301,6 +303,8 @@ mod tests {
         assert!(!hote_autorise("https://steamstatic.com.evil.com/a.jpg"));
         assert!(hote_autorise("https://images.steamusercontent.com/ugc/1/A/"));
         assert!(hote_autorise("https://steamuserimages-a.akamaihd.net/ugc/1/A/"));
+        assert!(hote_autorise("https://resteam-profils.resteam.workers.dev/f/76561198000000000/avatar?v=1"));
+        assert!(!hote_autorise("https://evil.workers.dev/f/1/avatar"));
         assert!(!hote_autorise("file:///C:/Windows/win.ini"));
     }
 

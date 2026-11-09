@@ -220,6 +220,26 @@ export type PreferencesEtat = { preferences: Preferences; demarrageWindows: bool
 export type SessionJeu = { appId: number; debut: number; fin: number | null };
 export type EtatJeu = { enCours: SessionJeu | null; derniere: SessionJeu | null };
 
+// ——— Partage du profil (serveur ResTeaM) ———
+
+export type FichierPartage = { url: string; type: string; video: boolean };
+export type ProfilPartage = {
+  steamId: string;
+  style: {
+    fond?: "steam" | "banniere" | "avatar" | "nebuleuse" | "aurore" | "jeu";
+    cadre?: "steam" | "aucun" | "lune" | "lianes" | "engrenages" | "aura";
+    effet?: "pluie" | "lucioles" | "etoiles" | "aucun";
+    accent?: string;
+    avatarAnime?: boolean;
+    jeuFond?: number | null;
+  };
+  avatar: FichierPartage | null;
+  banniere: FichierPartage | null;
+  maj: number;
+};
+/** Réponse de `/moi` : mon SteamID et mon profil partagé (nul avant le premier envoi). */
+export type EtatPartage = { steamId: string; profil: ProfilPartage | null } | null;
+
 // ——— Trophées du profil ———
 
 export type TropheeRare = { appId: number; nom: string; icone: string; pourcentage: number };

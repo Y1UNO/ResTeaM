@@ -174,7 +174,7 @@ fn jeton_aleatoire() -> String {
 }
 
 /// Lit la ligne de requête HTTP (`GET /chemin HTTP/1.1`) et renvoie la cible.
-async fn lire_cible(flux: &mut TcpStream) -> Option<String> {
+pub(crate) async fn lire_cible(flux: &mut TcpStream) -> Option<String> {
     let mut tampon = vec![0u8; 16 * 1024];
     let mut lu = 0;
     loop {
@@ -199,7 +199,7 @@ async fn lire_cible(flux: &mut TcpStream) -> Option<String> {
     cible.starts_with('/').then(|| cible.to_string())
 }
 
-async fn repondre(flux: &mut TcpStream, statut: u16, html: &str) {
+pub(crate) async fn repondre(flux: &mut TcpStream, statut: u16, html: &str) {
     let raison = match statut {
         200 => "OK",
         400 => "Bad Request",
@@ -215,7 +215,7 @@ async fn repondre(flux: &mut TcpStream, statut: u16, html: &str) {
 }
 
 // Pages affichées dans le navigateur après la connexion (DA Nocturne, sans ressource externe).
-const PAGE_SUCCES: &str = concat!(
+pub(crate) const PAGE_SUCCES: &str = concat!(
     "<!doctype html><html lang=\"fr\"><meta charset=\"utf-8\"><title>ResTeaM · connecté</title>",
     "<style>html,body{margin:0;height:100%;background:#09090A;color:#F2F2F3;font-family:'Segoe UI',system-ui,sans-serif}",
     "body{display:flex;align-items:center;justify-content:center}.c{text-align:center;padding:40px 48px;border-radius:28px;",
@@ -235,7 +235,7 @@ const PAGE_ANNULEE: &str = concat!(
     "<div class=\"c\"><h1>Connexion annulée</h1><p>Tu peux fermer cet onglet.</p></div></html>"
 );
 
-const PAGE_ERREUR: &str = concat!(
+pub(crate) const PAGE_ERREUR: &str = concat!(
     "<!doctype html><html lang=\"fr\"><meta charset=\"utf-8\"><title>ResTeaM · erreur</title>",
     "<style>html,body{margin:0;height:100%;background:#09090A;color:#F2F2F3;font-family:'Segoe UI',system-ui,sans-serif}",
     "body{display:flex;align-items:center;justify-content:center}.c{text-align:center;padding:40px 48px;border-radius:28px;",

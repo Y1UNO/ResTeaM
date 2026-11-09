@@ -104,6 +104,8 @@ const CHARGE = Date.now();
 const EN_JEU = typeof location !== "undefined" && location.search.includes("enjeu=1");
 type ReglageApercu = { appId: number; optionsLancement: string | null; majAuto: number | null; telechargementsEnJeu: number | null };
 const FILE = { installations: [] as number[], desinstallations: [] as number[], reglages: [] as ReglageApercu[], redemarrage: 0, reglageSteam: null as Record<string, unknown> | null };
+/** Partage du profil simulé. */
+const PARTAGE = { actif: false };
 /** Préférences de ResTeaM simulées. */
 const PREFS = {
   fermerReduit: true,
@@ -433,6 +435,23 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         majLe: Math.floor(Date.now() / 1000),
       };
     }
+    case "partage_etat":
+      return PARTAGE.actif ? { steamId: "76561198000000000", profil: null } : null;
+    case "partage_connecter":
+      PARTAGE.actif = true;
+      return { steamId: "76561198000000000", profil: null };
+    case "partage_publier":
+    case "partage_fichier":
+    case "partage_retirer_fichier":
+      return { ok: true };
+    case "partage_arreter":
+      PARTAGE.actif = false;
+      return undefined;
+    case "profil_partage":
+      // Un ami sur deux partage son profil ResTeaM (aurore, cadre de lunes, couleur dorée).
+      return Number(String(args?.steamId).slice(-1)) % 2 === 0
+        ? { steamId: String(args?.steamId), style: { fond: "aurore", cadre: "lune", effet: "etoiles", accent: "#ffd27a", avatarAnime: true, jeuFond: null }, avatar: null, banniere: null, maj: Date.now() }
+        : null;
     case "notification_essai":
       return undefined;
     case "jeu_session": {

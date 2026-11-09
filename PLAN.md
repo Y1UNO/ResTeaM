@@ -753,6 +753,16 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - **Icône Workshop** : une personne qui tient un panier tressé, d'où dépasse un croissant de lune (une création qu'on partage), avec une étincelle. Au survol, le panier se soulève, le croissant sort et l'étincelle scintille. Différente du sac du Magasin et des deux joueurs de la Communauté.
 - **À vérifier dans l'exe** : Acheter → « Ouvrir le salon d'achat » affiche la barre et la page du jeu sur Steam, puis redimensionner, réduire, agrandir et fermer le salon depuis sa barre.
 
+### Étape 12 ter — Icônes vivantes, connexion gardée au salon (9 novembre 2026)
+
+- **Barre de gauche** : icônes un peu plus grandes (22 → 26 px) et **toujours légèrement animées** : les croissants se balancent, les étoiles et étincelles scintillent, les barres des Classements respirent, la flèche des Téléchargements et le croissant du Workshop flottent. Chaque bouton a son propre décalage, pour qu'ils ne bougent pas ensemble. Le mouvement de veille passe par `rotate`, `translate`, `scale` et `opacity` : il s'ajoute au mouvement du survol sans le remplacer. Arrêté si Windows demande moins d'animations.
+- **Connexion Steam dans le salon** :
+  - le profil du salon (`salon-steam/`) est bien gardé sur le disque d'une ouverture à l'autre (le panier de Steam y reste, par exemple) ;
+  - mais Steam ne garde la connexion que si **« Se souvenir de moi »** est coché au moment de se connecter. Sinon, la session meurt à la fermeture du salon. Aucun cookie de connexion n'était enregistré après le premier essai de Tom (seuls les noms et les dates des cookies ont été lus pour le savoir, jamais leurs valeurs) ;
+  - la barre du salon affiche donc un rappel sur la page de connexion de Steam (`/login` ou `login.steampowered.com`, d'après l'adresse réelle fournie par Rust) : « Coche « Se souvenir de moi » pour rester connecté ». Rien n'est ajouté ni coché dans la page de Steam elle-même ;
+  - aperçu : `?salon=barre&page=connexion`.
+- **À vérifier dans l'exe** : se connecter au salon avec « Se souvenir de moi » coché, fermer ResTeaM, le rouvrir, puis rouvrir le salon : il doit être encore connecté.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

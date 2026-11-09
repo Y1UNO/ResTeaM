@@ -19,6 +19,21 @@ function chemin(url: string): string {
 }
 
 /**
+ * Page de connexion de Steam ? (d'après l'adresse réelle fournie par Rust.)
+ * Steam ne garde la connexion d'une ouverture à l'autre que si « Se souvenir
+ * de moi » est coché : la barre le rappelle, sans rien toucher à la page.
+ */
+function pageConnexion(etat: EtatSalon | null): boolean {
+  if (!etat?.officiel) return false;
+  if (etat.hote === "login.steampowered.com") return true;
+  try {
+    return /^\/(login|openid\/login)(\/|$)/i.test(new URL(etat.url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Barre du salon d'achat : la seule partie dessinée par ResTeaM. En dessous, ce sont
  * les vraies pages de Steam, dans leur propre espace isolé. L'adresse affichée vient
  * du moteur du navigateur (Rust), jamais de la page : une page ne peut pas la falsifier.
@@ -102,6 +117,15 @@ export function SalonBarre() {
         <span className="salon-barre__chemin">{etat ? chemin(etat.url) : ""}</span>
         <span className="salon-barre__charge" aria-hidden="true" />
       </div>
+
+      {pageConnexion(etat) && (
+        <p className="salon-barre__astuce" role="status">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24">
+            <path d="M14.5 3.2a8.6 8.6 0 1 0 6.3 12.6 7 7 0 1 1-6.3-12.6z" fill="currentColor" />
+          </svg>
+          Coche « Se souvenir de moi » pour rester connecté
+        </p>
+      )}
 
       <div className="salon-barre__actions">
         <button type="button" className="salon-barre__panier" onClick={() => act("panier")}>

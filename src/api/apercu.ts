@@ -674,6 +674,9 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     case "salon_action":
       return null;
     case "salon_etat":
+      // `?salon=barre&page=connexion` : la barre sur la page de connexion de Steam.
+      if (new URLSearchParams(location.search).get("page") === "connexion")
+        return { url: "https://store.steampowered.com/login/?redir=cart%2F", hote: "store.steampowered.com", officiel: true, securise: true, titre: "Connexion", chargement: false };
       return { url: "https://store.steampowered.com/app/1145350/Hades_II/", hote: "store.steampowered.com", officiel: true, securise: true, titre: "Hades II sur Steam", chargement: false };
     case "fiche_mod": {
       const i = Number(String(args?.id ?? "0").slice(-3)) || 0;

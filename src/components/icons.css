@@ -87,3 +87,98 @@
 :is(button, a):hover .ico-workshop .ico-eclat {
   animation: ico-scintille 0.9s ease-in-out infinite;
 }
+
+/*
+ * Barre de gauche : icônes un peu plus grandes, et toujours légèrement animées
+ * (demande de Tom). Le mouvement de veille passe par `rotate`, `translate`,
+ * `scale` et `opacity` : il s'ajoute au `transform` du survol au lieu de le
+ * remplacer. Chaque bouton a son propre décalage, pour ne pas bouger en chœur.
+ */
+.rail__btn > .ico {
+  width: 26px;
+  height: 26px;
+}
+.rail .ico-lune {
+  animation: ico-veille-balance 6s ease-in-out infinite;
+}
+.rail .ico-workshop .ico-lune {
+  animation: ico-veille-flotte 4.2s ease-in-out infinite;
+}
+.rail .ico-eclat,
+.rail .ico-etoile {
+  animation: ico-veille-scintille 3.8s ease-in-out infinite;
+}
+.rail .ico-classements .ico-barre {
+  transform-origin: bottom;
+  animation: ico-veille-barre 5s ease-in-out infinite;
+}
+.rail .ico-telecharger .ico-fleche {
+  animation: ico-veille-flotte 4.6s ease-in-out infinite;
+}
+.rail__btn:nth-of-type(2) .ico * {
+  animation-delay: -0.8s;
+}
+.rail__btn:nth-of-type(3) .ico * {
+  animation-delay: -1.9s;
+}
+.rail__btn:nth-of-type(4) .ico * {
+  animation-delay: -2.7s;
+}
+.rail__btn:nth-of-type(5) .ico * {
+  animation-delay: -3.5s;
+}
+.rail__btn:nth-of-type(6) .ico * {
+  animation-delay: -1.3s;
+}
+.rail__btn:nth-of-type(7) .ico * {
+  animation-delay: -4.4s;
+}
+.rail .ico-classements .b2 {
+  animation-delay: -1.2s !important;
+}
+.rail .ico-classements .b3 {
+  animation-delay: -2.4s !important;
+}
+@keyframes ico-veille-balance {
+  0%,
+  100% {
+    rotate: -7deg;
+  }
+  50% {
+    rotate: 9deg;
+  }
+}
+@keyframes ico-veille-flotte {
+  0%,
+  100% {
+    translate: 0 0.3px;
+  }
+  50% {
+    translate: 0 -0.9px;
+  }
+}
+@keyframes ico-veille-scintille {
+  0%,
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.5;
+    scale: 0.78;
+  }
+}
+@keyframes ico-veille-barre {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+  50% {
+    scale: 1 0.88;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail .ico * {
+    animation: none !important;
+  }
+}

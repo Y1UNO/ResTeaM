@@ -184,3 +184,32 @@ html.est-salon #root {
 .salon-barre .titlebar__btn {
   height: 100%;
 }
+
+/* Rappel sur la page de connexion de Steam : « Se souvenir de moi » garde la connexion. */
+.salon-barre__astuce {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(238, 242, 255, 0.06);
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  color: var(--text-2);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: rise-in 0.4s var(--ease) both;
+}
+.salon-barre__astuce svg {
+  flex: 0 0 auto;
+  color: #7ee2a8;
+}
+@media (max-width: 1180px) {
+  .salon-barre__astuce {
+    display: none;
+  }
+}

@@ -381,7 +381,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - **« En jeu maintenant »** : Steam ne publie pas le total. C'est donc la somme des joueurs en jeu sur les 10 jeux les plus joués (`GetNumberOfCurrentPlayers`, relu toutes les 3 min). La courbe de 24 h est faite des relevés de ResTeaM (un toutes les 20 min, quand l'app est ouverte), et la page l'explique.
 - **Tests** : 40 tests Rust (dont les hôtes autorisés du cache d'images, la lecture d'un produit en promo, les relevés sur 24 h) et 11 tests réseau ignorés, lancés une fois sur le vrai Steam.
 
-### Étape 8 — Téléchargements, amis, recherche globale, hors ligne (9 novembre 2026)
+### Étape 8 — Téléchargements, amis, recherche globale, hors ligne (9 novembre 2026) — validée par Tom dans l'exe
 
 - **Molette sur les rubans** (demande de Tom) : sur l'accueil et le magasin, la molette fait défiler le ruban de jaquettes à l'horizontale, en douceur. Aux deux bouts, elle rend la main à la page (`src/lib/molette.ts`).
 - **Téléchargements** (`src/pages/Telechargements.tsx`) :
@@ -402,7 +402,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - Les dernières pages vides sont remplacées ; `EmptyPage.tsx` est supprimé.
 - **Reste pour l'étape 9** : audit de sécurité, suppression de la page de test `/donnees`.
 
-### Étape 8 bis — Profil des amis, favoris d'abord, app plus vivante (9 novembre 2026)
+### Étape 8 bis — Profil des amis, favoris d'abord, app plus vivante (9 novembre 2026) — validée par Tom dans l'exe
 
 - **Profil d'un ami** (`/profil/:steamId`, commande `profil_joueur`) :
   - on l'ouvre en cliquant une carte de la page Amis, un nom dans le panneau de l'accueil ou un ami dans la Recherche ;

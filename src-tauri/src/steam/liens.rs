@@ -21,6 +21,8 @@ pub enum ActionSteam {
     Amis,
     /// Page Téléchargements du client Steam.
     Telechargements,
+    /// Vérifier l'intégrité des fichiers d'un jeu (fenêtre de Steam).
+    Verifier { app_id: u32 },
     /// Annonce ou page Steam, ouverte dans le navigateur du client Steam.
     Page { url: String },
 }
@@ -62,6 +64,7 @@ pub fn construire(action: &ActionSteam) -> Option<String> {
         }
         ActionSteam::Amis => Some("steam://open/friends".into()),
         ActionSteam::Telechargements => Some("steam://open/downloads".into()),
+        ActionSteam::Verifier { app_id } => Some(format!("steam://validate/{app_id}")),
         ActionSteam::Page { url } => page_autorisee(url).then(|| format!("steam://openurl/{url}")),
     }
 }

@@ -448,6 +448,21 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 - **Retiré** : la page de test `/donnees` et son entrée de menu.
 - **Dépendances** : `npm audit` et `cargo audit` sans vulnérabilité ; 5 avertissements RustSec sur des dépendances Linux ou de compilation, absentes de l'exe Windows.
 
+### Étape 10 — Propriétés d'un jeu (9 novembre 2026)
+
+- **Clés vérifiées sur le PC de Tom** (lecture seule) :
+  - `LaunchOptions` dans `userdata/<compte>/config/localconfig.vdf` (chemin `UserLocalConfigStore > Software > Valve > Steam > apps > <id>`) ;
+  - `AutoUpdateBehavior`, `AllowOtherDownloadsWhileRunning`, `UserConfig.language` et `InstalledDepots.*.dlcappid` dans le manifeste.
+  - Steam Cloud et overlay par jeu : aucune clé fiable trouvée, donc rien n'est écrit (à revoir à l'étape 11).
+- **Modification en place** (`vdf::modifier`) : seule la valeur visée est remplacée, ou ajoutée dans son bloc (créé s'il manque). Le reste du fichier reste identique octet pour octet. Testé en mémoire sur les vrais `localconfig.vdf` du PC, sans écriture.
+- **Écriture Steam fermé seulement** : les réglages passent par la file de redémarrage (`reglages` dans `FileSteam`). Après le jeu en cours, Steam est fermé, puis l'app fait une copie `*.resteam.bak` et une écriture atomique. Steam est ensuite relancé caché.
+- **Fenêtre Propriétés** (`src/pages/fiche/Proprietes.tsx`), engrenage sur la fiche et sur l'accueil :
+  - Général : options de lancement, avec des options courantes à ajouter d'un clic ;
+  - Mises à jour : toujours / au lancement / en priorité, et téléchargements pendant le jeu ;
+  - Fichiers : taille, dossier (« Ouvrir le dossier »), langue, version, dernière mise à jour, « Vérifier les fichiers » (fenêtre de Steam, `steam://validate`) ;
+  - DLC installés, avec leurs images.
+- Garde-fous : options sur une seule ligne, 1024 caractères au plus ; valeurs 0 à 2 ; compte à 17 chiffres.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

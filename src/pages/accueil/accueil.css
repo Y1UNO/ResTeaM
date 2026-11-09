@@ -989,3 +989,16 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Engrenage (propriétés) : tourne un peu au survol. */
+.hero__engrenage svg,
+.fiche-bloc__engrenage svg {
+  transition: transform 0.6s var(--ease);
+}
+.hero__engrenage:hover svg,
+.fiche-bloc__engrenage:hover svg {
+  transform: rotate(90deg);
+}
+.hero__engrenage:not(:disabled):hover {
+  border-color: rgba(238, 242, 255, 0.4);
+  color: var(--text-1);
+}

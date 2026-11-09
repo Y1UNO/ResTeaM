@@ -102,10 +102,12 @@ const SS = `${CDN_APERCU}/1145350`;
  */
 const CHARGE = Date.now();
 const EN_JEU = typeof location !== "undefined" && location.search.includes("enjeu=1");
-const FILE = { installations: [] as number[], desinstallations: [] as number[], redemarrage: 0 };
+type ReglageApercu = { appId: number; optionsLancement: string | null; majAuto: number | null; telechargementsEnJeu: number | null };
+const FILE = { installations: [] as number[], desinstallations: [] as number[], reglages: [] as ReglageApercu[], redemarrage: 0 };
+const PROPRIETES = new Map<number, { optionsLancement: string; majAuto: number; telechargementsEnJeu: number }>();
 const jeuEnCours = () => (EN_JEU && Date.now() - CHARGE < 25_000 ? 730 : null);
 function avancerFile() {
-  const vide = !FILE.installations.length && !FILE.desinstallations.length;
+  const vide = !FILE.installations.length && !FILE.desinstallations.length && !FILE.reglages.length;
   if (vide || jeuEnCours()) return;
   if (!FILE.redemarrage) {
     FILE.redemarrage = Date.now();
@@ -118,17 +120,27 @@ function avancerFile() {
     const i = INSTALLES.indexOf(id);
     if (i >= 0) INSTALLES.splice(i, 1);
   }
+  for (const r of FILE.reglages) {
+    const p = PROPRIETES.get(r.appId) ?? { optionsLancement: "", majAuto: 0, telechargementsEnJeu: 0 };
+    PROPRIETES.set(r.appId, {
+      optionsLancement: r.optionsLancement ?? p.optionsLancement,
+      majAuto: r.majAuto ?? p.majAuto,
+      telechargementsEnJeu: r.telechargementsEnJeu ?? p.telechargementsEnJeu,
+    });
+  }
   FILE.installations = [];
   FILE.desinstallations = [];
+  FILE.reglages = [];
   FILE.redemarrage = 0;
 }
 function fileSteam() {
-  const vide = !FILE.installations.length && !FILE.desinstallations.length;
+  const vide = !FILE.installations.length && !FILE.desinstallations.length && !FILE.reglages.length;
   return {
     phase: vide ? "repos" : jeuEnCours() ? "attenteJeu" : "redemarrage",
     jeuEnCours: vide ? null : jeuEnCours(),
     installations: [...FILE.installations],
     desinstallations: [...FILE.desinstallations],
+    reglages: FILE.reglages.map((r) => ({ ...r })),
   };
 }
 /** Installations simulées : appId → heure du clic sur « Installer ». */
@@ -316,8 +328,38 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       const id = Number(args?.appId);
       FILE.installations = FILE.installations.filter((x) => x !== id);
       FILE.desinstallations = FILE.desinstallations.filter((x) => x !== id);
+      FILE.reglages = FILE.reglages.filter((x) => x.appId !== id);
       return fileSteam();
     }
+    case "proprietes_jeu": {
+      const id = Number(args?.appId);
+      const p = PROPRIETES.get(id) ?? { optionsLancement: id === 1145350 ? "-windowed" : "", majAuto: 0, telechargementsEnJeu: 0 };
+      const nom = JEUX.find((j) => j.appId === id)?.nom ?? String(id);
+      return {
+        appId: id,
+        installe: INSTALLES.includes(id),
+        ...p,
+        langue: "french",
+        dossier: "E:\\SteamLibrary\\steamapps\\common\\" + nom,
+        taille: 11_774_185_682,
+        version: "20481234",
+        derniereMaj: maintenant() - 86400 * 2,
+        dlc: id === 1145350 ? [2868840] : [],
+        enAttente: FILE.reglages.find((r) => r.appId === id) ?? null,
+      };
+    }
+    case "regler_jeu": {
+      const d = args?.demande as ReglageApercu;
+      const existant = FILE.reglages.find((r) => r.appId === d.appId);
+      if (existant) {
+        if (d.optionsLancement != null) existant.optionsLancement = d.optionsLancement;
+        if (d.majAuto != null) existant.majAuto = d.majAuto;
+        if (d.telechargementsEnJeu != null) existant.telechargementsEnJeu = d.telechargementsEnJeu;
+      } else FILE.reglages.push({ ...d });
+      return fileSteam();
+    }
+    case "ouvrir_dossier_jeu":
+      return null;
     case "file_steam":
       return fileSteam();
     case "stats_systeme": {

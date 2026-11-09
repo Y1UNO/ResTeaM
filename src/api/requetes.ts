@@ -156,7 +156,7 @@ export function useFileSteam() {
     staleTime: 0,
     refetchInterval: (q) => {
       const f = q.state.data;
-      return f && (f.installations.length || f.desinstallations.length) ? 2_000 : 15_000;
+      return f && (f.installations.length || f.desinstallations.length || f.reglages?.length) ? 2_000 : 15_000;
     },
   });
 }
@@ -262,5 +262,15 @@ export function useProfilJoueur(steamId: string | null) {
     queryFn: () => api.profilJoueur(steamId as string),
     enabled: pret && steamId != null,
     staleTime: 5 * 60_000,
+  });
+}
+
+/** Propriétés d'un jeu (fichiers de Steam), relues à chaque ouverture. */
+export function useProprietesJeu(appId: number | null) {
+  return useQuery({
+    queryKey: ["proprietes", appId],
+    queryFn: () => api.proprietesJeu(appId as number),
+    enabled: appId != null,
+    staleTime: 0,
   });
 }

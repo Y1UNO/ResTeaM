@@ -18,6 +18,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
+use super::proprietes::{self, Reglage};
 use super::{installation, local, vdf};
 use crate::commandes::EtatApp;
 use crate::erreur::{Erreur, Resultat};
@@ -46,17 +47,20 @@ pub struct FileSteam {
     pub installations: Vec<u32>,
     /// Jeux à supprimer pendant que Steam est fermé.
     pub desinstallations: Vec<u32>,
+    /// Propriétés de jeux à écrire pendant que Steam est fermé (étape 10).
+    #[serde(default)]
+    pub reglages: Vec<Reglage>,
 }
 
 impl Default for FileSteam {
     fn default() -> Self {
-        Self { phase: Phase::Repos, jeu_en_cours: None, installations: vec![], desinstallations: vec![] }
+        Self { phase: Phase::Repos, jeu_en_cours: None, installations: vec![], desinstallations: vec![], reglages: vec![] }
     }
 }
 
 impl FileSteam {
     fn vide(&self) -> bool {
-        self.installations.is_empty() && self.desinstallations.is_empty()
+        self.installations.is_empty() && self.desinstallations.is_empty() && self.reglages.is_empty()
     }
 }
 
@@ -102,6 +106,15 @@ impl Redemarrage {
         self.demarrer(app);
     }
 
+    /// Ajoute (ou complète) un réglage de jeu, appliqué au prochain arrêt de Steam.
+    pub fn ajouter_reglage(&self, app: &AppHandle, r: Reglage) {
+        self.modifier(app, |f| match f.reglages.iter_mut().find(|x| x.app_id == r.app_id) {
+            Some(existant) => existant.fusionner(r),
+            None => f.reglages.push(r),
+        });
+        self.demarrer(app);
+    }
+
     /// Retire un jeu de la file. Pour une installation pas encore vue par Steam,
     /// le manifeste écrit par ResTeaM est supprimé.
     pub fn annuler(&self, app: &AppHandle, app_id: u32) -> Resultat<()> {
@@ -117,6 +130,7 @@ impl Redemarrage {
         self.modifier(app, |f| {
             f.installations.retain(|id| *id != app_id);
             f.desinstallations.retain(|id| *id != app_id);
+            f.reglages.retain(|r| r.app_id != app_id);
         });
         Ok(())
     }
@@ -186,8 +200,14 @@ async fn traiter(app: &AppHandle) -> Resultat<()> {
         });
         let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
         let desinstallations = a_traiter.desinstallations.clone();
+        let reglages = a_traiter.reglages.clone();
         let dossiers_raccourcis = dossiers_raccourcis(app);
         let resultat = installation::redemarrer_steam_avec(&steam, move |steam| {
+            for r in &reglages {
+                if let Err(e) = proprietes::appliquer(steam, r) {
+                    eprintln!("réglages de {} : {e}", r.app_id);
+                }
+            }
             for id in &desinstallations {
                 if let Err(e) = supprimer_jeu(steam, *id, &dossiers_raccourcis) {
                     eprintln!("désinstallation de {id} : {e}");
@@ -199,6 +219,7 @@ async fn traiter(app: &AppHandle) -> Resultat<()> {
             f.phase = Phase::Repos;
             f.installations.retain(|id| !a_traiter.installations.contains(id));
             f.desinstallations.retain(|id| !a_traiter.desinstallations.contains(id));
+            f.reglages.retain(|r| !a_traiter.reglages.contains(r));
         });
         resultat?;
         installation::cacher_fenetre_steam().await;

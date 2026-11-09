@@ -12,6 +12,7 @@ import { Affiche } from "./Ambiance";
 import { PanneauPatchNotes } from "./PanneauPatchNotes";
 import { useInstallation } from "../../installation/store";
 import { FenetreDesinstallation } from "../../installation/Desinstallation";
+import { FenetreProprietes } from "../fiche/Proprietes";
 import { usePalette } from "../../lib/couleurs";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
@@ -39,6 +40,7 @@ export function Hero({ jeu, images }: Props) {
   const file = useFileSteam().data;
   const aSupprimer = !!file?.desinstallations.includes(jeu.appId);
   const [desinstaller, setDesinstaller] = useState(false);
+  const [proprietes, setProprietes] = useState(false);
   const teinte = usePalette(images.hero, jeu.nom)[0];
   const minuterie = useRef<number | undefined>(undefined);
 
@@ -47,6 +49,7 @@ export function Hero({ jeu, images }: Props) {
     setLancement(false);
     setJaquetteRatee(false);
     setDesinstaller(false);
+    setProprietes(false);
     return () => window.clearTimeout(minuterie.current);
   }, [jeu.appId]);
 
@@ -162,6 +165,18 @@ export function Hero({ jeu, images }: Props) {
             <button type="button" className="btn btn--secondaire" onClick={() => navigate(`/jeu/${jeu.appId}`)}>
               Fiche du jeu
             </button>
+            <button
+              type="button"
+              className="btn btn--secondaire hero__corbeille hero__engrenage"
+              onClick={() => setProprietes(true)}
+              aria-label={`Propriétés de ${jeu.nom}`}
+              title="Propriétés"
+            >
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+              </svg>
+            </button>
             {inst && (
               <button
                 type="button"
@@ -203,6 +218,7 @@ export function Hero({ jeu, images }: Props) {
         </button>
       </div>
 
+      {proprietes && <FenetreProprietes appId={jeu.appId} nom={jeu.nom} jaquette={images.jaquette} onFermer={() => setProprietes(false)} />}
       {desinstaller && inst && (
         <FenetreDesinstallation
           appId={jeu.appId}

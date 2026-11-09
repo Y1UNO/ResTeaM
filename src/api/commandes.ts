@@ -13,6 +13,8 @@ import {
   type FicheJeu,
   type Produit,
   type ProfilJoueur,
+  type ProprietesJeu,
+  type Reglage,
   type Souhait,
   type VitrineMagasin,
   type FileSteam,
@@ -99,5 +101,8 @@ export const api = {
   enLigne: () => appeler<Donnee<EnLigne>>("en_ligne"),
   amisPossedant: (appId: number) => appeler<string[]>("amis_possedant", { appId }),
   profilJoueur: (steamId: string) => appeler<Donnee<ProfilJoueur>>("profil_joueur", { steamId }),
+  proprietesJeu: (appId: number) => appeler<ProprietesJeu>("proprietes_jeu", { appId }),
+  reglerJeu: (demande: Omit<Reglage, "compte">) => appeler<FileSteam>("regler_jeu", { demande }),
+  ouvrirDossierJeu: (appId: number) => appeler<void>("ouvrir_dossier_jeu", { appId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

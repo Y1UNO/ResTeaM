@@ -58,12 +58,13 @@ export function CentreInstallation() {
 function VeilleFileSteam() {
   const client = useQueryClient();
   const file = useFileSteam().data;
-  const n = file ? file.installations.length + file.desinstallations.length : 0;
+  const n = file ? file.installations.length + file.desinstallations.length + (file.reglages?.length ?? 0) : 0;
   const avant = useRef(n);
   useEffect(() => {
     if (n < avant.current) {
       void client.invalidateQueries({ queryKey: ["installes"] });
       void client.invalidateQueries({ queryKey: ["bibliotheque"] });
+      void client.invalidateQueries({ queryKey: ["proprietes"] });
     }
     avant.current = n;
   }, [n, client]);

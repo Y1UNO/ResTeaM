@@ -8,6 +8,7 @@ pub mod liens;
 pub mod local;
 pub mod magasin;
 pub mod pc;
+pub mod proprietes;
 pub mod notes;
 pub mod redemarrage;
 pub mod vdf;

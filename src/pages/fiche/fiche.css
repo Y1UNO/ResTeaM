@@ -743,3 +743,233 @@
   height: 100%;
   object-fit: cover;
 }
+
+/* ——— Fenêtre Propriétés (étape 10) ——— */
+.achat.prop {
+  width: 620px;
+  margin: 0;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+.prop__entete {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.prop__jaquette {
+  flex: 0 0 auto;
+  width: 54px;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  background: #18181b center / cover no-repeat;
+  box-shadow: var(--shadow-1);
+}
+.prop__titres {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.prop__fermer {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line-3);
+  background: none;
+  color: var(--text-2);
+  font-size: 20px;
+  cursor: pointer;
+}
+.prop__onglets {
+  align-self: flex-start;
+}
+.ruban__onglet.is-muet {
+  opacity: 0.55;
+}
+.prop__corps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+  animation: fiche-ouvre 0.3s ease both;
+}
+.prop__etiquette {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-kicker);
+}
+.prop__etiquette:not(:first-child) {
+  margin-top: 8px;
+}
+.prop__champ {
+  height: 50px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-3);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+.prop__champ:focus {
+  border-color: rgba(238, 242, 255, 0.4);
+  box-shadow: 0 0 0 4px rgba(238, 242, 255, 0.06);
+}
+.prop__puces {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.prop__puce {
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-3);
+  background: none;
+  color: var(--text-3);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.prop__puce:hover {
+  border-color: rgba(238, 242, 255, 0.35);
+  color: var(--text-1);
+}
+.prop__puce.is-actif {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.prop__aide {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-4);
+}
+.prop__choix {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.prop__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease;
+}
+.prop__option > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.prop__option strong {
+  font-size: 14px;
+}
+.prop__option > span:last-child > span {
+  font-size: 12.5px;
+  color: var(--text-4);
+}
+.prop__option.is-actif {
+  border-color: rgba(238, 242, 255, 0.45);
+  background: rgba(238, 242, 255, 0.06);
+}
+.prop__rond {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 2px solid rgba(238, 242, 255, 0.35);
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+.prop__option.is-actif .prop__rond {
+  border: 5px solid var(--accent);
+  box-shadow: 0 0 10px rgba(238, 242, 255, 0.4);
+}
+.prop__fichiers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.prop__ligne {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+.prop__ligne > span:first-child {
+  color: var(--text-4);
+  flex: 0 0 auto;
+}
+.prop__ligne > span:last-child {
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prop__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.prop__dlc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.prop__dlc-ligne {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.prop__dlc-image {
+  flex: 0 0 auto;
+  width: 92px;
+  aspect-ratio: 460 / 215;
+  border-radius: 8px;
+  background: #18181b center / cover no-repeat;
+}
+.prop__dlc-ligne > span:nth-child(2) {
+  flex: 1;
+}
+.prop__dlc-etat {
+  font-size: 12px;
+  color: #3fe08a;
+}
+.prop__statut {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgba(238, 242, 255, 0.05);
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  color: var(--text-2);
+}

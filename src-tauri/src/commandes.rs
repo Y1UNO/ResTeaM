@@ -20,6 +20,7 @@ use crate::steam::boutique::{Produit, Souhait};
 use crate::steam::classements::{self, Classements, EnLigne, Releve};
 use crate::steam::magasin::{AvisJeu, FicheJeu, VitrineMagasin};
 use crate::steam::notes::{self, PatchNotes};
+use crate::steam::proprietes::{self, Proprietes, Reglage};
 use crate::steam::pc::{self, ConfigPc};
 use crate::steam::redemarrage::{FileSteam, Redemarrage};
 use crate::steam::local::{self, Collections, DossierBibliotheque, JeuInstalle};
@@ -660,4 +661,69 @@ pub async fn profil_joueur(app: AppHandle, etat: State<'_, EtatApp>, steam_id: S
             })
         })
         .await
+}
+
+// ——— Étape 10 : propriétés d'un jeu ———
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProprietesJeu {
+    #[serde(flatten)]
+    pub proprietes: Proprietes,
+    /// Réglage demandé, pas encore écrit (Steam pas encore redémarré).
+    pub en_attente: Option<Reglage>,
+}
+
+/// Propriétés d'un jeu lues dans les fichiers de Steam, plus le réglage en attente.
+#[tauri::command]
+pub async fn proprietes_jeu(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32) -> Resultat<ProprietesJeu> {
+    let session = session_requise(&app)?;
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    let sid = session.steam_id.clone();
+    let proprietes = tauri::async_runtime::spawn_blocking(move || proprietes::lire(&steam, &sid, app_id))
+        .await
+        .map_err(|e| Erreur::Interne(e.to_string()))?;
+    let en_attente = etat.redemarrage.lire().reglages.into_iter().find(|r| r.app_id == app_id);
+    Ok(ProprietesJeu { proprietes, en_attente })
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DemandeReglage {
+    pub app_id: u32,
+    pub options_lancement: Option<String>,
+    pub maj_auto: Option<u8>,
+    pub telechargements_en_jeu: Option<u8>,
+}
+
+/// Met un réglage dans la file : Steam redémarre caché (après le jeu en cours) et le
+/// réglage est écrit pendant qu'il est fermé.
+#[tauri::command]
+pub async fn regler_jeu(app: AppHandle, etat: State<'_, EtatApp>, demande: DemandeReglage) -> Resultat<FileSteam> {
+    let session = session_requise(&app)?;
+    let r = Reglage {
+        app_id: demande.app_id,
+        compte: session.steam_id,
+        options_lancement: demande.options_lancement.map(|o| o.trim().to_string()),
+        maj_auto: demande.maj_auto,
+        telechargements_en_jeu: demande.telechargements_en_jeu,
+    };
+    r.valider()?;
+    if r.options_lancement.is_none() && r.maj_auto.is_none() && r.telechargements_en_jeu.is_none() {
+        return Ok(etat.redemarrage.lire());
+    }
+    etat.redemarrage.ajouter_reglage(&app, r);
+    Ok(etat.redemarrage.lire())
+}
+
+/// Ouvre le dossier d'installation du jeu dans l'Explorateur.
+#[tauri::command]
+pub async fn ouvrir_dossier_jeu(app: AppHandle, app_id: u32) -> Resultat<()> {
+    let session = session_requise(&app)?;
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    let p = proprietes::lire(&steam, &session.steam_id, app_id);
+    let dossier = p.dossier.filter(|d| std::path::Path::new(d).is_dir()).ok_or_else(|| Erreur::Interne("dossier du jeu introuvable".into()))?;
+    app.opener()
+        .open_path(dossier, None::<&str>)
+        .map_err(|e| Erreur::Interne(format!("ouverture du dossier : {e}")))
 }

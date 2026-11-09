@@ -145,9 +145,169 @@ pub fn lire(source: &str) -> Vdf {
     Vdf::Objet(objet(&jetons, &mut i))
 }
 
+// ——— Modification en place (étape 10 : propriétés d'un jeu) ———
+//
+// On ne réécrit jamais tout le fichier : on remplace seulement la valeur visée, ou
+// on l'ajoute dans son bloc. Le reste (ordre, mise en forme, clés inconnues) reste
+// tel quel, octet pour octet.
+
+enum JetonPos {
+    Chaine { texte: String, debut: usize, fin: usize },
+    Ouvre,
+    Ferme { debut: usize },
+}
+
+fn decouper_positions(source: &str) -> Vec<JetonPos> {
+    let octets = source.as_bytes();
+    let mut jetons = Vec::new();
+    let mut i = 0;
+    while i < octets.len() {
+        match octets[i] {
+            b'{' => {
+                jetons.push(JetonPos::Ouvre);
+                i += 1;
+            }
+            b'}' => {
+                jetons.push(JetonPos::Ferme { debut: i });
+                i += 1;
+            }
+            b'"' => {
+                let debut = i;
+                i += 1;
+                let mut brut = Vec::new();
+                while i < octets.len() && octets[i] != b'"' {
+                    if octets[i] == b'\\' && i + 1 < octets.len() {
+                        i += 1; // caractère échappé : gardé tel quel
+                    }
+                    brut.push(octets[i]);
+                    i += 1;
+                }
+                i += 1; // guillemet fermant
+                let texte = String::from_utf8_lossy(&brut).into_owned();
+                jetons.push(JetonPos::Chaine { texte, debut, fin: i.min(octets.len()) });
+            }
+            b'/' if octets.get(i + 1) == Some(&b'/') => {
+                while i < octets.len() && octets[i] != b'\n' {
+                    i += 1;
+                }
+            }
+            _ => i += 1,
+        }
+    }
+    jetons
+}
+
+/// Chaîne VDF entre guillemets (`\` et `"` échappés).
+pub fn citer(valeur: &str) -> String {
+    format!("\"{}\"", valeur.replace('\\', "\\\\").replace('"', "\\\""))
+}
+
+fn meme_chemin(pile: &[String], chemin: &[&str]) -> bool {
+    pile.len() == chemin.len() && pile.iter().zip(chemin).all(|(a, b)| a.eq_ignore_ascii_case(b))
+}
+
+fn prefixe_de(pile: &[String], chemin: &[&str]) -> bool {
+    pile.len() <= chemin.len() && pile.iter().zip(chemin).all(|(a, b)| a.eq_ignore_ascii_case(b))
+}
+
+/// Donne la valeur `valeur` à `cle` dans le bloc `chemin` (créé s'il manque, sous le
+/// bloc existant le plus profond). `None` si même la racine du chemin est absente.
+pub fn modifier(source: &str, chemin: &[&str], cle: &str, valeur: &str) -> Option<String> {
+    let jetons = decouper_positions(source);
+    let mut pile: Vec<String> = Vec::new();
+    let mut cle_en_attente: Option<String> = None;
+    // Fermeture du bloc existant le plus profond sur le chemin : (profondeur, position).
+    let mut meilleur: Option<(usize, usize)> = None;
+    for j in &jetons {
+        match j {
+            JetonPos::Chaine { texte, debut, fin } => match cle_en_attente.take() {
+                Some(k) => {
+                    if meme_chemin(&pile, chemin) && k.eq_ignore_ascii_case(cle) {
+                        return Some(format!("{}{}{}", &source[..*debut], citer(valeur), &source[*fin..]));
+                    }
+                }
+                None => cle_en_attente = Some(texte.clone()),
+            },
+            JetonPos::Ouvre => pile.push(cle_en_attente.take().unwrap_or_default()),
+            JetonPos::Ferme { debut } => {
+                cle_en_attente = None;
+                if !pile.is_empty() && prefixe_de(&pile, chemin) && meilleur.is_none_or(|(p, _)| pile.len() > p) {
+                    meilleur = Some((pile.len(), *debut));
+                }
+                pile.pop();
+            }
+        }
+    }
+    let (profondeur, position) = meilleur?;
+    let fin_de_ligne = if source.contains("\r\n") { "\r\n" } else { "\n" };
+    // Indentation : celle de l'accolade fermante, plus une tabulation.
+    let debut_ligne = source[..position].rfind('\n').map(|n| n + 1).unwrap_or(0);
+    let marge_brute = &source[debut_ligne..position];
+    let seule_sur_sa_ligne = marge_brute.chars().all(|c| c == '\t' || c == ' ');
+    let marge = if seule_sur_sa_ligne { marge_brute.to_string() } else { String::new() };
+    let mut ajout = String::new();
+    let mut ind = format!("{marge}\t");
+    for segment in &chemin[profondeur..] {
+        ajout.push_str(&format!("{ind}{}{fin_de_ligne}{ind}{{{fin_de_ligne}", citer(segment)));
+        ind.push('\t');
+    }
+    ajout.push_str(&format!("{ind}{}\t\t{}{fin_de_ligne}", citer(cle), citer(valeur)));
+    for _ in profondeur..chemin.len() {
+        ind.pop();
+        ajout.push_str(&format!("{ind}}}{fin_de_ligne}"));
+    }
+    // Insertion au début de la ligne de l'accolade quand elle est seule sur sa ligne.
+    let point = if seule_sur_sa_ligne { debut_ligne } else { position };
+    Some(format!("{}{}{}", &source[..point], ajout, &source[point..]))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const CONFIG: &str = "\"UserLocalConfigStore\"\n{\n\t\"Software\"\n\t{\n\t\t\"Valve\"\n\t\t{\n\t\t\t\"Steam\"\n\t\t\t{\n\t\t\t\t\"apps\"\n\t\t\t\t{\n\t\t\t\t\t\"730\"\n\t\t\t\t\t{\n\t\t\t\t\t\t\"LastPlayed\"\t\t\"1\"\n\t\t\t\t\t\t\"LaunchOptions\"\t\t\"-novid\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}\n";
+
+    fn apps(s: &str) -> Vdf {
+        lire(s).get("UserLocalConfigStore").unwrap().get("Software").unwrap().get("Valve").unwrap().get("Steam").unwrap().get("apps").unwrap().clone()
+    }
+
+    #[test]
+    fn remplace_une_valeur_existante() {
+        let chemin = ["UserLocalConfigStore", "Software", "Valve", "Steam", "apps", "730"];
+        let s = modifier(CONFIG, &chemin, "LaunchOptions", "-high \"x\"").unwrap();
+        assert!(s.contains("\"LaunchOptions\"\t\t\"-high \\\"x\\\"\""), "{s}");
+        let a = apps(&s);
+        assert_eq!(a.get("730").unwrap().texte("LaunchOptions"), Some("-high \"x\""));
+        assert_eq!(a.get("730").unwrap().texte("LastPlayed"), Some("1"));
+    }
+
+    #[test]
+    fn ajoute_une_cle_et_un_bloc() {
+        let s = modifier(CONFIG, &["UserLocalConfigStore", "Software", "Valve", "Steam", "apps", "730"], "OverlayAppEnable", "0").unwrap();
+        let a = apps(&s);
+        assert_eq!(a.get("730").unwrap().texte("OverlayAppEnable"), Some("0"));
+        assert_eq!(a.get("730").unwrap().texte("LaunchOptions"), Some("-novid"));
+        // Jeu jamais réglé : le bloc est créé dans « apps ».
+        let s2 = modifier(&s, &["UserLocalConfigStore", "Software", "Valve", "Steam", "apps", "1145350"], "LaunchOptions", "-windowed").unwrap();
+        let a2 = apps(&s2);
+        assert_eq!(a2.get("1145350").unwrap().texte("LaunchOptions"), Some("-windowed"));
+        assert_eq!(a2.get("730").unwrap().texte("LaunchOptions"), Some("-novid"));
+        assert!(s2.contains("\t\t\t\t\t\"1145350\"\n\t\t\t\t\t{\n\t\t\t\t\t\t\"LaunchOptions\"\t\t\"-windowed\"\n\t\t\t\t\t}\n\t\t\t\t}"), "{s2}");
+    }
+
+    #[test]
+    fn racine_absente() {
+        assert!(modifier(CONFIG, &["Autre", "x"], "a", "b").is_none());
+    }
+
+    #[test]
+    fn manifeste_modifie() {
+        let m = "\"AppState\"\r\n{\r\n\t\"appid\"\t\t\"1\"\r\n\t\"AutoUpdateBehavior\"\t\t\"0\"\r\n}\r\n";
+        let s = modifier(m, &["AppState"], "AutoUpdateBehavior", "1").unwrap();
+        assert_eq!(s, m.replace("\"AutoUpdateBehavior\"\t\t\"0\"", "\"AutoUpdateBehavior\"\t\t\"1\""));
+        let s = modifier(m, &["AppState"], "AllowOtherDownloadsWhileRunning", "2").unwrap();
+        assert!(s.ends_with("\t\"AllowOtherDownloadsWhileRunning\"\t\t\"2\"\r\n}\r\n"), "{s:?}");
+    }
 
     const MANIFESTE: &str = r#"
 "AppState"

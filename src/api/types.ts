@@ -179,6 +179,7 @@ export type ActionSteam =
   | { type: "rejoindreServeur"; adresse: string }
   | { type: "amis" }
   | { type: "telechargements" }
+  | { type: "verifier"; appId: number }
   | { type: "page"; url: string };
 
 // ——— Installation sans la fenêtre de Steam ———
@@ -198,6 +199,33 @@ export type FileSteam = {
   jeuEnCours: number | null;
   installations: number[];
   desinstallations: number[];
+  reglages?: Reglage[];
+};
+
+// ——— Étape 10 : propriétés d'un jeu ———
+
+export type Reglage = {
+  appId: number;
+  compte?: string;
+  optionsLancement: string | null;
+  /** 0 : toujours à jour · 1 : au lancement · 2 : en priorité. */
+  majAuto: number | null;
+  /** 0 : réglage de Steam · 1 : toujours · 2 : jamais. */
+  telechargementsEnJeu: number | null;
+};
+export type ProprietesJeu = {
+  appId: number;
+  installe: boolean;
+  optionsLancement: string;
+  majAuto: number;
+  telechargementsEnJeu: number;
+  langue: string | null;
+  dossier: string | null;
+  taille: number;
+  version: string | null;
+  derniereMaj: number;
+  dlc: number[];
+  enAttente: Reglage | null;
 };
 export type DemandeInstallation = {
   appId: number;

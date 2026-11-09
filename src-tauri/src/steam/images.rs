@@ -62,6 +62,9 @@ struct Assets {
     asset_url_format: Option<String>,
     library_capsule: Option<String>,
     library_capsule_2x: Option<String>,
+    /// Capsule verticale du magasin (374×448) : jaquette de secours.
+    hero_capsule: Option<String>,
+    hero_capsule_2x: Option<String>,
     library_hero: Option<String>,
     library_hero_2x: Option<String>,
     header: Option<String>,
@@ -104,11 +107,17 @@ impl ClientSteam {
                 resultat.insert(
                     id,
                     ImagesJeu {
+                        // Sans jaquette de bibliothèque (jeux récents, certains free-to-play) :
+                        // la capsule verticale du magasin plutôt qu'une adresse classique en 404.
                         jaquette: adresse(format, &a.library_capsule_2x)
                             .or_else(|| adresse(format, &a.library_capsule))
+                            .or_else(|| adresse(format, &a.hero_capsule_2x))
+                            .or_else(|| adresse(format, &a.hero_capsule))
                             .or(classique.jaquette),
                         jaquette_petite: adresse(format, &a.library_capsule)
                             .or_else(|| adresse(format, &a.library_capsule_2x))
+                            .or_else(|| adresse(format, &a.hero_capsule))
+                            .or_else(|| adresse(format, &a.hero_capsule_2x))
                             .or(classique.jaquette_petite),
                         // 3840×1240 : net même étiré sur un écran 1440p.
                         hero: adresse(format, &a.library_hero_2x)

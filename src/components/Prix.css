@@ -1,0 +1,189 @@
+/* Prix animés de la boutique (demande de Tom). */
+.montant {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ——— Réduction : rouge vif, vivante ——— */
+.reduction {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff4d5e 0%, #e0193a 100%);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  box-shadow: 0 0 14px rgba(255, 60, 80, 0.45);
+  animation: reduction-pouls 2.2s ease-in-out infinite;
+}
+.reduction.is-grand {
+  padding: 6px 11px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+.reduction::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: reduction-reflet 3.4s ease-in-out infinite;
+}
+@keyframes reduction-pouls {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 60, 80, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 60, 80, 0.75);
+    transform: scale(1.06);
+  }
+}
+@keyframes reduction-reflet {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  85%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+/* ——— Ancien prix qui se brise ——— */
+.prix-promo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+.prix-promo__ancien {
+  position: relative;
+  display: inline-block;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.prix-promo.is-grand .prix-promo__ancien {
+  font-size: 13px;
+}
+.prix-promo__moitie {
+  display: inline-block;
+}
+/* Les deux moitiés se superposent : chacune ne montre que son côté de la fissure. */
+.prix-promo__moitie.is-gauche {
+  clip-path: polygon(0 0, 52% 0, 44% 45%, 56% 60%, 47% 100%, 0 100%);
+}
+.prix-promo__moitie.is-droite {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(52% 0, 100% 0, 100% 100%, 47% 100%, 56% 60%, 44% 45%);
+}
+.prix-promo__fissure {
+  position: absolute;
+  left: 44%;
+  top: -10%;
+  width: 12%;
+  height: 120%;
+  background: linear-gradient(180deg, transparent, #ff4d5e 30%, #fff 50%, #ff4d5e 70%, transparent);
+  clip-path: polygon(70% 0, 0 45%, 100% 60%, 25% 100%, 40% 100%, 100% 62%, 10% 46%, 80% 0);
+  opacity: 0;
+}
+.prix-promo.is-vu .prix-promo__fissure {
+  animation: prix-fissure 0.9s ease both;
+}
+.prix-promo.is-vu .prix-promo__moitie.is-gauche {
+  animation: prix-casse-gauche 0.9s cubic-bezier(0.5, 0, 0.3, 1) 0.3s both;
+}
+.prix-promo.is-vu .prix-promo__moitie.is-droite {
+  animation: prix-casse-droite 0.9s cubic-bezier(0.5, 0, 0.3, 1) 0.3s both;
+}
+@keyframes prix-fissure {
+  0%,
+  15% {
+    opacity: 0;
+  }
+  30%,
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes prix-casse-gauche {
+  0% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-3px, 2px) rotate(-7deg);
+    opacity: 0.45;
+    text-decoration: line-through;
+  }
+}
+@keyframes prix-casse-droite {
+  0% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: translate(3px, 3px) rotate(9deg);
+    opacity: 0.45;
+  }
+}
+.prix-promo__nouveau {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.prix-promo.is-vu .prix-promo__nouveau {
+  animation: prix-arrive 0.6s var(--ease) 0.45s both;
+}
+.prix-promo.is-grand .prix-promo__nouveau {
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+@keyframes prix-arrive {
+  from {
+    color: #ff6b7a;
+    text-shadow: 0 0 12px rgba(255, 77, 94, 0.8);
+  }
+}
+
+/* ——— Panier qui bouge ——— */
+.icone-panier {
+  overflow: visible;
+  flex: 0 0 auto;
+}
+.icone-panier__article {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: panier-saute 1.6s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+.icone-panier__article.a2 {
+  animation-delay: 0.18s;
+}
+.icone-panier__article.a3 {
+  animation-delay: 0.36s;
+}
+@keyframes panier-saute {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  20% {
+    transform: translateY(-3.5px) scaleY(1.08);
+  }
+  32% {
+    transform: translateY(0) scaleY(0.9);
+  }
+}
+button:hover .icone-panier__article {
+  animation-duration: 0.9s;
+}

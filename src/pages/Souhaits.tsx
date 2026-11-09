@@ -9,6 +9,7 @@ import { date, entier } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import { degradeJaquette } from "../lib/images";
 import { PopupAchat } from "./fiche/PopupAchat";
+import { IconePanier } from "../components/Prix";
 import { BlocPrix } from "./magasin/Boutique";
 import "./pages.css";
 import "./magasin/boutique.css";
@@ -29,6 +30,7 @@ export function Souhaits() {
   const [tri, setTri] = useState<Tri>("ordre");
   const [cle, setCle] = useState(0);
   const [achat, setAchat] = useState<Produit | null>(null);
+  const [survol, setSurvol] = useState<number | null>(null);
 
   const ajoutes = useMemo(() => new Map(souhaits.map((x) => [x.appId, x.ajouteLe])), [souhaits]);
   const liste = useMemo(() => {
@@ -38,6 +40,7 @@ export function Souhaits() {
     return l;
   }, [produits.data, tri]);
   const enPromo = liste.filter((p) => (p.prix?.reduction ?? 0) > 0).length;
+  const vedette = liste.find((p) => p.appId === survol) ?? liste[0];
 
   const tris: { id: Tri; libelle: string }[] = [
     { id: "ordre", libelle: "Mon ordre" },
@@ -46,7 +49,8 @@ export function Souhaits() {
   ];
 
   return (
-    <div className="page">
+    <div className="page souhaits-page">
+      {vedette?.hero && <div key={vedette.appId} className="souhaits__affiche" aria-hidden="true" style={{ backgroundImage: `url("${viaCache(vedette.hero)}")` }} />}
       <Smoke variant="top" />
       <Lucioles graine={41} nombre={12} />
       <div className="page__content souhaits">
@@ -93,17 +97,30 @@ export function Souhaits() {
         {s.data && ids.length === 0 && <p className="souhaits__vide">Ta liste de souhaits est vide. Ajoute des jeux depuis Steam.</p>}
         {produits.isLoading && ids.length > 0 && <p className="placeholder-note">Lecture des prix…</p>}
 
-        <div key={cle} className="souhaits__liste">
-          {liste.map((p, i) => (
-            <Ligne
-              key={p.appId}
-              p={p}
-              index={i}
-              ajouteLe={ajoutes.get(p.appId) ?? 0}
-              onOuvrir={() => navigate(`/jeu/${p.appId}`)}
-              onAcheter={() => setAchat(p)}
+        <div className="souhaits__corps">
+          <div key={cle} className="souhaits__liste">
+            {liste.map((p, i) => (
+              <Ligne
+                key={p.appId}
+                p={p}
+                index={i}
+                actif={vedette?.appId === p.appId}
+                ajouteLe={ajoutes.get(p.appId) ?? 0}
+                onSurvol={() => setSurvol(p.appId)}
+                onOuvrir={() => navigate(`/jeu/${p.appId}`)}
+                onAcheter={() => setAchat(p)}
+              />
+            ))}
+          </div>
+          {vedette && (
+            <Details
+              key={vedette.appId}
+              p={vedette}
+              ajouteLe={ajoutes.get(vedette.appId) ?? 0}
+              onOuvrir={() => navigate(`/jeu/${vedette.appId}`)}
+              onAcheter={() => setAchat(vedette)}
             />
-          ))}
+          )}
         </div>
       </div>
       {achat && (
@@ -122,13 +139,17 @@ export function Souhaits() {
 function Ligne({
   p,
   index,
+  actif,
   ajouteLe,
+  onSurvol,
   onOuvrir,
   onAcheter,
 }: {
   p: Produit;
   index: number;
+  actif: boolean;
   ajouteLe: number;
+  onSurvol: () => void;
   onOuvrir: () => void;
   onAcheter: () => void;
 }) {
@@ -136,7 +157,13 @@ function Ligne({
   const promo = (p.prix?.reduction ?? 0) > 0;
   const image = p.capsule ?? p.banniere;
   return (
-    <article data-lueur="" className={`souhait${promo ? " is-promo" : ""}`} style={{ animationDelay: `${Math.min(index, 14) * 40}ms` }}>
+    <article
+      data-lueur=""
+      className={`souhait${promo ? " is-promo" : ""}${actif ? " is-actif" : ""}`}
+      style={{ animationDelay: `${Math.min(index, 14) * 40}ms` }}
+      onMouseEnter={onSurvol}
+      onFocus={onSurvol}
+    >
       <button type="button" className="souhait__image" onClick={onOuvrir} aria-label={`${p.nom} : ouvrir la fiche`} style={image && !ratee ? undefined : { background: degradeJaquette(p.nom) }}>
         {image && !ratee && <img src={viaCache(image)} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setRatee(true)} />}
       </button>
@@ -171,5 +198,53 @@ function Ligne({
         </button>
       </div>
     </article>
+  );
+}
+
+/** Panneau de détails du jeu survolé (grands écrans) : captures, tags, avis, prix. */
+function Details({ p, ajouteLe, onOuvrir, onAcheter }: { p: Produit; ajouteLe: number; onOuvrir: () => void; onAcheter: () => void }) {
+  return (
+    <aside className="souhaits__details" aria-label={`Détails de ${p.nom}`}>
+      <span className="kicker">
+        <span className="kicker__dot" />
+        {(p.prix?.reduction ?? 0) > 0 ? "En promo" : p.aVenir ? "Bientôt" : "Dans tes souhaits"}
+      </span>
+      <h2 className="souhaits__details-nom">{p.nom}</h2>
+      {p.avis && (
+        <span className="souhaits__details-avis">
+          <strong>{p.avis.libelle}</strong> · {entier(p.avis.nombre)} évaluations · {p.avis.pourcentage} %
+        </span>
+      )}
+      <div className="souhaits__details-captures">
+        {(p.captures.length ? p.captures : [p.capsule ?? p.banniere]).slice(0, 4).map((c, i) =>
+          c ? <img key={c} src={viaCache(c)} alt="" loading="lazy" draggable={false} style={{ animationDelay: `${i * 70}ms` }} /> : null,
+        )}
+      </div>
+      {p.tags.length > 0 && (
+        <div className="bapercu__tags">
+          {p.tags.map((t) => (
+            <span key={t}>{t}</span>
+          ))}
+        </div>
+      )}
+      <span className="souhaits__details-meta">
+        {p.aVenir ? (p.sortieTexte ?? "Prochainement") : p.sortie ? `Sorti le ${date(p.sortie)}` : ""}
+        {ajouteLe > 0 && ` · dans tes souhaits depuis le ${date(ajouteLe)}`}
+      </span>
+      <div className="souhaits__details-bas">
+        <BlocPrix p={p} grand />
+        <div className="souhaits__details-boutons">
+          <button type="button" className="btn btn--secondaire btn--petit" onClick={onOuvrir}>
+            Fiche
+          </button>
+          {!p.aVenir && (
+            <button type="button" className="btn btn--principal btn--petit" onClick={onAcheter}>
+              <IconePanier />
+              Acheter
+            </button>
+          )}
+        </div>
+      </div>
+    </aside>
   );
 }

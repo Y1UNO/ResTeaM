@@ -1,6 +1,102 @@
 /* Liste de souhaits — valeurs de kit/design/05-liste-de-souhaits.dc.html. */
 .souhaits {
-  max-width: 1400px;
+  max-width: none;
+}
+.souhaits-page {
+  overflow: clip;
+}
+/* Affiche du jeu survolé, en fond, qui change en fondu. */
+.souhaits__affiche {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--rail-w);
+  height: 80vh;
+  background: center 25% / cover no-repeat;
+  filter: blur(4px) saturate(1.05);
+  opacity: 0.32;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  pointer-events: none;
+  animation: souhaits-affiche 0.7s ease both;
+}
+@keyframes souhaits-affiche {
+  from {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+.souhaits__corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 26vw, 520px);
+  gap: 28px;
+  align-items: start;
+}
+@media (max-width: 1400px) {
+  .souhaits__corps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .souhaits__details {
+    display: none;
+  }
+}
+.souhait.is-actif {
+  border-color: rgba(238, 242, 255, 0.3);
+  background: rgba(30, 30, 36, 0.75);
+}
+.souhaits__details {
+  position: sticky;
+  top: 40px;
+  padding: 22px;
+  border-radius: var(--radius-2xl);
+  background: rgba(14, 14, 17, 0.72);
+  border: 1px solid var(--line-3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: bapercu-entre 0.4s var(--ease) both;
+}
+.souhaits__details-nom {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -1px;
+}
+.souhaits__details-avis,
+.souhaits__details-meta {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.souhaits__details-avis strong {
+  color: var(--text-1);
+}
+.souhaits__details-captures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.souhaits__details-captures img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: #18181b;
+  animation: rise-in 0.45s var(--ease) both;
+}
+.souhaits__details-captures img:first-child {
+  grid-column: 1 / -1;
+}
+.souhaits__details-bas {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.souhaits__details-boutons {
+  display: flex;
+  gap: 8px;
 }
 .souhaits__entete {
   display: flex;

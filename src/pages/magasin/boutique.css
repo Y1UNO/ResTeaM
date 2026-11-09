@@ -555,3 +555,215 @@
     grid-template-columns: minmax(0, 1fr) 320px;
   }
 }
+
+/* ——— Prix (composants Prix.tsx) ——— */
+.bprix__seul,
+.bprix__gratuit {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.bprix.is-grand .bprix__seul,
+.bprix.is-grand .bprix__gratuit {
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+.bprix__gratuit {
+  color: #3fe08a;
+}
+.rib__badge.rib__badge--promo {
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+}
+.achat__ouvrir,
+.btn {
+  gap: 9px;
+}
+.fiche-bloc__montant .prix-promo.is-grand .prix-promo__nouveau {
+  font-size: 32px;
+  letter-spacing: -1px;
+}
+
+/* ——— Promos à ne pas rater : une grande, deux moyennes ——— */
+.bpromos {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
+  height: clamp(380px, 32vw, 560px);
+}
+.bpromo {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line-2);
+  background: #18181b;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: rise-in 0.6s var(--ease) both;
+  transition: border-color var(--dur-fast) ease;
+}
+.bpromo.is-grande {
+  grid-row: 1 / span 2;
+}
+.bpromo:hover {
+  border-color: rgba(238, 242, 255, 0.35);
+}
+.bpromo__image {
+  position: absolute;
+  inset: 0;
+}
+.bpromo__image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s var(--ease);
+}
+.bpromo:hover .bpromo__image img {
+  transform: scale(1.05);
+}
+.bpromo__voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(9, 9, 10, 0.92) 0%, rgba(9, 9, 10, 0.2) 55%, transparent 100%);
+}
+.bpromo__texte {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bpromo__texte strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.1;
+}
+.bpromo.is-grande .bpromo__texte strong {
+  font-size: 34px;
+  letter-spacing: -1px;
+}
+.bpromo__texte > span:nth-child(2) {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.bpromo__texte .bprix {
+  align-self: flex-start;
+}
+.bpromo__texte .prix-promo {
+  align-items: flex-start;
+}
+
+/* ——— Par genre : tuiles colorées qui s'inclinent ——— */
+.bgenres {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.bgenre {
+  position: relative;
+  overflow: hidden;
+  height: 110px;
+  border-radius: var(--radius-lg);
+  border: 1px solid hsl(var(--h) 60% 60% / 0.28);
+  background:
+    radial-gradient(circle at 85% 20%, hsl(var(--h) 80% 60% / 0.55), transparent 55%),
+    radial-gradient(circle at 10% 100%, hsl(calc(var(--h) + 40) 70% 45% / 0.45), transparent 60%),
+    #141418;
+  color: var(--text-1);
+  text-align: left;
+  cursor: pointer;
+  animation: rise-in 0.5s var(--ease) both;
+}
+.bgenre::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(from 0deg, transparent, hsl(var(--h) 90% 70% / 0.18), transparent 30%);
+  animation: bgenre-tourne 9s linear infinite;
+}
+@keyframes bgenre-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bgenre__nom {
+  position: absolute;
+  left: 18px;
+  bottom: 14px;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+html.defile .bgenre::before {
+  animation-play-state: paused;
+}
+
+/* ——— Rangée horizontale (gratuits) ——— */
+.brangee {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 2px 12px;
+  scrollbar-width: thin;
+}
+.bcapsule {
+  flex: 0 0 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: rise-in 0.45s var(--ease) both;
+}
+.bcapsule__image {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #18181b;
+  border: 2px solid rgba(238, 242, 255, 0.06);
+  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+.bcapsule__image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bcapsule:hover .bcapsule__image {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+}
+.bcapsule__nom {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bcapsule__tags {
+  font-size: 11.5px;
+  color: var(--text-4);
+}
+.brayon--plus {
+  border-style: dashed;
+  color: var(--text-3);
+  background: none;
+}

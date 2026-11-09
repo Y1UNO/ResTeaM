@@ -4,6 +4,7 @@ import { NavRail } from "./NavRail";
 import { TitleBar } from "./TitleBar";
 import { CentreInstallation } from "../installation/CentreInstallation";
 import { HorsLigne } from "./HorsLigne";
+import { Lancement } from "./Lancement";
 import { PATHS } from "./paths";
 import "./Layout.css";
 
@@ -35,6 +36,7 @@ export function Layout() {
       <NavRail />
       <CentreInstallation />
       <HorsLigne />
+      <Lancement />
       <main className="app__main">
         <div key={pathname} className="app__page">
           <Outlet />

@@ -448,7 +448,7 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 - **Retiré** : la page de test `/donnees` et son entrée de menu.
 - **Dépendances** : `npm audit` et `cargo audit` sans vulnérabilité ; 5 avertissements RustSec sur des dépendances Linux ou de compilation, absentes de l'exe Windows.
 
-### Étape 10 — Propriétés d'un jeu (9 novembre 2026)
+### Étape 10 — Propriétés d'un jeu (9 novembre 2026) — validée par Tom dans l'exe
 
 - **Clés vérifiées sur le PC de Tom** (lecture seule) :
   - `LaunchOptions` dans `userdata/<compte>/config/localconfig.vdf` (chemin `UserLocalConfigStore > Software > Valve > Steam > apps > <id>`) ;
@@ -479,6 +479,24 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
   - il est sur l'accueil, la fiche, le profil, et sur les jaquettes de la bibliothèque (immobile là, pour la fluidité).
 - **Jauge d'heures** : vague très légère et reflet sur les paliers remplis ; les paliers vides ne bougent pas.
 - **Lune des succès** (`Croissant`) : elle se remplit à l'arrivée, sa lueur respire et un reflet parcourt l'arc. **À 100 %** : bleu lunaire brillant, cratères, halo qui tourne, éclats d'étoiles, légère flottaison.
+
+### Étape 10 ter — Lot 1 des retours de Tom (9 novembre 2026)
+
+- **Images manquantes** :
+  - jaquette de secours = capsule verticale du magasin (`hero_capsule`) quand le jeu n'a pas de jaquette de bibliothèque ;
+  - une erreur passagère de Steam ne fige plus de mauvaises adresses pour toute la session : le front réessaie, jusqu'à 5 fois.
+- **Défilement plus fluide** (`src/lib/defilement.ts`) : pendant le défilement, les animations de décor sont en pause et les effets de survol coupés. Les longues sections hors de l'écran ne sont pas dessinées (`content-visibility`).
+- **Écran de lancement** (`src/app/Lancement.tsx`) : logo animé, nom lettre par lettre, progression. Il précharge en arrière-plan les images des favoris, des jeux récents et des offres (cache disque). Il dure entre 1,4 et 7 s, une fois par lancement.
+- **Boutique** :
+  - prix qui défilent jusqu'à leur valeur ;
+  - en promo, l'ancien prix se fissure et se brise, puis le prix promo défile ;
+  - réductions en rouge vif, qui pulsent, avec un reflet ;
+  - panier dont les articles sautillent (Acheter) ;
+  - 16 genres de plus (dont Hack 'n' Slash, Souls-like, Metroidvania…) derrière « + genres » ;
+  - sections variées : « Promos à ne pas rater » (une grande, deux moyennes), tuiles « Par genre » qui s'inclinent, rangée « Gratuits et populaires ».
+  - Le prix affiché est toujours le bon, même si l'animation ne tourne pas (filet de sécurité).
+- **Liste de souhaits** : l'affiche du jeu survolé passe en fond, en fondu ; un panneau de détails le suit à droite (captures, tags, avis, prix, Acheter). Les pages Amis, Téléchargements et Recherche prennent toute la largeur.
+- **Rangs** : les badges flottent, un reflet les traverse, l'aura est plus visible. La rangée du profil a des badges plus grands, tous animés, qui grandissent au survol.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

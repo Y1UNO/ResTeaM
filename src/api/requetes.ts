@@ -120,6 +120,9 @@ export function useImages(appIds: number[]) {
       queryKey: ["images", p.join(",")],
       queryFn: () => api.imagesJeux(p),
       staleTime: Infinity,
+      // Steam limite parfois : on réessaie avec un délai qui grandit.
+      retry: 5,
+      retryDelay: (n: number) => Math.min(1000 * 2 ** n, 15_000),
     })),
     combine: combiner,
   });

@@ -594,3 +594,16 @@
 .profil__contenu {
   z-index: 1;
 }
+/* Rangée des rangs : le badge grandit au survol et sur le rang choisi. */
+.profil-rang .badge-rang {
+  transition: transform 0.45s var(--ease);
+}
+.profil-rang:hover .badge-rang {
+  transform: scale(1.12) rotate(-6deg);
+}
+.profil-rang.is-actif .badge-rang {
+  transform: scale(1.18);
+}
+.profil-rang.is-lointain:not(.a-des-jeux) .badge-rang {
+  filter: grayscale(0.6) brightness(0.8);
+}

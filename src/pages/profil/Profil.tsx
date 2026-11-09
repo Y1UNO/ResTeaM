@@ -191,7 +191,7 @@ function VueProfil({ ami }: { ami: string | null }) {
                   onClick={() => choisirRang(i)}
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
-                  <BadgeRang niveau={i} taille={48} anime={atteint} />
+                  <BadgeRang niveau={i} taille={60} />
                   <span className="profil-rang__nom">{x.nom}</span>
                   <span className="profil-rang__seuil">{x.seuil}</span>
                   <span className="profil-rang__nombre">{nb ? `${nb} jeu${nb > 1 ? "x" : ""}` : "—"}</span>

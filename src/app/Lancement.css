@@ -1,0 +1,106 @@
+/* Écran de lancement : logo, nom qui apparaît lettre par lettre, progression. */
+.lancement {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(63, 224, 138, 0.08), transparent 55%),
+    radial-gradient(ellipse at 50% 120%, rgba(238, 242, 255, 0.06), transparent 60%),
+    var(--bg);
+  animation: lancement-entre 0.4s ease both;
+}
+.lancement.is-sortie {
+  animation: lancement-sort 0.7s var(--ease) both;
+  pointer-events: none;
+}
+@keyframes lancement-entre {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes lancement-sort {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+    filter: blur(6px);
+  }
+}
+.lancement__centre {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.lancement__logo {
+  position: relative;
+  animation: lancement-logo 1s var(--ease) both;
+}
+@keyframes lancement-logo {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotate(-25deg);
+  }
+}
+.lancement__halo {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(63, 224, 138, 0.22), transparent 62%);
+  filter: blur(10px);
+  animation: lancement-halo 2.6s ease-in-out infinite;
+}
+@keyframes lancement-halo {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+.lancement__nom {
+  display: flex;
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+.lancement__nom span {
+  display: inline-block;
+  animation: lancement-lettre 0.6s var(--ease) both;
+}
+@keyframes lancement-lettre {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(4px);
+  }
+}
+.lancement__barre {
+  width: 260px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--fill-track);
+  overflow: hidden;
+}
+.lancement__barre span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1e9e58, #3fe08a, #eef2ff);
+  box-shadow: 0 0 12px rgba(63, 224, 138, 0.6);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease);
+}
+.lancement__texte {
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}

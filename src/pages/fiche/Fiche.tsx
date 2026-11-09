@@ -26,6 +26,7 @@ import { rangDepuisMinutes } from "../../lib/rangs";
 import { viaCache } from "../../lib/imageLocale";
 import { Medias } from "./Medias";
 import { BadgeRang } from "../../components/BadgeRang";
+import { IconePanier, MontantDefilant, PrixPromo, Reduction } from "../../components/Prix";
 import { PopupAchat } from "./PopupAchat";
 import { FenetreProprietes } from "./Proprietes";
 import "../pages.css";
@@ -204,13 +205,19 @@ function BlocAchat({ fiche, onAcheter }: { fiche: FicheJeu; onAcheter: () => voi
     <>
       <div className="fiche-bloc">
         <div className="fiche-bloc__prix">
-          {p && p.reduction > 0 && <span className="fiche-bloc__reduction">−{p.reduction} %</span>}
+          {p && p.reduction > 0 && <Reduction pourcent={p.reduction} grand />}
           <div className="fiche-bloc__montants">
-            {p && p.reduction > 0 && <span className="fiche-bloc__ancien">{p.texteInitial}</span>}
-            <span className="fiche-bloc__montant">{p ? p.texteFinal : fiche.gratuit ? "Gratuit" : fiche.aVenir ? "Bientôt" : "—"}</span>
+            {p && p.reduction > 0 ? (
+              <span className="fiche-bloc__montant">
+                <PrixPromo initial={p.initial} final_={p.final_} grand />
+              </span>
+            ) : (
+              <span className="fiche-bloc__montant">{p ? <MontantDefilant centimes={p.final_} /> : fiche.gratuit ? "Gratuit" : fiche.aVenir ? "Bientôt" : "—"}</span>
+            )}
           </div>
         </div>
         <button type="button" className="btn btn--principal fiche-bloc__acheter" onClick={onAcheter} disabled={fiche.aVenir && !p}>
+          <IconePanier />
           {fiche.gratuit && !p ? "Obtenir" : "Acheter"}
         </button>
         <button

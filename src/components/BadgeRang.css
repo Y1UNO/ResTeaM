@@ -169,3 +169,49 @@
 .badge-rang__svg {
   transition: transform 0.4s var(--ease);
 }
+
+/* Plus de vie (demande de Tom) : le badge flotte et un reflet le traverse. */
+.badge-rang.is-anime .badge-rang__svg {
+  animation: br-flotte 3.8s ease-in-out infinite;
+}
+.badge-rang.n9.is-anime .badge-rang__svg {
+  animation:
+    br-flotte 3.8s ease-in-out infinite,
+    br-irise 8s linear infinite;
+}
+@keyframes br-flotte {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+}
+.badge-rang.is-anime:not(.n0)::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  z-index: 3;
+  border-radius: 50%;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  background-size: 250% 100%;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  animation: br-reflet 4.5s ease-in-out infinite;
+}
+@keyframes br-reflet {
+  0%,
+  60% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+.badge-rang.is-anime .badge-rang__aura {
+  opacity: calc(0.35 + 0.55 * var(--br-force));
+}
+html.defile .badge-rang::after {
+  animation-play-state: paused;
+}

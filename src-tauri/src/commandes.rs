@@ -13,7 +13,7 @@ use crate::secrets;
 use crate::session::{self, Session};
 use crate::steam::auth;
 use crate::steam::bibliotheque::{self, Bibliotheque};
-use crate::steam::images::{self, ImagesJeu};
+use crate::steam::images::ImagesJeu;
 use crate::steam::installation::{self, Disque, StatsSysteme};
 use crate::steam::liens::{self, ActionSteam};
 use crate::steam::boutique::{Produit, Souhait};
@@ -262,7 +262,7 @@ pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resulta
     let mut resultat = HashMap::new();
     let mut manquants = Vec::new();
     for id in app_ids.into_iter().take(150) {
-        match etat.cache.frais::<ImagesJeu>(&format!("images3:{id}"))? {
+        match etat.cache.frais::<ImagesJeu>(&format!("images4:{id}"))? {
             Some(i) => {
                 resultat.insert(id, i);
             }
@@ -273,15 +273,13 @@ pub async fn images_jeux(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resulta
         match etat.steam.images(&manquants).await {
             Ok(trouvees) => {
                 for (id, i) in trouvees {
-                    etat.cache.ranger(&format!("images3:{id}"), &i, TTL_IMAGES)?;
+                    etat.cache.ranger(&format!("images4:{id}"), &i, TTL_IMAGES)?;
                     resultat.insert(id, i);
                 }
             }
-            Err(e) if e.est_passagere() => {
-                for id in manquants {
-                    resultat.insert(id, images::adresses_classiques(id));
-                }
-            }
+            // Erreur passagère (quota, réseau) : on renvoie l'erreur pour que le front
+            // réessaie. Avant, les adresses classiques étaient gardées toute la session,
+            // et elles n'existent pas pour les jeux récents (jaquettes vides).
             Err(e) => return Err(e),
         }
     }

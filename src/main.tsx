@@ -21,8 +21,10 @@ import { router } from "./app/router";
 import { clientRequetes } from "./api/requetes";
 import { useSession } from "./app/session";
 import { installerInteractions } from "./lib/interactif";
+import { installerDefilementFluide } from "./lib/defilement";
 
 installerInteractions();
+installerDefilementFluide();
 
 // Lecture de la session et de l'état de la clé, une fois au démarrage.
 void useSession.getState().initialiser();

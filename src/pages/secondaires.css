@@ -1,6 +1,7 @@
 /* Pages de l'étape 8 : Téléchargements, Amis, Recherche (même DA que les maquettes 03 à 06). */
+/* Les pages prennent toute la largeur (écran 2560 px de Tom) : les grilles s'adaptent. */
 .secondaire {
-  max-width: 1400px;
+  max-width: none;
 }
 .secondaire__entete {
   display: flex;

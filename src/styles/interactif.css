@@ -89,3 +89,30 @@
     opacity: calc(var(--force, 0.7) * 0.4);
   }
 }
+
+/* ——— Pendant le défilement (src/lib/defilement.ts) ——— */
+html.defile .app__page {
+  pointer-events: none;
+}
+html.defile .luciole,
+html.defile .smoke__layer,
+html.defile .lueurs__tache,
+html.defile .affiche__brume,
+html.defile .badge-rang *,
+html.defile .jauge__segment > div,
+html.defile .jauge__segment > div::after,
+html.defile .croissant *,
+html.defile .profil__orbite,
+html.defile .en-jeu__point,
+html.defile .ami-carte__avatar::before {
+  animation-play-state: paused !important;
+}
+
+/* Sections longues : ni mises en page ni peintes tant qu'elles sont hors de l'écran. */
+.boutique__bloc,
+.profil__section,
+.secondaire__bloc,
+.fiche__bas {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}

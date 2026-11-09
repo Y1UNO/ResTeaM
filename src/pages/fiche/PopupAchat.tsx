@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../../api/commandes";
+import { IconePanier } from "../../components/Prix";
 import "./fiche.css";
 
 // ——— Popup d'achat (paiement dans Steam) ———
@@ -56,7 +57,8 @@ export function PopupAchat({ appId, nom, prix, obtenir = false, onFermer }: Prop
           <button type="button" className="btn btn--secondaire btn--petit" onClick={fermer}>
             Annuler
           </button>
-          <button type="button" className="btn btn--principal btn--petit" onClick={ouvrir} autoFocus>
+          <button type="button" className="btn btn--principal btn--petit achat__ouvrir" onClick={ouvrir} autoFocus>
+            <IconePanier />
             Ouvrir dans Steam
           </button>
         </div>

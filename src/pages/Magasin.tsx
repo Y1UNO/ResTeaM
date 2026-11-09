@@ -10,7 +10,8 @@ import { Affiche, Lueurs } from "./accueil/Ambiance";
 import { PanneauAmis } from "./accueil/PanneauAmis";
 import { PopupAchat } from "./fiche/PopupAchat";
 import { useMoletteHorizontale } from "../lib/molette";
-import { RechercheMagasin, ResultatsRecherche, Rayons, SouhaitsApercu } from "./magasin/Boutique";
+import { PromosVedettes, RangeeGratuits, RechercheMagasin, ResultatsRecherche, Rayons, SouhaitsApercu, TuilesGenres } from "./magasin/Boutique";
+import { IconePanier, MontantDefilant, Reduction } from "../components/Prix";
 import "./magasin/boutique.css";
 import "./pages.css";
 import "./accueil/accueil.css";
@@ -66,6 +67,7 @@ export function Magasin() {
     { id: "aVenir", libelle: "À venir" },
   ];
   const [rechercheTout, setRechercheTout] = useState<string | null>(null);
+  const [rayonDemande, setRayonDemande] = useState<string | null>(null);
   const boutique = useRef<HTMLDivElement>(null);
   const piste = useRef<HTMLDivElement>(null);
   useMoletteHorizontale(piste, onglet);
@@ -103,7 +105,13 @@ export function Magasin() {
               <div className="hero__chiffres">
                 <div className="carte-verre hero__puce">
                   <span className="hero__puce-grand">
-                    {vedette.prixFinal > 0 ? euros(vedette.prixFinal) : onglet === "aVenir" ? "Bientôt" : "Gratuit"}
+                    {vedette.prixFinal > 0 ? (
+                      <MontantDefilant key={vedette.appId} centimes={vedette.prixFinal} depuis={vedette.reduction > 0 ? vedette.prixInitial : 0} delai={300} />
+                    ) : onglet === "aVenir" ? (
+                      "Bientôt"
+                    ) : (
+                      "Gratuit"
+                    )}
                   </span>
                   <span className="hero__puce-petit">
                     {vedette.reduction > 0
@@ -115,7 +123,9 @@ export function Magasin() {
                 </div>
                 {vedette.reduction > 0 && (
                   <div className="carte-verre hero__puce">
-                    <span className="hero__puce-grand">−{vedette.reduction} %</span>
+                    <span className="hero__puce-grand">
+                      <Reduction pourcent={vedette.reduction} grand />
+                    </span>
                     <span className="hero__puce-petit">{finOffre(vedette.finOffre) ?? "offre en cours"}</span>
                   </div>
                 )}
@@ -129,9 +139,7 @@ export function Magasin() {
                     possedes.has(vedette.appId) ? void api.steamLien({ type: "magasin", appId: vedette.appId }) : setAchat(vedette)
                   }
                 >
-                  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
-                  </svg>
+                  <IconePanier />
                   {possedes.has(vedette.appId) ? "Voir dans Steam" : "Acheter sur Steam"}
                 </button>
                 <button type="button" className="btn btn--secondaire" onClick={() => navigate(`/jeu/${vedette.appId}`)}>
@@ -232,8 +240,11 @@ export function Magasin() {
           <ResultatsRecherche terme={rechercheTout} onFermer={() => setRechercheTout(null)} />
         ) : (
           <>
+            <PromosVedettes vitrine={v} />
             <SouhaitsApercu />
-            <Rayons vitrine={v} />
+            <TuilesGenres onChoisir={(id) => setRayonDemande(`${id}#${Date.now()}`)} />
+            <Rayons vitrine={v} demande={rayonDemande} />
+            <RangeeGratuits />
           </>
         )}
       </div>
@@ -284,12 +295,16 @@ function CarteOffre({
         {possede ? (
           <span className="rib__badge">À toi</span>
         ) : (
-          offre.reduction > 0 && <span className="rib__badge rib__badge--promo">−{offre.reduction} %</span>
+          offre.reduction > 0 && (
+            <span className="rib__badge rib__badge--promo">
+              <Reduction pourcent={offre.reduction} />
+            </span>
+          )
         )}
       </div>
       <span className="rib__prix">
         {offre.reduction > 0 && <s>{euros(offre.prixInitial)}</s>}
-        <strong>{offre.prixFinal > 0 ? euros(offre.prixFinal) : aVenir ? "Bientôt" : "Gratuit"}</strong>
+        <strong>{offre.prixFinal > 0 ? <MontantDefilant centimes={offre.prixFinal} depuis={offre.prixInitial} /> : aVenir ? "Bientôt" : "Gratuit"}</strong>
       </span>
     </button>
   );

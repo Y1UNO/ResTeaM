@@ -570,3 +570,48 @@ pub async fn en_ligne(etat: State<'_, EtatApp>) -> Resultat<Donnee<EnLigne>> {
         })
         .await
 }
+
+// ——— Étape 8 : amis qui possèdent un jeu ———
+
+const TTL_IDS_AMI: i64 = 24 * 60 * 60;
+
+/// Amis (SteamID) qui possèdent ce jeu. La bibliothèque de chaque ami est gardée
+/// 24 h en cache ; un profil privé compte comme « ne le possède pas ».
+#[tauri::command]
+pub async fn amis_possedant(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Vec<String>> {
+    let (sid, cle) = identifiants(&app)?;
+    let amis = etat.cache.avec_cache(&format!("amis:{sid}"), TTL_AMIS, || etat.steam.amis(&cle, &sid)).await?.donnees;
+    let mut resultat = Vec::new();
+    let mut a_lire = Vec::new();
+    for ami in &amis.amis {
+        match etat.cache.frais::<Vec<u32>>(&format!("ids-possedes:{}", ami.joueur.steam_id))? {
+            Some(ids) => {
+                if ids.contains(&app_id) {
+                    resultat.push(ami.joueur.steam_id.clone());
+                }
+            }
+            None => a_lire.push(ami.joueur.steam_id.clone()),
+        }
+    }
+    // Par paquets de 8 requêtes en parallèle, pour ne pas inonder Steam.
+    for paquet in a_lire.chunks(8) {
+        let mut taches = Vec::new();
+        for id in paquet {
+            let client = ClientSteam { http: etat.steam.http.clone() };
+            let (cle, id) = (cle.clone(), id.clone());
+            taches.push(tauri::async_runtime::spawn(async move {
+                let ids = client.ids_possedes(&cle, &id).await.unwrap_or_default();
+                (id, ids)
+            }));
+        }
+        for t in taches {
+            if let Ok((id, ids)) = t.await {
+                etat.cache.ranger(&format!("ids-possedes:{id}"), &ids, TTL_IDS_AMI)?;
+                if ids.contains(&app_id) {
+                    resultat.push(id);
+                }
+            }
+        }
+    }
+    Ok(resultat)
+}

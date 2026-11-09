@@ -3,7 +3,6 @@ import { Layout } from "./Layout";
 import { Garde } from "./Garde";
 import { PATHS } from "./paths";
 import { Accueil } from "../pages/Accueil";
-import { EmptyPage } from "../pages/EmptyPage";
 import { Parametres } from "../pages/Parametres";
 import { DonneesTest } from "../pages/DonneesTest";
 import { Bibliotheque } from "../pages/Bibliotheque";
@@ -12,6 +11,9 @@ import { Magasin } from "../pages/Magasin";
 import { Profil } from "../pages/profil/Profil";
 import { Souhaits } from "../pages/Souhaits";
 import { Classements } from "../pages/Classements";
+import { Telechargements } from "../pages/Telechargements";
+import { Amis } from "../pages/Amis";
+import { Recherche } from "../pages/Recherche";
 import { Connexion } from "../ecrans/Connexion";
 import { CleApi } from "../ecrans/CleApi";
 import { Chargement } from "../ecrans/Chargement";
@@ -41,8 +43,9 @@ export const router = createHashRouter([
       { path: PATHS.jeu, element: <Fiche /> },
       { path: PATHS.classements, element: <Classements /> },
       { path: PATHS.souhaits, element: <Souhaits /> },
-      { path: PATHS.recherche, element: <EmptyPage title="Recherche" step="8" /> },
-      { path: PATHS.telechargements, element: <EmptyPage title="Téléchargements" step="8" /> },
+      { path: PATHS.recherche, element: <Recherche /> },
+      { path: PATHS.telechargements, element: <Telechargements /> },
+      { path: PATHS.amis, element: <Amis /> },
       { path: PATHS.profil, element: <Profil /> },
       { path: PATHS.parametres, element: <Parametres /> },
       { path: PATHS.donnees, element: <DonneesTest /> },

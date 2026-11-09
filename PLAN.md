@@ -355,7 +355,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - La teinte du fond vient des couleurs de l'avatar.
 - Écart avec la maquette : « ces 2 semaines » au lieu de « ces 15 jours », parce que l'API de Steam compte sur 2 semaines.
 
-### Étape 7 — Boutique complète, images en cache, liste de souhaits, classements (9 novembre 2026)
+### Étape 7 — Boutique complète, images en cache, liste de souhaits, classements (9 novembre 2026) — validée par Tom dans l'exe
 
 - **Images plus rapides** (demande de Tom) : protocole `img` (`http://img.localhost/<adresse>`, `src-tauri/src/images_locales.rs`).
   - Chaque image de Steam est téléchargée une fois, rangée dans `images/` (dossier de données), puis lue sur le disque ;
@@ -380,6 +380,27 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - les places 2 à 10 avec leur évolution (▲ ▼ = nouveau) et « Voir le top 100 » ;
   - **« En jeu maintenant »** : Steam ne publie pas le total. C'est donc la somme des joueurs en jeu sur les 10 jeux les plus joués (`GetNumberOfCurrentPlayers`, relu toutes les 3 min). La courbe de 24 h est faite des relevés de ResTeaM (un toutes les 20 min, quand l'app est ouverte), et la page l'explique.
 - **Tests** : 40 tests Rust (dont les hôtes autorisés du cache d'images, la lecture d'un produit en promo, les relevés sur 24 h) et 11 tests réseau ignorés, lancés une fois sur le vrai Steam.
+
+### Étape 8 — Téléchargements, amis, recherche globale, hors ligne (9 novembre 2026)
+
+- **Molette sur les rubans** (demande de Tom) : sur l'accueil et le magasin, la molette fait défiler le ruban de jaquettes à l'horizontale, en douceur. Aux deux bouts, elle rend la main à la page (`src/lib/molette.ts`).
+- **Téléchargements** (`src/pages/Telechargements.tsx`) :
+  - en cours, relu sur le disque toutes les 2 s : barre, octets, débit, temps restant, bouton « Suivre » qui ouvre le centre d'installation ;
+  - en attente de Steam : installations et désinstallations en file, avec la raison et Annuler ;
+  - mises à jour à faire ;
+  - installés récemment ;
+  - disques : jeux, poids et espace libre ;
+  - état vide soigné.
+- **Amis** (`src/pages/Amis.tsx`, lien « Tous les amis » dans le panneau de l'accueil) :
+  - recherche par pseudo ou par jeu ;
+  - groupes En jeu, En ligne, Hors ligne ;
+  - le jeu en cours mène à sa fiche ; Rejoindre quand c'est possible ; profil Steam ; « + Ajouter un ami » ;
+  - états vides, et cas de la liste privée.
+- **« N amis possèdent ce jeu »** sur la fiche : commande `amis_possedant`. La bibliothèque de chaque ami est lue une fois (8 requêtes en parallèle au plus), puis gardée 24 h ; un profil privé compte comme « ne le possède pas ».
+- **Recherche globale** (Ctrl+K, `src/pages/Recherche.tsx`) : ta bibliothèque, puis le magasin (sans les jeux que tu as déjà), puis tes amis, sans tenir compte des accents. Entrée ouvre le premier jeu.
+- **Hors ligne** : sans Internet, une pastille l'indique en bas à gauche, et les pages affichent le cache. Au retour du réseau, toutes les données sont relues.
+- Les dernières pages vides sont remplacées ; `EmptyPage.tsx` est supprimé.
+- **Reste pour l'étape 9** : audit de sécurité, suppression de la page de test `/donnees`.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

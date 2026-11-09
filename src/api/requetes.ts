@@ -242,3 +242,14 @@ export function useClassements() {
 export function useEnLigne() {
   return useQuery({ queryKey: ["en-ligne"], queryFn: api.enLigne, staleTime: 60_000, refetchInterval: 3 * 60_000 });
 }
+
+/** Amis qui possèdent un jeu (bibliothèques des amis en cache 24 h côté Rust). */
+export function useAmisPossedant(appId: number | null) {
+  const { pret } = usePret();
+  return useQuery({
+    queryKey: ["amis-possedant", appId],
+    queryFn: () => api.amisPossedant(appId as number),
+    enabled: pret && appId != null,
+    staleTime: 30 * 60_000,
+  });
+}

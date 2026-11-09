@@ -520,6 +520,8 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         })),
       });
     }
+    case "amis_possedant":
+      return ["76561198000000000", "76561198000000001", "76561198000000003"];
     case "patch_notes":
       return enveloppe({
         id: "1",

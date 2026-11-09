@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useMoletteHorizontale } from "../../lib/molette";
 import { useNavigate } from "react-router-dom";
 import type { ImagesJeu, JeuBibliotheque } from "../../api/types";
 import { heures } from "../../lib/format";
@@ -24,6 +25,8 @@ type Props = {
  */
 export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet, nombreFavoris }: Props) {
   const navigate = useNavigate();
+  const piste = useRef<HTMLDivElement>(null);
+  useMoletteHorizontale(piste, onglet);
   const onglets: { id: OngletRuban; libelle: string }[] = [
     { id: "reprendre", libelle: "Reprendre" },
     { id: "favoris", libelle: `Favoris${nombreFavoris ? ` · ${nombreFavoris}` : ""}` },
@@ -49,7 +52,7 @@ export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet
           ))}
         </div>
       </div>
-      <div key={onglet} className="ruban__piste">
+      <div key={onglet} ref={piste} className="ruban__piste">
         {jeux.length === 0 && (
           <p className="ruban__vide">
             {onglet === "favoris" ? "Aucun favori : ajoute-en dans Steam (étoile sur un jeu)." : "Aucun jeu lancé récemment."}

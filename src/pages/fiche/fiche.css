@@ -711,3 +711,35 @@
   gap: 10px;
   justify-content: flex-end;
 }
+
+/* Amis qui possèdent le jeu. */
+.fiche__amis {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.fiche__amis--charge {
+  color: var(--text-4);
+}
+.fiche__amis-avatars {
+  display: flex;
+}
+.fiche__amis-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #2a3a4a;
+  border: 2px solid #121214;
+  animation: rise-in 0.4s var(--ease) both;
+}
+.fiche__amis-avatar + .fiche__amis-avatar {
+  margin-left: -10px;
+}
+.fiche__amis-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

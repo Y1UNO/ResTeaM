@@ -9,6 +9,7 @@ import { degradeJaquette, imagesDe } from "../lib/images";
 import { Affiche, Lueurs } from "./accueil/Ambiance";
 import { PanneauAmis } from "./accueil/PanneauAmis";
 import { PopupAchat } from "./fiche/PopupAchat";
+import { useMoletteHorizontale } from "../lib/molette";
 import { RechercheMagasin, ResultatsRecherche, Rayons, SouhaitsApercu } from "./magasin/Boutique";
 import "./magasin/boutique.css";
 import "./pages.css";
@@ -66,6 +67,8 @@ export function Magasin() {
   ];
   const [rechercheTout, setRechercheTout] = useState<string | null>(null);
   const boutique = useRef<HTMLDivElement>(null);
+  const piste = useRef<HTMLDivElement>(null);
+  useMoletteHorizontale(piste, onglet);
   const voirResultats = (terme: string) => {
     setRechercheTout(terme);
     window.setTimeout(() => boutique.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -208,7 +211,7 @@ export function Magasin() {
             ))}
           </div>
         </div>
-        <div key={onglet} className="ruban__piste">
+        <div key={onglet} ref={piste} className="ruban__piste">
           {v && liste.length === 0 && <p className="ruban__vide">Rien dans ce rayon pour l’instant.</p>}
           {liste.map((o, i) => (
             <CarteOffre

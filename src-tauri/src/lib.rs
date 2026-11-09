@@ -58,6 +58,7 @@ pub fn run() {
             commandes::liste_souhaits,
             commandes::classements,
             commandes::en_ligne,
+            commandes::amis_possedant,
             commandes::file_steam,
             commandes::annuler_file_steam,
             commandes::connexion_steam,

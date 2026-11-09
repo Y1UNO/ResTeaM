@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../api/commandes";
 import { useAmis } from "../../api/requetes";
 import type { Ami } from "../../api/types";
@@ -13,6 +14,7 @@ const MAX = 7;
  */
 export function PanneauAmis() {
   const amis = useAmis();
+  const navigate = useNavigate();
   const [ouvert, setOuvert] = useState(false);
   const liste = amis.data?.donnees.amis ?? [];
   if (amis.data?.donnees.prive || (amis.isSuccess && liste.length === 0)) return null;
@@ -34,6 +36,11 @@ export function PanneauAmis() {
       {visibles.map((a) => (
         <LigneAmi key={a.steamId} ami={a} ouvert={ouvert} />
       ))}
+      {ouvert && (
+        <button type="button" className="amis__ajouter amis__tous" onClick={() => navigate("/amis")}>
+          Tous les amis ({liste.length})
+        </button>
+      )}
       <button
         type="button"
         className="amis__ajouter"

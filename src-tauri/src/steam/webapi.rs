@@ -99,6 +99,20 @@ impl ClientSteam {
         Ok(corps.response.games.into_iter().map(JeuPossede::from).collect())
     }
 
+    /// Identifiants des jeux d'un compte, sans les détails (amis qui possèdent un jeu).
+    /// Un profil privé renvoie une liste vide.
+    pub async fn ids_possedes(&self, cle: &str, steam_id: &str) -> Resultat<Vec<u32>> {
+        let url = Self::url(
+            "IPlayerService/GetOwnedGames/v1/",
+            &[("key", cle), ("steamid", steam_id), ("include_played_free_games", "true")],
+        )?;
+        let corps: serde_json::Value = self.obtenir(url).await?;
+        Ok(corps["response"]["games"]
+            .as_array()
+            .map(|l| l.iter().filter_map(|g| g["appid"].as_u64().map(|v| v as u32)).collect())
+            .unwrap_or_default())
+    }
+
     /// `IPlayerService/GetRecentlyPlayedGames` (deux dernières semaines).
     pub async fn jeux_recents(&self, cle: &str, steam_id: &str) -> Resultat<Vec<JeuPossede>> {
         let url = Self::url(

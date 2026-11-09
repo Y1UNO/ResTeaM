@@ -7,6 +7,7 @@ export const PATHS = {
   souhaits: "/souhaits",
   recherche: "/recherche",
   telechargements: "/telechargements",
+  amis: "/amis",
   profil: "/profil",
   jeu: "/jeu/:appId",
   parametres: "/parametres",

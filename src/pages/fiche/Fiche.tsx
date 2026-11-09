@@ -2,6 +2,8 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api/commandes";
 import {
+  useAmis,
+  useAmisPossedant,
   useAvisJeu,
   useBibliotheque,
   useConfigPc,
@@ -21,6 +23,7 @@ import { usePalette } from "../../lib/couleurs";
 import { date, entier, heures, taille } from "../../lib/format";
 import { imagesDe } from "../../lib/images";
 import { rangDepuisMinutes } from "../../lib/rangs";
+import { viaCache } from "../../lib/imageLocale";
 import { Medias } from "./Medias";
 import { PopupAchat } from "./PopupAchat";
 import "../pages.css";
@@ -166,6 +169,7 @@ export function Fiche() {
             />
             {f?.metacritic != null && <Ligne cle="Metacritic" valeur={`${f.metacritic} / 100`} />}
             <div className="fiche__separateur" />
+            <AmisPossedant appId={appId} />
             <button type="button" className="fiche__lien" onClick={() => void api.steamLien({ type: "magasin", appId })}>
               Ouvrir la page dans Steam
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -537,6 +541,32 @@ function Ligne({ cle, valeur, titre }: { cle: string; valeur: string; titre?: st
     <div className="fiche__ligne">
       <span>{cle}</span>
       <span title={titre}>{valeur}</span>
+    </div>
+  );
+}
+
+/** « N amis possèdent ce jeu » avec leurs avatars (maquette 02). */
+function AmisPossedant({ appId }: { appId: number }) {
+  const ids = useAmisPossedant(appId);
+  const amis = useAmis();
+  if (amis.data?.donnees.prive) return null;
+  if (ids.isLoading) return <span className="fiche__amis fiche__amis--charge">Recherche chez tes amis…</span>;
+  const liste = (ids.data ?? [])
+    .map((id) => amis.data?.donnees.amis.find((a) => a.steamId === id))
+    .filter((a): a is NonNullable<typeof a> => !!a);
+  if (liste.length === 0) return <span className="fiche__amis">Aucun ami ne possède ce jeu</span>;
+  return (
+    <div className="fiche__amis" title={liste.map((a) => a.pseudo).join(", ")}>
+      <span className="fiche__amis-avatars">
+        {liste.slice(0, 5).map((a) => (
+          <span key={a.steamId} className="fiche__amis-avatar">
+            {a.avatar && <img src={viaCache(a.avatar)} alt="" draggable={false} />}
+          </span>
+        ))}
+      </span>
+      <span>
+        {liste.length} ami{liste.length > 1 ? "s possèdent" : " possède"} ce jeu
+      </span>
     </div>
   );
 }

@@ -96,5 +96,6 @@ export const api = {
   listeSouhaits: () => appeler<Donnee<Souhait[]>>("liste_souhaits"),
   classements: () => appeler<Donnee<Classements>>("classements"),
   enLigne: () => appeler<Donnee<EnLigne>>("en_ligne"),
+  amisPossedant: (appId: number) => appeler<string[]>("amis_possedant", { appId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
 };

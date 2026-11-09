@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { NavRail } from "./NavRail";
 import { TitleBar } from "./TitleBar";
 import { CentreInstallation } from "../installation/CentreInstallation";
+import { HorsLigne } from "./HorsLigne";
 import { PATHS } from "./paths";
 import "./Layout.css";
 
@@ -33,6 +34,7 @@ export function Layout() {
       <TitleBar />
       <NavRail />
       <CentreInstallation />
+      <HorsLigne />
       <main className="app__main">
         <div key={pathname} className="app__page">
           <Outlet />

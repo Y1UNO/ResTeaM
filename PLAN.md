@@ -172,6 +172,51 @@ Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bi
 
 **Ensuite** : rangées de la boutique façon Steam (carrousels à flèches, « Car tu as joué à… », « Moins de 10 € », rangées par tag), puis les étapes 11, 13, 14 et 15.
 
+### À faire — Profil : total des trophées et lune à 30 niveaux
+
+Noté le 9 novembre 2026 (idée de Tom), rien de commencé. À placer juste avant ou juste après la Communauté, selon ce que Tom préfère.
+
+**1. Total des trophées** (sur mon profil et sur celui des amis)
+- Une case dans la rangée de chiffres du profil : **« Trophées 1 234 »**, avec le compteur qui défile à l'arrivée.
+- Au survol : nombre de jeux à 100 %, trophée le plus rare (avec son pourcentage mondial) et dernier trophée obtenu.
+- Source : les succès débloqués de chaque jeu joué. Un appel par jeu coûte cher, donc :
+  - à vérifier d'abord : `IPlayerService/GetTopAchievementsForGames`, qui prend plusieurs jeux en un appel ;
+  - sinon, `GetPlayerAchievements` jeu par jeu, en tâche de fond (4 à la fois), seulement pour les jeux avec du temps de jeu ;
+  - cache de 24 h, et mise à jour seulement pour les jeux joués depuis.
+- Amis : visible seulement si leurs détails de jeu sont publics. Sinon, « privé ».
+
+**2. Lune du profil à 30 niveaux, propres à ResTeaM**
+- Le niveau Steam reste affiché en petit. La lune suit un **niveau ResTeaM de 1 à 30** calculé avec des points (barème à valider avec Tom) :
+  - trophées (1 point chacun) ;
+  - heures de jeu (par exemple 1 point par heure) ;
+  - jeux terminés à 100 % (gros bonus) ;
+  - rangs des jeux (bonus à chaque rang atteint).
+  - Courbe de plus en plus longue, pour que le niveau 30 reste rare.
+- **Chaque niveau ajoute une petite amélioration visuelle**, et les paliers 5, 10, 15, 20, 25 et 30 changent franchement le style :
+
+| Niveaux | Lune |
+|---|---|
+| 1 | Le visuel actuel |
+| 2 à 4 | Cratères plus nets, première étoile qui scintille, halo léger |
+| **5** | Halo qui respire, 3 étoiles autour |
+| 6 à 9 | Poussière d'étoiles en orbite lente, reflets plus brillants |
+| **10** | Anneau fin en orbite (style Saturne), teinte bleu lunaire |
+| 11 à 14 | Deuxième anneau, petites lunes satellites |
+| **15** | Constellation qui se dessine autour, trait par trait |
+| 16 à 19 | Étoiles filantes de temps en temps, halo plus large |
+| **20** | Lune argentée brillante, aurore en arrière-plan |
+| 21 à 24 | Particules qui montent, reflets qui tournent |
+| **25** | Éclipse dorée : couronne de lumière derrière la lune |
+| 26 à 29 | Couronne plus vive, vagues de lumière |
+| **30** | Lune céleste : tout réuni, couleur qui change lentement, effet unique |
+
+- Toujours en transform et opacité, pour rester fluide.
+- Écran « Niveau supérieur ! » animé quand on gagne un niveau.
+- Un aperçu des 30 lunes au clic sur la lune, avec les points qui manquent pour la suivante.
+- Les amis voient leur propre lune (calculée avec leurs données publiques).
+
+**Vérification dans l'exe** : le total des trophées correspond à Steam (à comparer sur 2 ou 3 jeux), et la lune change bien d'aspect selon le niveau.
+
 ### Plus tard — Serveur de partage des profils (pour que les amis voient photo, bannière et style ResTeaM)
 
 Noté le 9 novembre 2026, à faire plus tard. **Oui, c'est faisable gratuitement**, et c'est largement assez puissant pour Tom et ses amis.

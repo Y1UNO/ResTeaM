@@ -346,6 +346,22 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 - Aucun achat, aucun argent : seulement le ticket quotidien, avec peut-être un ticket bonus pour un niveau de lune gagné ou un jeu fini à 100 %.
 - Avec le serveur de partage, les amis verront les styles gagnés, et le serveur pourra valider les tirages.
 
+**Option payante (idée de Tom, à décider)** : permettre à ceux qui le veulent de payer, par exemple 0,99 € le ticket, avec des réductions selon les offres. Rien d'obligatoire, une petite rentrée d'argent.
+- **Point juridique** : un tirage au sort **payant** est une « loot box ». Elles sont interdites en Belgique, surveillées en France (Autorité nationale des jeux) et dans l'UE, avec des règles fortes pour les mineurs. Les taux de chaque rareté doivent être affichés.
+- **Recommandation de Claude** :
+  - garder le hasard **gratuit** (le ticket du jour) ;
+  - pour le payant, vendre des styles **au choix**, sans hasard : boutique de styles à 0,99 €, packs visibles à l'avance, réductions, « pass de saison » ou bouton « soutenir ResTeaM ».
+  - Même rentrée d'argent, sans le risque des loot boxes.
+- **Ce qu'il faudra** :
+  - un statut pour encaisser (micro-entreprise par exemple, titulaire majeur) ;
+  - un prestataire de paiement qui gère la TVA européenne : Lemon Squeezy ou Paddle (« vendeur officiel », TVA comprise), sinon Stripe ;
+  - le paiement s'ouvre sur la page du prestataire : ResTeaM ne voit jamais la carte ;
+  - le serveur de partage (Cloudflare) reçoit la confirmation du paiement et garde les styles achetés par SteamID. L'app ne fait que les lire : impossible de tricher en modifiant un fichier.
+- **À vérifier avant de vendre quoi que ce soit** :
+  - les conditions d'utilisation de l'API Web de Steam (usage commercial d'une app qui s'appuie dessus) ;
+  - l'usage du nom « Steam » dans une app payante.
+
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |

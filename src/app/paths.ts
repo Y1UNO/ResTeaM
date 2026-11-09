@@ -4,6 +4,7 @@ export const PATHS = {
   bibliotheque: "/bibliotheque",
   magasin: "/magasin",
   classements: "/classements",
+  communaute: "/communaute",
   souhaits: "/souhaits",
   recherche: "/recherche",
   telechargements: "/telechargements",

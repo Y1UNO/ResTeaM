@@ -23,6 +23,8 @@ pub struct CacheImages {
     http: Client,
     /// Avatar et bannière choisis par Tom (`perso/`), servis sous `/__perso__/…`.
     pub dossier_perso: PathBuf,
+    /// Dossier `760/remote` des captures du compte connecté, servi sous `/__captures__/…`.
+    pub dossier_captures: std::sync::RwLock<Option<PathBuf>>,
 }
 
 /// Fichiers perso autorisés : `avatar` ou `banniere`, extension d'image ou de vidéo.
@@ -48,7 +50,13 @@ pub fn hote_autorise(adresse: &str) -> bool {
     let Ok(u) = url::Url::parse(adresse) else { return false };
     u.scheme() == "https"
         && u.host_str().is_some_and(|h| {
-            h.ends_with(".steamstatic.com") || h == "steamcdn-a.akamaihd.net" || h.ends_with(".steamusercontent.com")
+            h.ends_with(".steamstatic.com")
+                || h == "steamcdn-a.akamaihd.net"
+                || h == "steamuserimages-a.akamaihd.net"
+                // Miniatures des vidéos du Workshop.
+                || h == "img.youtube.com"
+                || h == "i.ytimg.com"
+                || h.ends_with(".steamusercontent.com")
         })
 }
 
@@ -88,13 +96,25 @@ impl CacheImages {
     pub fn nouveau(dossier: PathBuf, http: Client, dossier_perso: PathBuf) -> Self {
         let _ = fs::create_dir_all(&dossier);
         let _ = fs::create_dir_all(&dossier_perso);
-        Self { dossier, http, dossier_perso }
+        Self { dossier, http, dossier_perso, dossier_captures: std::sync::RwLock::new(None) }
     }
 
     /// Sert `/<adresse encodée>` : depuis le disque, sinon depuis Steam (puis rangée).
     pub async fn servir(&self, chemin: &str) -> Response<Vec<u8>> {
         let brut = chemin.trim_start_matches('/');
         // Fichiers perso : un nom fixe, jamais un chemin venu de la requête.
+        // Captures d'écran de Steam : chemin vérifié, sous le dossier du compte connecté.
+        if let Some(chemin) = brut.strip_prefix("__captures__/") {
+            let chemin = chemin.split('?').next().unwrap_or_default();
+            let base = self.dossier_captures.read().ok().and_then(|d| d.clone());
+            let (Some(base), true) = (base, crate::steam::workshop::chemin_capture_valide(chemin)) else {
+                return reponse(StatusCode::FORBIDDEN, Vec::new(), "text/plain");
+            };
+            return match tokio::fs::read(base.join(chemin)).await {
+                Ok(o) => reponse(StatusCode::OK, o, "image/jpeg"),
+                Err(_) => reponse(StatusCode::NOT_FOUND, Vec::new(), "text/plain"),
+            };
+        }
         if let Some(nom) = brut.strip_prefix("__perso__/") {
             if !nom_perso_valide(nom) {
                 return reponse(StatusCode::FORBIDDEN, Vec::new(), "text/plain");
@@ -183,6 +203,8 @@ mod tests {
         assert!(!hote_autorise("http://shared.akamai.steamstatic.com/a.jpg"));
         assert!(!hote_autorise("https://evil.com/steamstatic.com/a.jpg"));
         assert!(!hote_autorise("https://steamstatic.com.evil.com/a.jpg"));
+        assert!(hote_autorise("https://images.steamusercontent.com/ugc/1/A/"));
+        assert!(hote_autorise("https://steamuserimages-a.akamaihd.net/ugc/1/A/"));
         assert!(!hote_autorise("file:///C:/Windows/win.ini"));
     }
 

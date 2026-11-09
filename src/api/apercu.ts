@@ -171,6 +171,34 @@ function installationsSimulees() {
   });
 }
 
+const CAPTURES_FACTICES = [
+  "ef0f63061d0a0a9a7e46f3b84f125d25330e8f19",
+  "c88996aa0af82894a8e50ebb951a503ebce3ab24",
+  "b88cb7b48a86f07a7288bf37141f6558279f9bfc",
+  "c8d2b18451a2cc4d5b4fdd78ed84a5e64e051eac",
+];
+const TITRES_WORKSHOP = ["Clair de lune sur la ville", "Nébuleuse bleue", "Forêt de lucioles", "Pluie d'étoiles", "Aurore boréale", "Lac gelé", "Cité néon", "Vague de nuit"];
+
+/** Objet du Workshop factice pour l'aperçu (images des captures de Hades II). */
+function objetFactice(i: number, appId: number) {
+  return {
+    id: String(3_000_000_000 + i),
+    appId,
+    titre: `${TITRES_WORKSHOP[i % TITRES_WORKSHOP.length]}${i >= TITRES_WORKSHOP.length ? ` ${Math.floor(i / TITRES_WORKSHOP.length) + 1}` : ""}`,
+    apercu: `${CDN_APERCU}/1145350/ss_${CAPTURES_FACTICES[i % CAPTURES_FACTICES.length]}.600x338.jpg?t=1779901265`,
+    description: "Un fond d'écran animé, en 4K, avec une boucle douce et la musique d'ambiance. Compatible avec les écrans larges.",
+    taille: 12_000_000 + ((i * 7_919_000) % 380_000_000),
+    maj: maintenant() - i * 86_400 * 5,
+    abonnes: 250_000 - i * 3_100,
+    favoris: 12_000 - i * 150,
+    vues: 900_000 - i * 9_000,
+    note: 0.98 - (i % 9) * 0.04,
+    votes: 18_000 - i * 200,
+    tags: ["Anime", "Paysage", "4K", "Musique"].slice(0, 2 + (i % 3)),
+    video: null,
+  };
+}
+
 function donneesApercu(commande: string, args?: Record<string, unknown>): unknown {
   switch (commande) {
     case "steam_local":
@@ -578,6 +606,71 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         jeux: i === 3 ? null : jeux,
         recents: jeux.filter((j) => j.minutesDeuxSemaines > 0),
       });
+    }
+    // ——— Communauté ———
+    case "workshop_installe":
+      return [
+        { appId: 1145350, taille: 9_766_000_000, nombre: 196, majEnAttente: 2 },
+        { appId: 730, taille: 412_000_000, nombre: 53, majEnAttente: 0 },
+      ];
+    case "mods_jeu": {
+      const page = Number(args?.page ?? 0);
+      const total = Number(args?.appId) === 730 ? 53 : 196;
+      const n = Math.max(0, Math.min(40, total - page * 40));
+      return {
+        total,
+        taille: total * 48_000_000,
+        mods: Array.from({ length: n }, (_, k) => {
+          const i = page * 40 + k;
+          return {
+            id: String(3_000_000_000 + i),
+            taille: 12_000_000 + ((i * 7_919_000) % 380_000_000),
+            maj: maintenant() - i * 86_400 * 3,
+            aMettreAJour: i < 2,
+            objet: objetFactice(i, Number(args?.appId)),
+          };
+        }),
+      };
+    }
+    case "vitrine_workshop": {
+      const page = Number(args?.page ?? 1);
+      const genre = String(args?.genre ?? "objets");
+      const recherche = String(args?.recherche ?? "");
+      const total = recherche ? 12 : 3_271_050;
+      return enveloppe({
+        total,
+        objets: Array.from({ length: recherche ? 12 : 30 }, (_, k) => {
+          const o = objetFactice((page - 1) * 30 + k + 7, Number(args?.appId));
+          return genre === "videos" ? { ...o, video: "dQw4w9WgXcQ" } : genre === "guides" ? { ...o, titre: `Guide : ${o.titre}` } : o;
+        }),
+      });
+    }
+    case "mes_captures":
+      return [1145350, 1903340, 990080].map((appId, j) => ({
+        appId,
+        captures: CAPTURES_FACTICES.slice(0, 4 - j).map((h, i) => ({
+          fichier: `${CDN_APERCU}/${appId === 1145350 ? 1145350 : 1145350}/ss_${h}.1920x1080.jpg?t=1779901265`,
+          miniature: `${CDN_APERCU}/1145350/ss_${h}.600x338.jpg?t=1779901265`,
+          largeur: 2560,
+          hauteur: 1440,
+          date: maintenant() - (j * 10 + i) * 86_400,
+        })),
+      }));
+    case "ouvrir_captures":
+    case "ouvrir_objet_workshop":
+      return null;
+    case "fil_amis": {
+      const recents = [
+        [{ appId: 1145350, nom: "Hades II", m: 760 }, { appId: 730, nom: "Counter-Strike 2", m: 120 }],
+        [{ appId: 1145350, nom: "Hades II", m: 420 }, { appId: 1903340, nom: "Clair Obscur: Expedition 33", m: 300 }],
+        [{ appId: 730, nom: "Counter-Strike 2", m: 1500 }],
+        [],
+      ];
+      const amis = (donneesApercu("amis") as { donnees: { amis: Record<string, unknown>[] } }).donnees.amis;
+      return amis.map((a, i) => ({
+        joueur: { ...a, jeuEnCoursId: i === 0 ? "1172470" : i === 1 ? "1145350" : null },
+        recents: recents[i].map((r) => ({ appId: r.appId, nom: r.nom, minutesTotal: r.m * 4, minutesDeuxSemaines: r.m, icone: "", dernierLancement: maintenant() - 7200 * (i + 1) })),
+      }));
     }
     case "objets_profil":
       return enveloppe({

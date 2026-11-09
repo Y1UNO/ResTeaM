@@ -33,6 +33,13 @@ import {
   type Session,
   type StatsSysteme,
   type SuccesJeu,
+  type ActiviteAmi,
+  type CapturesJeu,
+  type GenreWorkshop,
+  type ModsJeu,
+  type PageWorkshop,
+  type ResumeWorkshop,
+  type TriWorkshop,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -108,7 +115,20 @@ export const api = {
   dlcJeu: (appId: number) => appeler<Produit[]>("dlc_jeu", { appId }),
   objetsProfil: (steamId: string) => appeler<Donnee<ObjetsProfil>>("objets_profil", { steamId }),
   statsSysteme: () => appeler<StatsSysteme>("stats_systeme"),
+  workshopInstalle: () => appeler<ResumeWorkshop[]>("workshop_installe"),
+  modsJeu: (appId: number, page: number) => appeler<ModsJeu>("mods_jeu", { appId, page }),
+  vitrineWorkshop: (appId: number, tri: TriWorkshop, genre: GenreWorkshop, recherche: string, page: number) =>
+    appeler<Donnee<PageWorkshop>>("vitrine_workshop", { appId, tri, genre, recherche, page }),
+  mesCaptures: () => appeler<CapturesJeu[]>("mes_captures"),
+  ouvrirCaptures: (appId: number) => appeler<void>("ouvrir_captures", { appId }),
+  filAmis: () => appeler<ActiviteAmi[]>("fil_amis"),
+  ouvrirObjetWorkshop: (id: string, dansSteam: boolean) => appeler<void>("ouvrir_objet_workshop", { id, dansSteam }),
 };
+
+/** Adresse d'une capture d'écran locale de Steam (servie par le protocole `img`). */
+export function adresseCapture(fichier: string): string {
+  return fichier.startsWith("https://") ? fichier : `http://img.localhost/__captures__/${fichier}`;
+}
 
 /**
  * Avatar ou bannière choisis sur le PC (image, GIF ou vidéo), envoyés en binaire brut

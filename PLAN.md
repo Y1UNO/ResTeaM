@@ -146,7 +146,7 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 
 À vérifier avant d'écrire dans les fichiers de Steam : les clés exactes, en lisant d'abord les fichiers du PC de Tom, sans rien modifier.
 
-### Prochaine étape — Communauté (lot 2, avec le Workshop de l'étape 12)
+### Communauté (lot 2, avec le Workshop de l'étape 12) — faite, voir le journal « Étape 11 »
 
 Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bis.
 
@@ -637,6 +637,28 @@ Je m'occupe du code du Worker (dans `serveur/`), du déploiement avec wrangler, 
   - envoyées en binaire brut (`enregistrer_media_perso`), rangées dans `perso/` du dossier de l'app, servies par le protocole `img` sous `/__perso__/` ;
   - seuls les noms `avatar.*` et `banniere.*` sont acceptés, testés par `fichiers_perso` ;
   - visibles dans ResTeaM sur ce PC. Pour que les amis les voient, il faudrait un serveur partagé (question posée à Tom).
+
+### Étape 11 — Communauté (lot 2, avec le Workshop) (9 novembre 2026)
+
+Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et Liste de souhaits). Un bouton sur la fiche d'un jeu y mène directement (`/communaute?onglet=workshop&jeu=<id>`).
+
+- **Fil des amis** :
+  - « En jeu maintenant » : cartes avec l'affiche du jeu et un point « en direct » ;
+  - « Les jeux du moment chez tes amis » : nombre d'amis et heures sur 2 semaines ;
+  - « Ces deux dernières semaines » : qui a joué combien à quoi.
+  - Source : `fil_amis`, la liste d'amis plus `GetRecentlyPlayedGames` par ami (8 à la fois, gardés 15 min, 60 amis au plus).
+- **Workshop** :
+  - choix du jeu : les jeux avec mods d'abord, puis les récents, ou n'importe quel jeu de la bibliothèque par recherche ;
+  - **Mes mods** : lus dans `steamapps/workshop/appworkshop_<id>.acf` de chaque bibliothèque. Sur ce PC partagé, seuls les mods du compte connecté sont gardés (`subscribedby`). Tom : 196 fonds Wallpaper Engine (9,3 Go) et 53 mods d'un autre jeu. Détails publics par `GetPublishedFileDetails` (sans clé, gardés 1 jour), 40 par page, badge « Mise à jour » quand `latest_manifest` diffère ;
+  - **Découvrir** : `IPublishedFileService/QueryFiles` (avec la clé, côté Rust), triés par mieux notés, tendance (7 jours), récents ou plus suivis, avec recherche. Gardé 1 h ;
+  - fenêtre d'un objet : image, tags, description sans BBCode, avis, abonnés, taille. « S'abonner dans Steam » ouvre la page dans Steam, car il n'existe pas d'API publique pour s'abonner. « Ouvrir dans le navigateur » est aussi proposé ;
+  - « Discussions du jeu » : ouvre les forums dans Steam.
+- **Mes captures** : `userdata/<compte>/760/screenshots.vdf`, groupées par jeu, avec une visionneuse (flèches du clavier) et « Ouvrir le dossier ». Le protocole `img` les sert sous `/__captures__/<appid>/screenshots/…`. Le chemin est vérifié (chiffres, `screenshots`, nom `.jpg`, jamais de `..`), et toujours sous le dossier du compte connecté.
+- **Créations** : illustrations, captures, vidéos et guides d'un jeu, par `QueryFiles` (`filetype` 2, 4, 3 et 10). Pour ces types, pas de filtre `creator_appid` : ils viennent du site ou du client Steam, pas du jeu.
+- Vérifié sur les vraies données de Tom, en lecture seule, avec un test lancé à la main (`essai_reel`, ignoré par défaut) : Wallpaper Engine, Hades et CS2 répondent pour chaque type.
+- Images : `steamuserimages-a.akamaihd.net` et les miniatures YouTube (`img.youtube.com`, `i.ytimg.com`) ajoutées aux hôtes autorisés du cache d'images.
+- Tests : `mods_du_compte_seulement`, `numero_de_compte`, `chemins_de_captures`, `captures_triees`, `objet_de_query_files`.
+- README : la Communauté ajoutée, avec deux captures (aperçu, données factices).
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

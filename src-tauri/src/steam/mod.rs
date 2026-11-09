@@ -13,3 +13,4 @@ pub mod notes;
 pub mod redemarrage;
 pub mod vdf;
 pub mod webapi;
+pub mod workshop;

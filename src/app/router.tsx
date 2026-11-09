@@ -10,6 +10,7 @@ import { Magasin } from "../pages/Magasin";
 import { Profil } from "../pages/profil/Profil";
 import { Souhaits } from "../pages/Souhaits";
 import { Classements } from "../pages/Classements";
+import { Communaute } from "../pages/communaute/Communaute";
 import { Telechargements } from "../pages/Telechargements";
 import { Amis } from "../pages/Amis";
 import { Recherche } from "../pages/Recherche";
@@ -41,6 +42,7 @@ export const router = createHashRouter([
       { path: PATHS.magasin, element: <Magasin /> },
       { path: PATHS.jeu, element: <Fiche /> },
       { path: PATHS.classements, element: <Classements /> },
+      { path: PATHS.communaute, element: <Communaute /> },
       { path: PATHS.souhaits, element: <Souhaits /> },
       { path: PATHS.recherche, element: <Recherche /> },
       { path: PATHS.telechargements, element: <Telechargements /> },

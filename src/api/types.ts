@@ -325,3 +325,44 @@ export type EnLigne = { joueurs: number; releves: Releve[] };
 
 export type ObjetProfil = { nom: string; image: string | null; videoWebm: string | null; videoMp4: string | null };
 export type ObjetsProfil = { fond: ObjetProfil | null; miniFond: ObjetProfil | null; cadre: ObjetProfil | null; avatarAnime: ObjetProfil | null };
+
+// ——— Communauté (Workshop, captures, fil des amis) ———
+
+export type ResumeWorkshop = { appId: number; taille: number; nombre: number; majEnAttente: number };
+
+export type ObjetWorkshop = {
+  id: string;
+  appId: number;
+  titre: string;
+  apercu: string;
+  description: string;
+  taille: number;
+  maj: number;
+  abonnes: number;
+  favoris: number;
+  vues: number;
+  /** Note de 0 à 1. */
+  note: number | null;
+  votes: number | null;
+  tags: string[];
+  /** Identifiant YouTube, pour les vidéos. */
+  video: string | null;
+};
+
+export type ModDetaille = {
+  id: string;
+  taille: number;
+  maj: number;
+  aMettreAJour: boolean;
+  objet: ObjetWorkshop | null;
+};
+
+export type ModsJeu = { total: number; taille: number; mods: ModDetaille[] };
+export type PageWorkshop = { total: number; objets: ObjetWorkshop[] };
+export type TriWorkshop = "populaires" | "tendance" | "recents" | "abonnes";
+export type GenreWorkshop = "objets" | "illustrations" | "captures" | "videos" | "guides";
+
+export type Capture = { fichier: string; miniature: string; largeur: number; hauteur: number; date: number };
+export type CapturesJeu = { appId: number; captures: Capture[] };
+
+export type ActiviteAmi = { joueur: Joueur; recents: JeuPossede[] };

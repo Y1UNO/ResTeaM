@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from "react";
-import { QueryClient, useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { QueryClient, useInfiniteQuery, useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useSession } from "../app/session";
 import { api } from "./commandes";
-import { estErreurApp, type ImagesJeu } from "./types";
+import { estErreurApp, type GenreWorkshop, type ImagesJeu, type TriWorkshop } from "./types";
 
 /** Erreurs qu'il ne sert à rien de réessayer. */
 const DEFINITIVES = new Set(["cle_absente", "cle_refusee", "session_absente", "cle_format"]);
@@ -291,4 +291,42 @@ export function useObjetsProfil(steamId: string | null | undefined) {
     enabled: !!steamId,
     staleTime: 30 * 60_000,
   });
+}
+
+// ——— Communauté ———
+
+export function useWorkshopInstalle() {
+  return useQuery({ queryKey: ["workshop-installe"], queryFn: api.workshopInstalle, staleTime: 5 * 60_000 });
+}
+
+/** Mods installés d'un jeu, 40 par page (« Voir plus » charge la suivante). */
+export function useModsJeu(appId: number | null) {
+  return useInfiniteQuery({
+    queryKey: ["mods-jeu", appId],
+    queryFn: ({ pageParam }) => api.modsJeu(appId as number, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (derniere, pages) => (pages.length * 40 < derniere.total ? pages.length : undefined),
+    enabled: appId != null,
+    staleTime: 10 * 60_000,
+  });
+}
+
+export function useVitrineWorkshop(appId: number | null, tri: TriWorkshop, genre: GenreWorkshop, recherche: string) {
+  return useInfiniteQuery({
+    queryKey: ["vitrine-workshop", appId, tri, genre, recherche],
+    queryFn: ({ pageParam }) => api.vitrineWorkshop(appId as number, tri, genre, recherche, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (derniere, pages) => (pages.length * 30 < derniere.donnees.total && derniere.donnees.objets.length > 0 ? pages.length + 1 : undefined),
+    enabled: appId != null,
+    staleTime: 30 * 60_000,
+    retry: 1,
+  });
+}
+
+export function useMesCaptures() {
+  return useQuery({ queryKey: ["mes-captures"], queryFn: api.mesCaptures, staleTime: 60_000 });
+}
+
+export function useFilAmis() {
+  return useQuery({ queryKey: ["fil-amis"], queryFn: api.filAmis, staleTime: 2 * 60_000, refetchInterval: 3 * 60_000 });
 }

@@ -20,6 +20,7 @@ Projet personnel de [Y1UNO](https://github.com/Y1UNO), construit étape par éta
 | **Liste de souhaits** | Les promos en premier, l'affiche au survol |
 | **Téléchargements** | Débit et disque en direct, file d'attente, glisser un jeu pour l'installer |
 | **Amis et profils** | En ligne / en jeu, profil des amis, jeux en commun |
+| **Communauté** | Fil des amis (qui joue à quoi, jeux du moment), Workshop (mes mods installés et vitrine d'un jeu, avec recherche), mes captures d'écran Steam, créations de la communauté (illustrations, captures, vidéos, guides) |
 | **Profil** | Rangs de temps de jeu de Novice à Éternel (0 h → 10 000 h), lune du niveau, badges, personnalisation (fond, cadre, ambiance, photo et bannière perso, objets Steam) |
 
 | | |
@@ -28,6 +29,7 @@ Projet personnel de [Y1UNO](https://github.com/Y1UNO), construit étape par éta
 | ![Fiche d'un jeu](docs/captures/04-fiche-jeu.png) | ![Classements](docs/captures/05-classements.png) |
 | ![Liste de souhaits](docs/captures/06-liste-de-souhaits.png) | ![Téléchargements](docs/captures/07-telechargements.png) |
 | ![Profil](docs/captures/09-profil.png) | ![Profil d'un ami](docs/captures/10-profil-ami.png) |
+| ![Communauté, Workshop](docs/captures/12-communaute.png) | ![Communauté, fil des amis](docs/captures/13-communaute-fil.png) |
 | ![Amis](docs/captures/08-amis.png) | ![Paramètres](docs/captures/11-parametres.png) |
 
 ## Direction artistique : « Nocturne · Clair de lune »
@@ -57,10 +59,9 @@ AUDIT-SECURITE.md  audit de sécurité
 
 ## État et suite
 
-Fait : accueil, bibliothèque, magasin, fiche et propriétés des jeux, classements, liste de souhaits, téléchargements, amis, profil personnalisable, recherche globale, mode hors ligne, audit de sécurité.
+Fait : accueil, bibliothèque, magasin, fiche et propriétés des jeux, classements, liste de souhaits, téléchargements, amis, profil personnalisable, recherche globale, mode hors ligne, audit de sécurité, Communauté (Workshop, captures, créations, fil des amis).
 
 À venir (détails dans [PLAN.md](PLAN.md)) :
-- onglet **Communauté** (Workshop, captures, créations, fil des amis) ;
 - total des trophées et lune du profil à 30 niveaux ;
 - paramètres de Steam ;
 - remplacer Steam au quotidien (démarrage avec Windows, zone de notification) ;

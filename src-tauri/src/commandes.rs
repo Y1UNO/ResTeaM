@@ -799,3 +799,217 @@ pub async fn enregistrer_media_perso(app: AppHandle, request: tauri::ipc::Reques
     tokio::fs::write(dossier.join(&fichier), octets).await?;
     Ok(format!("http://img.localhost/__perso__/{fichier}?v={}", crate::cache::maintenant()))
 }
+
+// ——— Communauté : Workshop, captures, fil des amis ———
+
+use crate::steam::workshop::{self, CapturesJeu, ModInstalle, ObjetWorkshop, PageWorkshop};
+
+const TTL_OBJET_WORKSHOP: i64 = 24 * 3600;
+const TTL_VITRINE_WORKSHOP: i64 = 3600;
+const TTL_RECENTS_AMI: i64 = 15 * 60;
+
+fn compte_connecte(app: &AppHandle) -> Resultat<(std::path::PathBuf, u32)> {
+    let session = session_requise(app)?;
+    let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
+    let compte = workshop::numero_compte(&session.steam_id).ok_or_else(|| Erreur::Interne("identifiant Steam invalide".into()))?;
+    Ok((steam, compte))
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumeWorkshop {
+    pub app_id: u32,
+    pub taille: u64,
+    pub nombre: usize,
+    pub maj_en_attente: usize,
+}
+
+/// Jeux qui ont des mods installés (abonnements du compte connecté).
+#[tauri::command]
+pub async fn workshop_installe(app: AppHandle) -> Resultat<Vec<ResumeWorkshop>> {
+    let (steam, compte) = compte_connecte(&app)?;
+    let jeux = tokio::task::spawn_blocking(move || workshop::mods_installes(&steam, compte))
+        .await
+        .map_err(|_| Erreur::Interne("lecture du Workshop".into()))?;
+    Ok(jeux
+        .into_iter()
+        .map(|j| ResumeWorkshop {
+            app_id: j.app_id,
+            taille: j.taille,
+            nombre: j.mods.len(),
+            maj_en_attente: j.mods.iter().filter(|m| m.a_mettre_a_jour).count(),
+        })
+        .collect())
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModDetaille {
+    #[serde(flatten)]
+    pub installe: ModInstalle,
+    /// `None` si Steam ne donne plus de détails (mod retiré ou privé).
+    pub objet: Option<ObjetWorkshop>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModsJeu {
+    pub total: usize,
+    pub taille: u64,
+    pub mods: Vec<ModDetaille>,
+}
+
+/// Détails d'objets du Workshop, avec un cache d'un jour par objet.
+async fn objets_caches(etat: &EtatApp, ids: &[String]) -> Resultat<HashMap<String, ObjetWorkshop>> {
+    let mut connus = HashMap::new();
+    let mut manquants = Vec::new();
+    for id in ids {
+        match etat.cache.frais::<ObjetWorkshop>(&format!("ugc:{id}"))? {
+            Some(o) => {
+                connus.insert(id.clone(), o);
+            }
+            None => manquants.push(id.clone()),
+        }
+    }
+    if !manquants.is_empty() {
+        for o in workshop::details(&etat.steam, &manquants).await? {
+            etat.cache.ranger(&format!("ugc:{}", o.id), &o, TTL_OBJET_WORKSHOP)?;
+            connus.insert(o.id.clone(), o);
+        }
+    }
+    Ok(connus)
+}
+
+/// Mods installés d'un jeu, 40 par page, avec leurs détails.
+#[tauri::command]
+pub async fn mods_jeu(app: AppHandle, etat: State<'_, EtatApp>, app_id: u32, page: u32) -> Resultat<ModsJeu> {
+    let (steam, compte) = compte_connecte(&app)?;
+    let jeux = tokio::task::spawn_blocking(move || workshop::mods_installes(&steam, compte))
+        .await
+        .map_err(|_| Erreur::Interne("lecture du Workshop".into()))?;
+    let Some(jeu) = jeux.into_iter().find(|j| j.app_id == app_id) else {
+        return Ok(ModsJeu { total: 0, taille: 0, mods: vec![] });
+    };
+    let debut = (page as usize).saturating_mul(40).min(jeu.mods.len());
+    let tranche: Vec<ModInstalle> = jeu.mods[debut..(debut + 40).min(jeu.mods.len())].to_vec();
+    let ids: Vec<String> = tranche.iter().map(|m| m.id.clone()).collect();
+    let mut objets = objets_caches(&etat, &ids).await.unwrap_or_default();
+    Ok(ModsJeu {
+        total: jeu.mods.len(),
+        taille: jeu.taille,
+        mods: tranche.into_iter().map(|m| ModDetaille { objet: objets.remove(&m.id), installe: m }).collect(),
+    })
+}
+
+/// Vitrine du Workshop d'un jeu : tri, type de contenu, recherche, page.
+#[tauri::command]
+pub async fn vitrine_workshop(
+    app: AppHandle,
+    etat: State<'_, EtatApp>,
+    app_id: u32,
+    tri: String,
+    genre: String,
+    recherche: String,
+    page: u32,
+) -> Resultat<Donnee<PageWorkshop>> {
+    let (_, cle) = identifiants(&app)?;
+    let tri = if matches!(tri.as_str(), "populaires" | "recents" | "tendance" | "abonnes") { tri } else { "populaires".into() };
+    let genre = if matches!(genre.as_str(), "objets" | "illustrations" | "captures" | "videos" | "guides") { genre } else { "objets".into() };
+    let recherche: String = recherche.trim().chars().take(80).collect();
+    let page = page.clamp(1, 200);
+    let cle_cache = format!("vitrine-ws:{app_id}:{tri}:{genre}:{page}:{}", recherche.to_lowercase());
+    etat.cache
+        .avec_cache(&cle_cache, TTL_VITRINE_WORKSHOP, || workshop::vitrine(&etat.steam, &cle, app_id, &tri, &genre, &recherche, page))
+        .await
+}
+
+/// Mes captures d'écran Steam, groupées par jeu (la plus récente d'abord).
+#[tauri::command]
+pub async fn mes_captures(app: AppHandle) -> Resultat<Vec<CapturesJeu>> {
+    let (steam, compte) = compte_connecte(&app)?;
+    if let Ok(mut d) = app.state::<crate::images_locales::CacheImages>().dossier_captures.write() {
+        *d = Some(workshop::dossier_captures(&steam, compte));
+    }
+    tokio::task::spawn_blocking(move || workshop::captures(&steam, compte))
+        .await
+        .map_err(|_| Erreur::Interne("lecture des captures".into()))
+}
+
+/// Ouvre le dossier des captures d'un jeu dans l'Explorateur.
+#[tauri::command]
+pub async fn ouvrir_captures(app: AppHandle, app_id: u32) -> Resultat<()> {
+    let (steam, compte) = compte_connecte(&app)?;
+    let dossier = workshop::dossier_captures(&steam, compte).join(app_id.to_string()).join("screenshots");
+    if !dossier.is_dir() {
+        return Err(Erreur::Interne("dossier des captures introuvable".into()));
+    }
+    app.opener()
+        .open_path(dossier.to_string_lossy(), None::<&str>)
+        .map_err(|e| Erreur::Interne(format!("ouverture du dossier : {e}")))
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ActiviteAmi {
+    pub joueur: Joueur,
+    /// Jeux des deux dernières semaines (vide si privé).
+    pub recents: Vec<JeuPossede>,
+}
+
+/// Fil de la Communauté : ce que font les amis (en jeu, jeux récents).
+/// Les jeux récents de chaque ami sont gardés 15 minutes.
+#[tauri::command]
+pub async fn fil_amis(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<Vec<ActiviteAmi>> {
+    let (sid, cle) = identifiants(&app)?;
+    let amis = etat.cache.avec_cache(&format!("amis:{sid}"), TTL_AMIS, || etat.steam.amis(&cle, &sid)).await?.donnees;
+    // Les plus actifs d'abord : en jeu, en ligne, puis dernière connexion.
+    let mut joueurs: Vec<Joueur> = amis.amis.into_iter().map(|a| a.joueur).collect();
+    joueurs.sort_by_key(|j| (j.jeu_en_cours.is_none(), j.etat == 0, -j.derniere_deconnexion.unwrap_or(0)));
+    joueurs.truncate(60);
+    let mut recents: HashMap<String, Vec<JeuPossede>> = HashMap::new();
+    let mut a_lire = Vec::new();
+    for j in &joueurs {
+        match etat.cache.frais::<Vec<JeuPossede>>(&format!("recents:{}", j.steam_id))? {
+            Some(r) => {
+                recents.insert(j.steam_id.clone(), r);
+            }
+            None => a_lire.push(j.steam_id.clone()),
+        }
+    }
+    for paquet in a_lire.chunks(8) {
+        let mut taches = Vec::new();
+        for id in paquet {
+            let client = ClientSteam { http: etat.steam.http.clone() };
+            let (cle, id) = (cle.clone(), id.clone());
+            taches.push(tauri::async_runtime::spawn(async move {
+                let r = client.jeux_recents(&cle, &id).await.unwrap_or_default();
+                (id, r)
+            }));
+        }
+        for t in taches {
+            if let Ok((id, r)) = t.await {
+                etat.cache.ranger(&format!("recents:{id}"), &r, TTL_RECENTS_AMI)?;
+                recents.insert(id, r);
+            }
+        }
+    }
+    Ok(joueurs
+        .into_iter()
+        .map(|j| {
+            let r = recents.remove(&j.steam_id).unwrap_or_default();
+            ActiviteAmi { joueur: j, recents: r }
+        })
+        .collect())
+}
+
+/// Ouvre la page d'un objet du Workshop : dans Steam (pour s'abonner, connecté)
+/// ou dans le navigateur. L'adresse est construite ici à partir de l'identifiant.
+#[tauri::command]
+pub fn ouvrir_objet_workshop(app: AppHandle, id: String, dans_steam: bool) -> Resultat<()> {
+    if id.is_empty() || id.len() > 20 || !id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(Erreur::Interne("objet du Workshop invalide".into()));
+    }
+    let page = format!("https://steamcommunity.com/sharedfiles/filedetails/?id={id}");
+    let lien = if dans_steam { format!("steam://openurl/{page}") } else { page };
+    app.opener().open_url(lien, None::<&str>).map_err(|_| Erreur::Interne("impossible d'ouvrir la page".into()))
+}

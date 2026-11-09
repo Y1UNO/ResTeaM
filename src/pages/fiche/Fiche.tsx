@@ -26,6 +26,7 @@ import { rangDepuisMinutes } from "../../lib/rangs";
 import { viaCache } from "../../lib/imageLocale";
 import { Medias } from "./Medias";
 import { BadgeRang } from "../../components/BadgeRang";
+import { IconCommunity } from "../../components/icons";
 import { IconePanier, MontantDefilant, PrixPromo, Reduction } from "../../components/Prix";
 import { PopupAchat } from "./PopupAchat";
 import { FenetreProprietes } from "./Proprietes";
@@ -253,6 +254,7 @@ function BlocPossede({
   teinte: string;
 }) {
   const installation = useInstallation();
+  const navigate = useNavigate();
   const file = useFileSteam().data;
   const nomEnCours = useNomJeu(file?.jeuEnCours);
   const [desinstaller, setDesinstaller] = useState(false);
@@ -304,6 +306,15 @@ function BlocPossede({
             Installer
           </button>
         )}
+        <button
+          type="button"
+          className="fiche-bloc__etoile"
+          aria-label={`Communauté de ${nom}`}
+          title="Communauté (Workshop, créations)"
+          onClick={() => navigate(`/communaute?onglet=workshop&jeu=${jeu.appId}`)}
+        >
+          <IconCommunity size={20} />
+        </button>
         <button
           type="button"
           className="fiche-bloc__etoile fiche-bloc__engrenage"

@@ -763,6 +763,16 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
   - aperçu : `?salon=barre&page=connexion`.
 - **À vérifier dans l'exe** : se connecter au salon avec « Se souvenir de moi » coché, fermer ResTeaM, le rouvrir, puis rouvrir le salon : il doit être encore connecté.
 
+### Étape 12 quater — Jaquettes du ruban plus grandes et plus nettes (9 novembre 2026)
+
+- **Constat** : malgré son nom, l'image `library_600x900.jpg` de Steam ne fait que **300×450**. La vraie 600×900 est `library_600x900_2x.jpg` (vérifié sur six jeux). Les jaquettes du Magasin (`library_capsule`), les adresses de secours et l'aperçu prenaient la petite.
+- **Images** :
+  - `boutique.rs` prend `library_capsule_2x` (600×900), puis la simple, puis `library_600x900_2x.jpg` ;
+  - les adresses de secours (`images.rs`, `lib/images.ts`) prennent la `_2x`. Si un vieux jeu n'a pas de `_2x`, le ruban et le hero se replient sur la petite avant d'afficher le dégradé (`replierJaquette`) ;
+  - cache des images renouvelé (`images5:`) pour reprendre les nouvelles adresses tout de suite ;
+  - `jaquette_petite` (300×450) reste pour les petites tuiles de la bibliothèque.
+- **Ruban de l'accueil** : cartes au format 2:3 des jaquettes, donc l'image entière, sans rognage (le titre en haut de l'affiche n'est plus coupé) : 188×276 px, 204×300 px pour la carte choisie (avant : 176×230 et 196×252). Espacements resserrés pour que tout le ruban tienne dans un écran de 1080 px de haut.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

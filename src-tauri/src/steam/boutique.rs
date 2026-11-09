@@ -121,7 +121,10 @@ fn produit(it: &serde_json::Value, tags: &HashMap<u32, String>) -> Option<Produi
         nom: it["name"].as_str().unwrap_or_default().to_string(),
         banniere: adresse(f, &a["header"]).or_else(|| Some(format!("{base}header.jpg"))),
         capsule: adresse(f, &a["main_capsule"]).or_else(|| adresse(f, &a["header"])),
-        jaquette: adresse(f, &a["library_capsule"]).or_else(|| Some(format!("{base}library_600x900.jpg"))),
+        // Jaquette 600×900 (`_2x`) : la simple (`library_capsule`) ne fait que 300×450.
+        jaquette: adresse(f, &a["library_capsule_2x"])
+            .or_else(|| adresse(f, &a["library_capsule"]))
+            .or_else(|| Some(format!("{base}library_600x900_2x.jpg"))),
         hero: adresse(f, &a["library_hero"]).or_else(|| Some(format!("{base}library_hero.jpg"))),
         gratuit: it["is_free"].as_bool().unwrap_or(false) || (prix.is_none() && !a_venir && o.is_object()),
         prix,

@@ -6,7 +6,7 @@ import type { ImagesJeu, JeuBibliotheque } from "../../api/types";
 import { Croissant } from "../../components/Croissant";
 import { JaugeHeures } from "../../components/JaugeHeures";
 import { date, heures, pourcentage } from "../../lib/format";
-import { degradeJaquette } from "../../lib/images";
+import { degradeJaquette, replierJaquette } from "../../lib/images";
 import { marquerNotesVues, notesVuesLe } from "../../lib/notesVues";
 import { Affiche } from "./Ambiance";
 import { PanneauPatchNotes } from "./PanneauPatchNotes";
@@ -204,7 +204,7 @@ export function Hero({ jeu, images }: Props) {
           style={{ background: afficheImage ? undefined : degradeJaquette(jeu.nom) }}
         >
           {afficheImage && (
-            <img className="jaquette-hero__image" src={images.jaquette!} alt="" draggable={false} onError={() => setJaquetteRatee(true)} />
+            <img className="jaquette-hero__image" src={images.jaquette!} alt="" draggable={false} onError={(e) => replierJaquette(e.currentTarget) || setJaquetteRatee(true)} />
           )}
           <span className="jaquette-hero__voile" aria-hidden="true" />
           {nouveauPatch && (

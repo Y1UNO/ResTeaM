@@ -552,7 +552,7 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
           nom,
           banniere: `${CDN_APERCU}/${appId}/header.jpg`,
           capsule: `${CDN_APERCU}/${appId}/capsule_616x353.jpg`,
-          jaquette: `${CDN_APERCU}/${appId}/library_600x900.jpg`,
+          jaquette: `${CDN_APERCU}/${appId}/library_600x900_2x.jpg`,
           hero: `${CDN_APERCU}/${appId}/library_hero.jpg`,
           prix: initial ? { final_, initial, reduction, texteFinal: t(final_), texteInitial: t(initial), finPromo: reduction ? maintenant() + 86400 * 3 : null } : null,
           gratuit: initial === 0,

@@ -4,7 +4,7 @@ import { MenuJeu } from "../bibliotheque/MenuJeu";
 import { useNavigate } from "react-router-dom";
 import type { ImagesJeu, JeuBibliotheque } from "../../api/types";
 import { heures } from "../../lib/format";
-import { degradeJaquette, imagesDe } from "../../lib/images";
+import { degradeJaquette, imagesDe, replierJaquette } from "../../lib/images";
 import { PATHS } from "../../app/paths";
 
 export type OngletRuban = "reprendre" | "favoris";
@@ -131,7 +131,7 @@ function CarteRuban({
       aria-label={`${jeu.nom}, ${heures(jeu.minutesTotal)}`}
     >
       <div className="rib__art" style={image ? undefined : { background: degradeJaquette(jeu.nom) }}>
-        {image && <img src={jaquette!} alt="" draggable={false} loading="lazy" onError={() => setRatee(true)} />}
+        {image && <img src={jaquette!} alt="" draggable={false} loading="lazy" onError={(e) => replierJaquette(e.currentTarget) || setRatee(true)} />}
         {badge && <span className="rib__badge">{badge}</span>}
         {(inst?.etat === "telechargement" || inst?.etat === "enPause") && inst.aTelecharger > 0 && (
           <span className="rib__progression" aria-hidden="true">

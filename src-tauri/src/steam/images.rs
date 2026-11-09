@@ -15,10 +15,10 @@ const CDN: &str = "https://shared.akamai.steamstatic.com/store_item_assets/";
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImagesJeu {
-    /// Jaquette verticale 1200×1800 (ruban de l'accueil, fiche).
+    /// Jaquette verticale 600×900 (`library_capsule_2x` : ruban de l'accueil, fiche).
     pub jaquette: Option<String>,
-    /// Même jaquette en 600×900 : assez nette pour les tuiles de la bibliothèque,
-    /// quatre fois plus légère à décoder.
+    /// Même jaquette en 300×450 (`library_capsule`) : pour les petites tuiles de
+    /// la bibliothèque, quatre fois plus légère à décoder.
     #[serde(default)]
     pub jaquette_petite: Option<String>,
     /// Grand visuel horizontal de la bibliothèque (fond du hero).
@@ -31,7 +31,8 @@ pub struct ImagesJeu {
 pub fn adresses_classiques(app_id: u32) -> ImagesJeu {
     let base = format!("{CDN}steam/apps/{app_id}/");
     ImagesJeu {
-        jaquette: Some(format!("{base}library_600x900.jpg")),
+        // Malgré son nom, `library_600x900.jpg` ne fait que 300×450 : la `_2x` fait 600×900.
+        jaquette: Some(format!("{base}library_600x900_2x.jpg")),
         jaquette_petite: Some(format!("{base}library_600x900.jpg")),
         hero: Some(format!("{base}library_hero_2x.jpg")),
         banniere: Some(format!("{base}header.jpg")),
@@ -157,6 +158,6 @@ mod tests {
         let i = tauri::async_runtime::block_on(c.images(&[1145350, 1903340, 99999999])).unwrap();
         println!("{:#?}", i.get(&1145350));
         assert!(i[&1145350].jaquette.as_deref().unwrap().contains("library_capsule"));
-        assert!(i[&99999999].jaquette.as_deref().unwrap().ends_with("library_600x900.jpg"));
+        assert!(i[&99999999].jaquette.as_deref().unwrap().ends_with("library_600x900_2x.jpg"));
     }
 }

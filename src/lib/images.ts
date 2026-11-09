@@ -7,11 +7,22 @@ const CDN = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps"
 export function imagesDe(appId: number, toutes?: Record<string, ImagesJeu>): ImagesJeu {
   const i = toutes?.[String(appId)];
   return {
-    jaquette: viaCache(i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`),
+    // `library_600x900.jpg` ne fait que 300×450 malgré son nom : la `_2x` fait 600×900.
+    jaquette: viaCache(i?.jaquette ?? `${CDN}/${appId}/library_600x900_2x.jpg`),
     jaquettePetite: viaCache(i?.jaquettePetite ?? i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`),
     hero: viaCache(i?.hero ?? `${CDN}/${appId}/library_hero_2x.jpg`),
     banniere: viaCache(i?.banniere ?? `${CDN}/${appId}/header.jpg`),
   };
+}
+
+/**
+ * Jaquette 600×900 introuvable (quelques vieux jeux n'ont que la 300×450) :
+ * on se replie sur la petite. Renvoie `false` s'il n'y a plus rien à essayer.
+ */
+export function replierJaquette(img: HTMLImageElement): boolean {
+  if (!img.src.includes("library_600x900_2x.jpg")) return false;
+  img.src = img.src.replace("library_600x900_2x.jpg", "library_600x900.jpg");
+  return true;
 }
 
 /** Teinte stable tirée du nom (dégradé de remplacement quand l'image manque). */

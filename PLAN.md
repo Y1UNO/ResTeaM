@@ -335,6 +335,18 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 ### 11. Personnalisation du profil (fond du thème)
 - Des réglages de base pour le fond du profil : choix de l'image ou de la vidéo, flou, assombrissement, teinte, position.
 
+### 11 bis. Notifications aux couleurs de ResTeaM (idée de Tom)
+- Tom trouve les notifications de Windows fades. On les remplace par **nos propres notifications** : une petite fenêtre ResTeaM sans cadre, transparente et toujours au-dessus, en bas à droite de l'écran, qui fonctionne même quand ResTeaM est rangé dans la zone de notification.
+- Contenu selon le type :
+  - **ami en jeu** : son avatar **animé** (avatar animé de Steam s'il en a un), son cadre, son pseudo, la jaquette du jeu ;
+  - **téléchargement terminé, mise à jour** : la jaquette ou le visuel du jeu, une barre qui se remplit, un bouton « Jouer » ;
+  - **promo** : la capsule du jeu, la réduction en grand, l'ancien et le nouveau prix ;
+  - **niveau de lune, ticket du jour** (plus tard) : la lune qui grandit.
+- Animation dans la DA (glisse depuis le bord, halo lunaire, fondu), en transform et opacité. Plusieurs notifications s'empilent. Disparition après quelques secondes, ou au survol on la garde. Un clic ouvre la bonne page de ResTeaM.
+- Réglages : position (coin de l'écran), durée, et **« ne pas déranger en jeu »** (rien ne s'affiche pendant une partie : les notifications attendent la fin du jeu, ou passent en notification Windows discrète).
+- Sécurité : la fenêtre ne charge que la page locale de ResTeaM, sans aucune capacité en dehors de « fermer » et « ouvrir ResTeaM » ; les textes (pseudos, noms de jeux) sont affichés comme du texte, jamais comme du HTML.
+- La notification Windows actuelle reste en secours, si la fenêtre ne peut pas s'afficher.
+
 ### 12. Coffre à styles : un ticket gratuit par jour
 - Côté « gambling » **gratuit** : **un ticket par jour**, qui ouvre un tirage animé (coffre lunaire, roue…) et fait gagner un style à collectionner.
 - On travaillera **beaucoup de styles** :

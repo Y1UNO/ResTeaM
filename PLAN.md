@@ -146,6 +146,8 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 
 À vérifier avant d'écrire dans les fichiers de Steam : les clés exactes, en lisant d'abord les fichiers du PC de Tom, sans rien modifier.
 
+**Faits le 9 novembre 2026** (Tom : « fais tout, je ferai un gros test ensuite ») : 11 → journal « Étape 13 », 13 → « Étape 14 », 14 → « Étape 15 », 15 → « Étape 16 ».
+
 ### Communauté (lot 2, avec le Workshop de l'étape 12) — faite, voir le journal « Étape 11 »
 
 Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bis.
@@ -190,7 +192,7 @@ Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bi
 
 **Vérification dans l'exe** : acheter un jeu gratuit ou à 0,99 € de bout en bout, et vérifier qu'aucune donnée de Steam n'est accessible depuis la fenêtre principale.
 
-### À faire — Coffre-fort et campagne « tout faire planter » (idée de Tom)
+### Coffre-fort et campagne « tout faire planter » (idée de Tom) — faits, voir le journal « Étape 18 » et `AUDIT-SECURITE-2.md`
 
 1. **Coffre-fort** :
    - chiffrer avec la protection de données de Windows (DPAPI, liée à la session Windows de Tom) ce que ResTeaM garde sur le disque : `session.json`, choix de profil, file d'attente Steam, cache SQLite ;
@@ -206,7 +208,7 @@ Noté le 9 novembre 2026, rien de commencé. Tom l'a demandé après le lot 3 bi
    - relecture de la CSP, des capacités Tauri et de l'isolement des fenêtres.
    - Chaque plantage trouvé donne une correction et un test qui l'empêche de revenir.
 
-### À faire — Profil : total des trophées et lune à 30 niveaux
+### Profil : total des trophées et lune à 30 niveaux — fait, voir le journal « Étape 17 »
 
 Noté le 9 novembre 2026 (idée de Tom), rien de commencé. À placer juste avant ou juste après la Communauté, selon ce que Tom préfère.
 
@@ -772,6 +774,115 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
   - cache des images renouvelé (`images5:`) pour reprendre les nouvelles adresses tout de suite ;
   - `jaquette_petite` (300×450) reste pour les petites tuiles de la bibliothèque.
 - **Ruban de l'accueil** : cartes au format 2:3 des jaquettes, donc l'image entière, sans rognage (le titre en haut de l'affiche n'est plus coupé) : 188×276 px, 204×300 px pour la carte choisie (avant : 176×230 et 196×252). Espacements resserrés pour que tout le ruban tienne dans un écran de 1080 px de haut.
+
+### Fonds Wallpaper Engine en pleine qualité (9 novembre 2026)
+
+- Tom trouvait les fonds pixelisés dans la fenêtre d'un objet. Pour un fond « scène », Steam ne fournit qu'un GIF de 250×250 (`preview.gif`, le même en ligne), qui était agrandi à 640 px.
+- Une scène est faite de calques, assemblés en direct par Wallpaper Engine. Mais la plus grande texture de `scene.pkg` contient souvent un fichier lisible tel quel : une illustration PNG ou JPEG en 4K, ou une **vidéo MP4 en 3840×2160**.
+- `workshop::lire_scene` lit la table du paquet (`PKGV…`), puis cherche dans les textures (`.tex`) un fichier rangé tel quel, précédé de sa taille. La recherche est bornée : table, noms et tailles sont vérifiés.
+  - Une vidéo passe toujours en premier.
+  - Une image n'est retenue que si elle a le format d'un écran (paysage, au moins 1600 px de large) : l'auteur d'un des fonds Wlop avait rangé dans le paquet son affiche de dons (portrait, codes QR), qui est écartée.
+- Le fichier trouvé est servi par le protocole `img` sous le nom virtuel `__scene__`, par morceaux pour la vidéo. Le résultat est gardé en mémoire tant que `scene.pkg` ne change pas.
+- Sur le PC de Tom : 335 scènes, dont 18 en vidéo HD et 200 en image HD (contrôle visuel sur un échantillon : ce sont bien les fonds). Pour les autres, l'aperçu reste à sa taille ×1,6 au centre, avec la mention « Aperçu de l'auteur · 250 px », au lieu d'être étiré.
+
+### Étape 13 — Paramètres de Steam dans ResTeaM (9 novembre 2026)
+
+- Nouvelle section « Steam » des Paramètres (`steam/parametres.rs`, `pages/parametres/ParametresSteam.tsx`).
+- Clés vérifiées sur le PC de Tom (lecture seule) et dans le code de l'interface de Steam (`steamui/sp.js`) :
+  - `config/config.vdf` (`InstallConfigStore > Software > Valve > Steam`) :
+    - `DownloadThrottleKbps`, en **kilobits** par seconde (Steam affiche `valeur × 1000 / 8` octets ; 0 = sans limite) ;
+    - `AllowDownloadsDuringGameplay` ;
+    - `StreamingThrottleEnabled` ;
+  - `userdata/<compte>/config/localconfig.vdf` (`UserLocalConfigStore > system`) : `EnableGameOverlay`.
+- Limite de débit au choix (sans limite, 2, 5, 10, 25 ou 50 Mo/s, ou une autre valeur), téléchargements pendant le jeu, ralentissement pendant le streaming, overlay.
+- Ces réglages s'écrivent **Steam fermé**, par la file de redémarrage, après une copie `.resteam.bak`. ResTeaM affiche « N changements à appliquer », puis l'état de la file (en attente du jeu en cours, Steam qui redémarre), et on peut annuler.
+- « Lancer Steam avec Windows » (valeur `Steam` de la clé `Run`) s'applique tout de suite.
+- Disques et bibliothèques : lecteur, nom, nombre de jeux, jauge d'espace utilisé, bouton « Ouvrir ». Seuls les dossiers déclarés dans `libraryfolders.vdf` peuvent être ouverts.
+
+### Étape 14 — Remplacer Steam, suivi du jeu lancé (9 novembre 2026)
+
+- Nouvelle section « ResTeaM au quotidien » des Paramètres :
+  - **lancer ResTeaM avec Windows** : clé `Run`, argument `--demarrage`, ResTeaM part directement dans la zone de notification ;
+  - **fermer = garder dans la zone de notification** ;
+  - **lancer Steam caché** avec ResTeaM, s'il ne tourne pas déjà (`-silent`, puis sa fenêtre est renvoyée si elle s'ouvre) ;
+  - **me laisser jouer** : ResTeaM se réduit quand un jeu se lance, et revient quand il se ferme.
+  - Les préférences sont dans `preferences.json`.
+- **Icône dans la zone de notification** : un clic ouvre ResTeaM. Le menu propose Ouvrir, Ma bibliothèque, Téléchargements et Quitter ResTeaM.
+- **Une seule instance** : relancer l'exe (raccourci du Bureau) remet la fenêtre existante à l'écran.
+- La fenêtre principale part cachée (`visible: false`) et se montre au démarrage, sauf si Windows l'a lancée.
+- **Suivi du jeu** (`jeu.rs`) : `RunningAppID` est relu toutes les 2 s.
+  - Une pastille « En cours · Nom du jeu · 12:34 » s'affiche en bas, et le bouton Jouer de l'accueil devient « En cours · 12:34 ».
+  - À la fin du jeu : « Session terminée · 1 h 12 » pendant 8 s.
+  - ResTeaM ne revient au premier plan que s'il s'était réduit lui-même.
+- Aperçu : `?enjeu=1`.
+
+### Étape 15 — Notifications Windows (9 novembre 2026)
+
+- Quatre notifications (`notifications.rs`), chacune réglable dans les Paramètres :
+  - **téléchargement terminé** et **mise à jour prête** : les `appmanifest` sont relus toutes les 8 s. Un jeu déjà vu installé avant son téléchargement compte comme une mise à jour ;
+  - **un ami lance un jeu** : toutes les 90 s. Au-delà de 3 amis d'un coup, un seul résumé ;
+  - **promo dans la liste de souhaits** : toutes les 6 h. Chaque promo (jeu, réduction, date de fin) n'est annoncée qu'une fois, mémoire de 60 jours.
+- ResTeaM n'est pas installé par un installeur : il s'inscrit lui-même auprès de Windows, avec son nom et son icône (`HKCU\Software\Classes\AppUserModelId\com.yiuno.resteam`).
+- Un clic sur une notification rouvre ResTeaM.
+- Bouton « Envoyer une notification d'essai » dans les Paramètres.
+
+### Étape 16 — Manette et mode Salon (9 novembre 2026)
+
+- `lib/manette.ts`, avec l'API Gamepad de WebView2 :
+  - la croix ou le stick gauche déplacent le focus vers l'élément le plus proche dans la direction (navigation spatiale), limité à la fenêtre ouverte s'il y en a une ;
+  - A valide ; B ferme la fenêtre ouverte (Échap), sinon revient en arrière ;
+  - LB et RB passent d'une page de la barre de gauche à l'autre ; Y ouvre la recherche ; le stick droit fait défiler ;
+  - un bouton maintenu se répète (380 ms, puis toutes les 110 ms).
+- Le focus est bien visible tant que la manette sert : anneau de clair de lune, curseur masqué. Il redevient discret dès que la souris bouge.
+- Rappel des touches pendant 5 s quand une manette se branche.
+- **Mode Salon** (Menu, F11, ou le menu du logo) : plein écran, interface agrandie à 125 % (zoom de WebView2), barre de titre masquée.
+
+### Étape 17 — Profil : trophées et lune à 30 niveaux (9 novembre 2026)
+
+- **Trophées** (`steam/trophees.rs`, commande `bilan_trophees`, cache de 6 h) :
+  - `GetAchievementsProgress` est refusé avec une clé API (HTTP 405). `IPlayerService/GetTopAchievementsForGames` renvoie, par paquets de 25 jeux, **tous** les trophées obtenus (on en demande jusqu'à 10 000), le total du jeu et leur rareté ;
+  - sur le compte de Tom : 712 trophées, 57 jeux qui en ont, 3 jeux à 100 %, en 1,1 s. Les totaux ont été recoupés jeu par jeu avec `GetPlayerAchievements`, sans écart sur 6 jeux ;
+  - la case « Trophées » du profil affiche le total, qui défile à l'arrivée. Au survol : jeux à 100 %, trophée le plus rare (avec le % de joueurs) et dernier trophée obtenu (parmi les 5 jeux lancés le plus récemment) ;
+  - pour un ami : ses données publiques, sinon « privé ».
+- **Niveau ResTeaM de 1 à 30** (`lib/niveauResteam.ts`, barème à valider avec Tom) :
+  - 1 point par trophée, 1 point par heure, 50 points par jeu à 100 %, 10 points par rang atteint sur chaque jeu ;
+  - courbe en puissance 2,2 : niveau 10 ≈ 1 900 points, niveau 20 ≈ 9 900, niveau 30 = 25 000.
+- **Lune céleste** (`components/LuneCeleste.tsx`), uniquement en transform et opacité :
+  - 2 à 4 : cratères, étoiles, halo ;
+  - 5 : halo qui respire, 3 étoiles ;
+  - 6 à 9 : poussière d'étoiles en orbite ;
+  - 10 : anneau, teinte bleue ; 11 à 14 : second anneau, satellites ;
+  - 15 : constellation tracée ; 16 à 19 : étoiles filantes, halo large ;
+  - 20 : lune argentée, aurore ; 21 à 24 : particules, reflet tournant ;
+  - 25 : éclipse dorée ; 26 à 29 : couronne vive, vagues ;
+  - 30 : couleurs qui se relaient, comète.
+- Le niveau Steam reste affiché en petit sous la lune. Un clic sur la lune ouvre **l'aperçu des 30 lunes**, avec le détail des points et ce qui manque pour la suivante. Un niveau gagné déclenche l'écran **« Niveau supérieur ! »**.
+- Aperçu : `?lune=N` montre la lune d'un niveau donné.
+
+### Étape 18 — Coffre-fort et campagne « tout faire planter » (9 novembre 2026)
+
+- **Coffre-fort** (`coffre.rs`) : `session.json` et chaque valeur du cache SQLite, dont la file d'attente de Steam, sont chiffrés par la protection de données de Windows (DPAPI, liée à la session de Tom, avec un sel propre à ResTeaM).
+  - Au premier démarrage, les anciennes données en clair sont chiffrées, puis un `VACUUM` efface leurs traces.
+  - La clé API reste dans le Gestionnaire d'identifiants Windows, et les cookies du salon dans leur dossier isolé.
+- **Campagne** (`robustesse.rs`, `proptest`) : plus de 50 000 entrées tirées au hasard à chaque `cargo test --lib`, des fichiers piégés et des tests de charge. Détail dans `AUDIT-SECURITE-2.md`.
+  - Faille corrigée : **débordement de pile** de l'analyseur VDF sur un fichier imbriqué très profondément. Il s'arrête maintenant à 64 niveaux, sans récursion.
+  - Faille corrigée : **plantage** sur une description du Workshop avec un `[` jamais fermé avant un caractère Unicode.
+  - Durcissement : les liens `steam://openurl` partent avec l'adresse normalisée, et les identifiants dans l'adresse sont refusés.
+- 102 tests Rust (17 autres lisent le vrai PC et ne tournent qu'à la demande).
+
+**À vérifier dans l'exe, pendant le gros test de Tom :**
+1. Paramètres > Steam : mettre une limite de 10 Mo/s, puis Appliquer. Steam redémarre caché, et sa page Téléchargements affiche la limite.
+2. Paramètres > ResTeaM au quotidien :
+   - fermer avec × : ResTeaM reste près de l'horloge, et le clic sur l'icône le rouvre ;
+   - « Quitter » le ferme vraiment ;
+   - relancer l'exe remet la fenêtre existante ;
+   - avec « Lancer ResTeaM avec Windows », redémarrer le PC : ResTeaM part caché, et Steam aussi.
+3. Lancer un jeu : ResTeaM se réduit, « En cours » et le minuteur s'affichent. Fermer le jeu : ResTeaM revient avec la durée de la session.
+4. « Envoyer une notification d'essai », puis la fin d'un téléchargement.
+5. Brancher une manette : déplacements, A, B, LB et RB. Menu : mode Salon.
+6. Profil : comparer le total des trophées avec Steam sur 2 ou 3 jeux, puis cliquer la lune.
+7. Workshop : ouvrir un fond « scène » (par exemple le Wlop en vidéo).
+8. Coffre-fort : `session.json` doit commencer par `rstm1:` après le premier lancement.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

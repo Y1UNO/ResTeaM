@@ -251,7 +251,7 @@ export function ParametresSteamBloc() {
   );
 }
 
-function Interrupteur({ titre, detail, actif, onChange }: { titre: string; detail: string; actif: boolean; onChange: (v: boolean) => void }) {
+export function Interrupteur({ titre, detail, actif, onChange }: { titre: string; detail: string; actif: boolean; onChange: (v: boolean) => void }) {
   return (
     <button type="button" role="switch" aria-checked={actif} className={`psteam__ligne interrupteur${actif ? " is-actif" : ""}`} onClick={() => onChange(!actif)}>
       <span className="psteam__texte">

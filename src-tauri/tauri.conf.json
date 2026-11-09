@@ -24,7 +24,8 @@
         "decorations": false,
         "shadow": true,
         "theme": "Dark",
-        "backgroundColor": "#09090A"
+        "backgroundColor": "#09090A",
+        "visible": false
       }
     ],
     "security": {

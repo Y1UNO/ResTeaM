@@ -11,6 +11,7 @@ import "./pages.css";
 import "./Parametres.css";
 import { viaCache } from "../lib/imageLocale";
 import { ParametresSteamBloc } from "./parametres/ParametresSteam";
+import { ParametresResteam } from "./parametres/ParametresResteam";
 
 /** Paramètres : compte Steam (déconnexion), clé Steam Web API (remplacer, supprimer) et paramètres de Steam. */
 export function Parametres() {
@@ -135,6 +136,8 @@ export function Parametres() {
             </div>
           )}
         </section>
+
+        <ParametresResteam />
 
         <ParametresSteamBloc />
       </div>

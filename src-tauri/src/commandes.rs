@@ -715,6 +715,38 @@ pub async fn regler_jeu(app: AppHandle, etat: State<'_, EtatApp>, demande: Deman
     Ok(etat.redemarrage.lire())
 }
 
+// ——— Préférences de ResTeaM et jeu en cours ———
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PreferencesEtat {
+    pub preferences: crate::preferences::Preferences,
+    pub demarrage_windows: bool,
+}
+
+#[tauri::command]
+pub fn preferences_lire(app: AppHandle) -> PreferencesEtat {
+    PreferencesEtat { preferences: crate::preferences::lire(&app), demarrage_windows: crate::preferences::demarrage_windows() }
+}
+
+#[tauri::command]
+pub fn preferences_ecrire(etat: State<'_, crate::preferences::EtatPreferences>, preferences: crate::preferences::Preferences) -> Resultat<()> {
+    etat.ecrire(preferences)
+}
+
+/// Lancement de ResTeaM avec Windows (caché dans la zone de notification).
+#[tauri::command]
+pub fn resteam_au_demarrage(actif: bool) -> Resultat<bool> {
+    crate::preferences::regler_demarrage_windows(actif)?;
+    Ok(crate::preferences::demarrage_windows())
+}
+
+/// Jeu en cours et dernière session terminée.
+#[tauri::command]
+pub fn jeu_session() -> crate::jeu::EtatJeu {
+    crate::jeu::etat()
+}
+
 // ——— Paramètres de Steam ———
 
 #[derive(serde::Serialize)]

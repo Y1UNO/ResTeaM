@@ -204,6 +204,22 @@ export type FileSteam = {
   reglageSteam?: ReglageSteam | null;
 };
 
+// ——— Préférences de ResTeaM et jeu en cours ———
+
+export type Preferences = {
+  fermerReduit: boolean;
+  steamCache: boolean;
+  reduireEnJeu: boolean;
+  notifTelechargement: boolean;
+  notifMaj: boolean;
+  notifAmi: boolean;
+  notifPromo: boolean;
+};
+export type PreferencesEtat = { preferences: Preferences; demarrageWindows: boolean };
+/** Millisecondes depuis 1970. */
+export type SessionJeu = { appId: number; debut: number; fin: number | null };
+export type EtatJeu = { enCours: SessionJeu | null; derniere: SessionJeu | null };
+
 // ——— Paramètres de Steam ———
 
 /** Changements demandés (seuls les champs non nuls sont écrits). */

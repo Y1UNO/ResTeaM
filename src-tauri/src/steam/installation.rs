@@ -176,6 +176,22 @@ where
     lancer(&exe, "-silent")
 }
 
+/// Lance Steam caché s'il ne tourne pas encore (au démarrage de ResTeaM,
+/// préférence « Démarrer Steam caché »), puis renvoie sa fenêtre si elle s'ouvre.
+pub async fn demarrer_steam_cache(steam: &Path) -> Resultat<()> {
+    let exe = steam.join("steam.exe");
+    if !exe.exists() {
+        return Err(Erreur::SteamIntrouvable);
+    }
+    let mut sys = System::new().map_err(|e| Erreur::Interne(format!("lecture des processus : {e}")))?;
+    if processus_steam(&mut sys) {
+        return Ok(());
+    }
+    lancer(&exe, "-silent")?;
+    cacher_fenetre_steam().await;
+    Ok(())
+}
+
 /// Supprime un manifeste « à installer » écrit par ResTeaM et que Steam n'a pas
 /// encore pris en charge (installation annulée avant le redémarrage).
 pub fn retirer_manifeste_non_lu(steam: &Path, app_id: u32) {

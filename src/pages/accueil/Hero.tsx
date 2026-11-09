@@ -14,6 +14,7 @@ import { useInstallation } from "../../installation/store";
 import { FenetreDesinstallation } from "../../installation/Desinstallation";
 import { FenetreProprietes } from "../fiche/Proprietes";
 import { usePalette } from "../../lib/couleurs";
+import { useChrono, useSessionJeu } from "../../app/sessionJeu";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
 
@@ -76,6 +77,10 @@ export function Hero({ jeu, images }: Props) {
   const inst = jeu.installation;
   const jouable = inst && (inst.etat === "installe" || inst.etat === "miseAJourRequise");
   const enTelechargement = inst && (inst.etat === "telechargement" || inst.etat === "enPause");
+
+  // Ce jeu tourne : le bouton affiche « En cours » et le temps de la session.
+  const enCours = useSessionJeu((s) => (s.enCours?.appId === jeu.appId ? s.enCours : null));
+  const chrono = useChrono(enCours?.debut);
 
   const actionPrincipale = () => {
     const jeuSuivi = { appId: jeu.appId, nom: jeu.nom, jaquette: images.jaquette, hero: images.hero };
@@ -154,7 +159,9 @@ export function Hero({ jeu, images }: Props) {
                   <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
                 </svg>
               )}
-              {lancement
+              {enCours
+                ? `En cours · ${chrono}`
+                : lancement
                 ? "Ouverture dans Steam…"
                 : jouable
                   ? "Jouer"

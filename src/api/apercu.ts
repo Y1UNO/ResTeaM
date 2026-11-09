@@ -104,6 +104,17 @@ const CHARGE = Date.now();
 const EN_JEU = typeof location !== "undefined" && location.search.includes("enjeu=1");
 type ReglageApercu = { appId: number; optionsLancement: string | null; majAuto: number | null; telechargementsEnJeu: number | null };
 const FILE = { installations: [] as number[], desinstallations: [] as number[], reglages: [] as ReglageApercu[], redemarrage: 0, reglageSteam: null as Record<string, unknown> | null };
+/** Préférences de ResTeaM simulées. */
+const PREFS = {
+  fermerReduit: true,
+  steamCache: true,
+  reduireEnJeu: true,
+  notifTelechargement: true,
+  notifMaj: true,
+  notifAmi: true,
+  notifPromo: false,
+};
+const PREFS_DEMARRAGE = { actif: false };
 /** Paramètres de Steam simulés (disque). */
 const PARAMS_STEAM = { limiteKbps: 0, telechargementsEnJeu: true, ralentirStreaming: false, overlay: true, demarrageWindows: true };
 const PROPRIETES = new Map<number, { optionsLancement: string; majAuto: number; telechargementsEnJeu: number }>();
@@ -399,6 +410,22 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       return donneesApercu("produits_magasin", { appIds: Number(args?.appId) === 1145350 ? [2868840, 413150, 367520] : [] });
     case "file_steam":
       return fileSteam();
+    case "preferences_lire":
+      return { preferences: { ...PREFS }, demarrageWindows: PREFS_DEMARRAGE.actif };
+    case "preferences_ecrire":
+      Object.assign(PREFS, args?.preferences as object);
+      return undefined;
+    case "resteam_au_demarrage":
+      PREFS_DEMARRAGE.actif = Boolean(args?.actif);
+      return PREFS_DEMARRAGE.actif;
+    case "jeu_session": {
+      // `?enjeu=1` : un jeu tourne pendant 25 s après le chargement, puis la session se termine.
+      const enJeu = jeuEnCours();
+      return {
+        enCours: enJeu ? { appId: enJeu, debut: CHARGE, fin: null } : null,
+        derniere: EN_JEU && !enJeu ? { appId: 730, debut: CHARGE, fin: CHARGE + 25_000 } : null,
+      };
+    }
     case "parametres_steam":
       avancerFile();
       return {

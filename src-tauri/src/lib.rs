@@ -2,6 +2,8 @@ mod cache;
 mod commandes;
 mod erreur;
 mod images_locales;
+mod jeu;
+mod preferences;
 mod salon;
 mod secrets;
 mod session;
@@ -9,16 +11,70 @@ mod steam;
 
 use std::fs;
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
 
-use tauri::Manager;
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::{AppHandle, Emitter, Manager};
 
 use cache::Cache;
 use commandes::EtatApp;
 use steam::webapi::ClientSteam;
 
+/// « Quitter » choisi dans la zone de notification : la fermeture n'est plus interceptée.
+static QUITTER: AtomicBool = AtomicBool::new(false);
+
+/// Remet la fenêtre principale à l'écran (zone de notification, second lancement).
+fn montrer(app: &AppHandle) {
+    if let Some(f) = app.get_webview_window("main") {
+        let _ = f.show();
+        let _ = f.unminimize();
+        let _ = f.set_focus();
+    }
+}
+
+/// Icône de ResTeaM dans la zone de notification : clic pour ouvrir, menu pour quitter.
+fn icone_notification(app: &tauri::App) -> tauri::Result<()> {
+    let ouvrir = MenuItem::with_id(app, "ouvrir", "Ouvrir ResTeaM", true, None::<&str>)?;
+    let bibliotheque = MenuItem::with_id(app, "bibliotheque", "Ma bibliothèque", true, None::<&str>)?;
+    let telechargements = MenuItem::with_id(app, "telechargements", "Téléchargements", true, None::<&str>)?;
+    let quitter = MenuItem::with_id(app, "quitter", "Quitter ResTeaM", true, None::<&str>)?;
+    let menu = Menu::with_items(
+        app,
+        &[&ouvrir, &PredefinedMenuItem::separator(app)?, &bibliotheque, &telechargements, &PredefinedMenuItem::separator(app)?, &quitter],
+    )?;
+    let mut icone = TrayIconBuilder::with_id("resteam").tooltip("ResTeaM").menu(&menu).show_menu_on_left_click(false);
+    if let Some(i) = app.default_window_icon() {
+        icone = icone.icon(i.clone());
+    }
+    icone
+        .on_menu_event(|app, evenement| match evenement.id().as_ref() {
+            "ouvrir" => montrer(app),
+            // Pages fixes : la fenêtre change de page (événement écouté par le front).
+            page @ ("bibliotheque" | "telechargements") => {
+                montrer(app);
+                let _ = app.emit_to("main", "aller-a", page);
+            }
+            "quitter" => {
+                QUITTER.store(true, Ordering::SeqCst);
+                app.exit(0);
+            }
+            _ => {}
+        })
+        .on_tray_icon_event(|icone, evenement| {
+            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = evenement {
+                montrer(icone.app_handle());
+            }
+        })
+        .build(app)?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Un seul ResTeaM : relancer l'exe (raccourci du Bureau) remet la fenêtre existante à l'écran.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| montrer(app)))
         .plugin(tauri_plugin_opener::init())
         // Images de Steam servies depuis le disque après le premier téléchargement.
         .register_asynchronous_uri_scheme_protocol("img", |ctx, requete, repondeur| {
@@ -42,6 +98,29 @@ pub fn run() {
             app.manage(images_locales::CacheImages::nouveau(dossier_images.clone(), steam.http.clone(), dossier.join("perso")));
             std::thread::spawn(move || images_locales::elaguer(&dossier_images));
             app.manage(EtatApp { cache, steam, annulation: Mutex::new(None), redemarrage: Default::default() });
+            app.manage(preferences::EtatPreferences::charger(&dossier));
+            let prefs = preferences::lire(app.handle());
+
+            icone_notification(app)?;
+            // Lancé par Windows au démarrage : directement dans la zone de notification.
+            let au_demarrage = std::env::args().any(|a| a == preferences::ARG_DEMARRAGE);
+            if !au_demarrage {
+                if let Some(f) = app.get_webview_window("main") {
+                    let _ = f.show();
+                    let _ = f.set_focus();
+                }
+            }
+            // Steam lancé caché derrière ResTeaM.
+            if prefs.steam_cache {
+                if let Some(dossier_steam) = steam::local::dossier_steam() {
+                    tauri::async_runtime::spawn(async move {
+                        if let Err(e) = steam::installation::demarrer_steam_cache(&dossier_steam).await {
+                            eprintln!("Steam caché : {e}");
+                        }
+                    });
+                }
+            }
+            jeu::surveiller(app.handle().clone());
             // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
             let handle = app.handle().clone();
             app.state::<EtatApp>().redemarrage.reprendre(&handle);
@@ -64,6 +143,10 @@ pub fn run() {
             commandes::profil_joueur,
             commandes::proprietes_jeu,
             commandes::regler_jeu,
+            commandes::preferences_lire,
+            commandes::preferences_ecrire,
+            commandes::resteam_au_demarrage,
+            commandes::jeu_session,
             commandes::parametres_steam,
             commandes::regler_steam,
             commandes::annuler_reglage_steam,
@@ -113,8 +196,15 @@ pub fn run() {
             commandes::installer_jeu,
             commandes::stats_systeme,
         ])
-        // Fermer ResTeaM ferme aussi le salon d'achat.
         .on_window_event(|fenetre, evenement| {
+            // Fermer = ranger dans la zone de notification (préférence), sauf « Quitter ».
+            if let tauri::WindowEvent::CloseRequested { api, .. } = evenement {
+                if fenetre.label() == "main" && !QUITTER.load(Ordering::SeqCst) && preferences::lire(fenetre.app_handle()).fermer_reduit {
+                    api.prevent_close();
+                    let _ = fenetre.hide();
+                }
+            }
+            // Fermer ResTeaM ferme aussi le salon d'achat.
             if fenetre.label() == "main" && matches!(evenement, tauri::WindowEvent::Destroyed) {
                 if let Some(s) = fenetre.app_handle().get_window(salon::FENETRE) {
                     let _ = s.close();

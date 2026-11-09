@@ -46,6 +46,9 @@ import {
   type TriWorkshop,
   ParametresSteamEtat,
   ReglageSteam,
+  Preferences,
+  PreferencesEtat,
+  EtatJeu,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -117,6 +120,10 @@ export const api = {
   profilJoueur: (steamId: string) => appeler<Donnee<ProfilJoueur>>("profil_joueur", { steamId }),
   proprietesJeu: (appId: number) => appeler<ProprietesJeu>("proprietes_jeu", { appId }),
   reglerJeu: (demande: Omit<Reglage, "compte">) => appeler<FileSteam>("regler_jeu", { demande }),
+  preferencesLire: () => appeler<PreferencesEtat>("preferences_lire"),
+  preferencesEcrire: (preferences: Preferences) => appeler<void>("preferences_ecrire", { preferences }),
+  resteamAuDemarrage: (actif: boolean) => appeler<boolean>("resteam_au_demarrage", { actif }),
+  jeuSession: () => appeler<EtatJeu>("jeu_session"),
   parametresSteam: () => appeler<ParametresSteamEtat>("parametres_steam"),
   reglerSteam: (demande: Omit<ReglageSteam, "compte">) => appeler<FileSteam>("regler_steam", { demande }),
   annulerReglageSteam: () => appeler<FileSteam>("annuler_reglage_steam"),

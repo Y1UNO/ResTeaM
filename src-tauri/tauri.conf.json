@@ -35,13 +35,20 @@
         "font-src": "'self' data:",
         "img-src": "'self' data: blob: http://img.localhost https://img.localhost https://*.steamstatic.com https://*.akamaihd.net https://*.steampowered.com",
         "connect-src": "ipc: http://ipc.localhost https://video.akamai.steamstatic.com https://video.fastly.steamstatic.com",
-        "media-src": "'self' blob: https://video.akamai.steamstatic.com https://video.fastly.steamstatic.com"
+        "media-src": "'self' blob: https://video.akamai.steamstatic.com https://video.fastly.steamstatic.com",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "frame-src": "'none'",
+        "form-action": "'none'",
+        "worker-src": "'none'"
       }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

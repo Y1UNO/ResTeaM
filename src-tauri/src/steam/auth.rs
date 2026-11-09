@@ -120,6 +120,11 @@ async fn verifier(http: &Client, params: &[(String, String)], return_to: &str) -
     if valeur("openid.identity") != Some(id_revendique) {
         return Err(Erreur::VerificationEchouee);
     }
+    // Audit (étape 9) : la signature de Steam doit couvrir les champs qu'on utilise,
+    // sinon une réponse signée pour un autre compte pourrait être détournée.
+    if !champs_signes_complets(valeur("openid.signed").unwrap_or_default()) {
+        return Err(Erreur::VerificationEchouee);
+    }
     let steam_id = extraire_steam_id(id_revendique).ok_or(Erreur::VerificationEchouee)?;
 
     // Demande à Steam de confirmer la signature (mode check_authentication).
@@ -147,6 +152,14 @@ async fn verifier(http: &Client, params: &[(String, String)], return_to: &str) -
     } else {
         Err(Erreur::VerificationEchouee)
     }
+}
+
+/// Champs que la signature OpenID doit couvrir (`openid.signed`, sans le préfixe).
+const CHAMPS_SIGNES: &[&str] = &["op_endpoint", "claimed_id", "identity", "return_to", "response_nonce", "assoc_handle"];
+
+fn champs_signes_complets(signes: &str) -> bool {
+    let liste: Vec<&str> = signes.split(',').map(str::trim).collect();
+    CHAMPS_SIGNES.iter().all(|c| liste.contains(c))
 }
 
 /// `https://steamcommunity.com/openid/id/<17 chiffres>` → SteamID64, et rien d'autre.
@@ -288,5 +301,12 @@ mod tests {
         let mut p = params_valides(rt);
         p[4].1 = "https://steamcommunity.com/openid/id/76561198000000001".into();
         assert!(matches!(bloquer(p), Err(Erreur::VerificationEchouee)));
+    }
+
+    #[test]
+    fn signature_qui_couvre_tout() {
+        assert!(champs_signes_complets("signed,op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle"));
+        assert!(!champs_signes_complets("signed,op_endpoint,identity,return_to,response_nonce,assoc_handle"));
+        assert!(!champs_signes_complets(""));
     }
 }

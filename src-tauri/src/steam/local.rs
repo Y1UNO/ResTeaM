@@ -11,6 +11,11 @@ use super::vdf;
 
 /// Redistribuables Steamworks : installés partout, jamais affichés comme des jeux.
 const OUTILS: &[u32] = &[228980];
+
+/// Composant partagé de Steam (redistribuables), jamais traité comme un jeu.
+pub fn est_outil(app_id: u32) -> bool {
+    OUTILS.contains(&app_id)
+}
 /// Écart entre un SteamID64 et l'identifiant de compte (dossier `userdata`).
 const BASE_STEAMID64: u64 = 76561197960265728;
 

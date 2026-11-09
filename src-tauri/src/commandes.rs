@@ -365,9 +365,11 @@ pub async fn installer_jeu(
         .cache
         .avec_cache(&format!("possedes:{sid}"), TTL_BIBLIOTHEQUE, || etat.steam.jeux_possedes(&cle, &sid))
         .await?;
-    if !possedes.donnees.iter().any(|j| j.app_id == app_id) {
+    let Some(possede) = possedes.donnees.iter().find(|j| j.app_id == app_id) else {
         return Err(Erreur::Interne("ce jeu n'est pas dans ta bibliothèque Steam".into()));
-    }
+    };
+    // Audit (étape 9) : le nom écrit dans le manifeste et les raccourcis est celui de Steam.
+    let nom = if possede.nom.trim().is_empty() { nom } else { possede.nom.clone() };
     installation::ecrire_manifeste(&steam, &bibliotheque, app_id, &nom, &sid)?;
     if raccourci_bureau {
         if let Ok(bureau) = app.path().desktop_dir() {
@@ -391,6 +393,10 @@ pub async fn desinstaller_jeu(app: AppHandle, etat: State<'_, EtatApp>, app_id: 
     let steam = local::dossier_steam().ok_or(Erreur::SteamIntrouvable)?;
     if !installation::deja_installe(&steam, app_id) {
         return Err(Erreur::Interne("ce jeu n'est pas installé".into()));
+    }
+    // Audit (étape 9) : jamais les outils de Steam (redistribuables partagés).
+    if local::est_outil(app_id) {
+        return Err(Erreur::Interne("ce composant de Steam ne se désinstalle pas".into()));
     }
     etat.redemarrage.ajouter_desinstallation(&app, app_id);
     Ok(etat.redemarrage.lire())

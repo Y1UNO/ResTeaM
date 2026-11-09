@@ -15,6 +15,8 @@ use tauri::http::{Response, StatusCode};
 /// Au-delà, les images les plus anciennes sont effacées au démarrage.
 const TAILLE_MAX: u64 = 800 * 1024 * 1024;
 const TAILLE_CIBLE: u64 = 600 * 1024 * 1024;
+/// Une image de Steam fait au plus quelques Mo : au-delà, on refuse.
+const IMAGE_MAX: u64 = 25 * 1024 * 1024;
 
 pub struct CacheImages {
     dossier: PathBuf,
@@ -90,8 +92,12 @@ impl CacheImages {
             let code = StatusCode::from_u16(rep.status().as_u16()).unwrap_or(StatusCode::NOT_FOUND);
             return reponse(code, Vec::new(), "text/plain");
         }
+        if rep.content_length().is_some_and(|n| n > IMAGE_MAX) {
+            return reponse(StatusCode::PAYLOAD_TOO_LARGE, Vec::new(), "text/plain");
+        }
         let octets = match rep.bytes().await {
-            Ok(o) => o.to_vec(),
+            Ok(o) if o.len() as u64 <= IMAGE_MAX => o.to_vec(),
+            Ok(_) => return reponse(StatusCode::PAYLOAD_TOO_LARGE, Vec::new(), "text/plain"),
             Err(_) => return reponse(StatusCode::BAD_GATEWAY, Vec::new(), "text/plain"),
         };
         // Écriture atomique : un fichier à moitié écrit n'est jamais servi.

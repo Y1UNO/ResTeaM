@@ -421,6 +421,18 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - anneau du rang choisi qui respire, icônes des chiffres qui bougent au survol ;
   - anneau vert tournant autour des amis en jeu, pouls autour des amis en ligne.
 
+### Étape 9 — Audit de sécurité (9 novembre 2026)
+
+- Rapport complet : `AUDIT-SECURITE.md`. Aucune faille grave.
+- **Durcissements** :
+  - OpenID : `openid.signed` doit couvrir les champs utilisés ;
+  - nom du manifeste et des raccourcis tiré de Steam ;
+  - les redistribuables de Steam ne peuvent pas être désinstallés ;
+  - cache d'images plafonné à 25 Mo par image ;
+  - CSP complétée (`object-src`, `base-uri`, `frame-src`, `form-action`, `worker-src`).
+- **Retiré** : la page de test `/donnees` et son entrée de menu.
+- **Dépendances** : `npm audit` et `cargo audit` sans vulnérabilité ; 5 avertissements RustSec sur des dépendances Linux ou de compilation, absentes de l'exe Windows.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

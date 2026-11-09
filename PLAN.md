@@ -1047,7 +1047,7 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 
 **À vérifier dans l'exe** : pinceau magique, puis « Partager mon profil », valider dans le navigateur, choisir une photo et une bannière. Un ami qui a ResTeaM doit voir ton profil ResTeaM. Vérifier aussi « Arrêter le partage ».
 
-### Étape 20 — Notifications aux couleurs de ResTeaM (10 novembre 2026)
+### Étape 20 — Notifications aux couleurs de ResTeaM (10 novembre 2026) — validée par Tom dans l'exe
 
 - Les notifications de Windows sont remplacées par **des cartes ResTeaM**, dans une petite fenêtre `notifs` (`notifications.rs`, `src/notifs/FenetreNotifs.tsx`) :
   - sans cadre, transparente, toujours au-dessus, absente de la barre des tâches ;

@@ -115,7 +115,18 @@ const PREFS = {
   notifMaj: true,
   notifAmi: true,
   notifPromo: false,
+  notifPasEnJeu: true,
+  notifCoin: "bd",
+  notifDuree: 7,
 };
+/** Notifications de démonstration (fenêtre `?notifs=1`), données une seule fois. */
+let NOTIFS_DEMO_DONNEES = false;
+const NOTIFS_DEMO = [
+  { id: 1, genre: "ami", titre: "Meguru Bachira", texte: "joue à Apex Legends", image: `${CDN_APERCU}/1172470/header.jpg`, vignette: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg", cadre: null, badge: null, jouer: null, page: "/profil/76561198000000100" },
+  { id: 2, genre: "telechargement", titre: "Hades II", texte: "Téléchargement terminé : prêt à jouer.", image: `${CDN_APERCU}/1145350/header.jpg`, vignette: `${CDN_APERCU}/1145350/library_600x900_2x.jpg`, cadre: null, badge: null, jouer: 1145350, page: "/jeu/1145350" },
+  { id: 3, genre: "promo", titre: "Stardew Valley", texte: "6,99 € au lieu de 13,99 €", image: `${CDN_APERCU}/413150/header.jpg`, vignette: `${CDN_APERCU}/413150/library_600x900_2x.jpg`, cadre: null, badge: "-50 %", jouer: null, page: "/jeu/413150" },
+  { id: 4, genre: "resteam", titre: "Les notifications fonctionnent", texte: "Un clic ici ouvre les Paramètres de ResTeaM.", image: null, vignette: null, cadre: null, badge: null, jouer: null, page: "/parametres" },
+];
 const PREFS_DEMARRAGE = { actif: false };
 /** Paramètres de Steam simulés (disque). */
 const PARAMS_STEAM = { limiteKbps: 0, telechargementsEnJeu: true, ralentirStreaming: false, overlay: true, demarrageWindows: true };
@@ -453,6 +464,14 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         ? { steamId: String(args?.steamId), style: { fond: "aurore", cadre: "lune", effet: "etoiles", accent: "#ffd27a", avatarAnime: true, jeuFond: null }, avatar: null, banniere: null, maj: Date.now() }
         : null;
     case "notification_essai":
+      return undefined;
+    case "notifs_prendre": {
+      const notifs = NOTIFS_DEMO_DONNEES ? [] : NOTIFS_DEMO;
+      NOTIFS_DEMO_DONNEES = true;
+      return { notifs, duree: 60, coin: new URLSearchParams(location.search).get("coin") ?? "bd" };
+    }
+    case "notifs_taille":
+    case "notifs_clic":
       return undefined;
     case "jeu_session": {
       // `?enjeu=1` : un jeu tourne pendant 25 s après le chargement, puis la session se termine.

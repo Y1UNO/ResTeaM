@@ -841,10 +841,58 @@ pub fn resteam_au_demarrage(actif: bool) -> Resultat<bool> {
     Ok(crate::preferences::demarrage_windows())
 }
 
-/// Notification Windows d'essai (bouton des Paramètres).
+/// Notification d'essai (bouton des Paramètres), toujours affichée, même en jeu.
 #[tauri::command]
 pub fn notification_essai(app: AppHandle) {
-    crate::notifications::envoyer(&app, "ResTeaM".into(), "Les notifications fonctionnent. Un clic ici rouvre ResTeaM.".into());
+    crate::notifications::liberer(&app);
+    let n = crate::notifications::Notif {
+        genre: "resteam".into(),
+        titre: "Les notifications fonctionnent".into(),
+        texte: "Un clic ici ouvre les Paramètres de ResTeaM.".into(),
+        page: Some("/parametres".into()),
+        ..Default::default()
+    };
+    crate::notifications::envoyer_maintenant(&app, n);
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotifsAPrendre {
+    pub notifs: Vec<crate::notifications::Notif>,
+    pub duree: u32,
+    pub coin: String,
+}
+
+/// Fenêtre des notifications : les cartes à afficher, et les réglages d'affichage.
+#[tauri::command]
+pub fn notifs_prendre(app: AppHandle) -> NotifsAPrendre {
+    let p = crate::preferences::lire(&app);
+    NotifsAPrendre { notifs: crate::notifications::prendre(), duree: p.notif_duree, coin: p.notif_coin }
+}
+
+/// Fenêtre des notifications : hauteur des cartes (0 : plus rien, la fenêtre se cache).
+#[tauri::command]
+pub async fn notifs_taille(app: AppHandle, hauteur: f64) -> Resultat<()> {
+    crate::notifications::ajuster(&app, hauteur).map_err(|e| Erreur::Interne(e.to_string()))
+}
+
+/// Clic sur une carte : ouvrir une page de ResTeaM (liste fermée), ou lancer le jeu.
+#[tauri::command]
+pub fn notifs_clic(app: AppHandle, page: Option<String>, jouer: Option<u32>) -> Resultat<()> {
+    use tauri::Emitter;
+    if let Some(id) = jouer {
+        let lien = liens::construire(&ActionSteam::Jouer { app_id: id }).ok_or_else(|| Erreur::Interne("lien refusé".into()))?;
+        return app.opener().open_url(lien, None::<&str>).map_err(|_| Erreur::Interne("impossible d'ouvrir Steam".into()));
+    }
+    if let Some(p) = page.filter(|p| crate::notifications::page_valide(p)) {
+        if let Some(f) = app.get_webview_window("main") {
+            let _ = f.show();
+            let _ = f.unminimize();
+            let _ = f.set_focus();
+        }
+        let _ = app.emit_to("main", "aller-a", p);
+    }
+    Ok(())
 }
 
 /// Jeu en cours et dernière session terminée.

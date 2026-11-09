@@ -214,8 +214,25 @@ export type Preferences = {
   notifMaj: boolean;
   notifAmi: boolean;
   notifPromo: boolean;
+  notifPasEnJeu: boolean;
+  notifCoin: "bd" | "hd" | "bg" | "hg";
+  notifDuree: number;
 };
 export type PreferencesEtat = { preferences: Preferences; demarrageWindows: boolean };
+/** Carte de notification ResTeaM (fenêtre `notifs`). */
+export type Notif = {
+  id: number;
+  genre: "ami" | "telechargement" | "maj" | "promo" | "resteam" | string;
+  titre: string;
+  texte: string;
+  image: string | null;
+  vignette: string | null;
+  cadre: string | null;
+  badge: string | null;
+  jouer: number | null;
+  page: string | null;
+};
+export type NotifsAPrendre = { notifs: Notif[]; duree: number; coin: "bd" | "hd" | "bg" | "hg" | string };
 /** Millisecondes depuis 1970. */
 export type SessionJeu = { appId: number; debut: number; fin: number | null };
 export type EtatJeu = { enCours: SessionJeu | null; derniere: SessionJeu | null };

@@ -337,7 +337,7 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 ### 11. Personnalisation du profil (fond du thème)
 - Des réglages de base pour le fond du profil : choix de l'image ou de la vidéo, flou, assombrissement, teinte, position.
 
-### 11 bis. Notifications aux couleurs de ResTeaM (idée de Tom)
+### 11 bis. Notifications aux couleurs de ResTeaM (idée de Tom) — faites le 10 novembre 2026, voir le journal « Étape 20 »
 - Tom trouve les notifications de Windows fades. On les remplace par **nos propres notifications** : une petite fenêtre ResTeaM sans cadre, transparente et toujours au-dessus, en bas à droite de l'écran, qui fonctionne même quand ResTeaM est rangé dans la zone de notification.
 - Contenu selon le type :
   - **ami en jeu** : son avatar **animé** (avatar animé de Steam s'il en a un), son cadre, son pseudo, la jaquette du jeu ;
@@ -1046,6 +1046,36 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Aperçu : un ami sur deux partage son profil (aurore, cadre de lunes, couleur dorée).
 
 **À vérifier dans l'exe** : pinceau magique, puis « Partager mon profil », valider dans le navigateur, choisir une photo et une bannière. Un ami qui a ResTeaM doit voir ton profil ResTeaM. Vérifier aussi « Arrêter le partage ».
+
+### Étape 20 — Notifications aux couleurs de ResTeaM (10 novembre 2026)
+
+- Les notifications de Windows sont remplacées par **des cartes ResTeaM**, dans une petite fenêtre `notifs` (`notifications.rs`, `src/notifs/FenetreNotifs.tsx`) :
+  - sans cadre, transparente, toujours au-dessus, absente de la barre des tâches ;
+  - elle ne prend **jamais le focus** (`focusable(false)`) : un jeu au premier plan le reste ;
+  - elle prend la hauteur des cartes (Rust la place dans le coin choisi de l'écran principal, zone de travail sans la barre des tâches) et se cache quand il n'y a plus rien ;
+  - elle est créée hors du fil principal (leçon du salon d'achat).
+- Une carte par type :
+  - **ami en jeu** : son avatar **animé** et son **cadre** d'objets Steam, un point vert qui bat, le visuel du jeu en fond, un clic ouvre son profil ;
+  - **téléchargement terminé** et **mise à jour** : visuel et jaquette du jeu, bouton **Jouer** ;
+  - **promo** : visuel, jaquette, badge **-50 %** qui rebondit, « 6,99 € au lieu de 13,99 € » ;
+  - **ResTeaM** (essai) : une lune qui se balance.
+- Les cartes arrivent en glissant depuis le bord, avec un reflet lunaire, et le visuel en fond dérive lentement. Une fine ligne montre le temps restant ; elle s'arrête quand la souris est dessus. La croix apparaît au survol. Au-delà de 4 cartes : « +N autres ».
+- **Réglages** (Paramètres > ResTeaM au quotidien > Notifications) :
+  - **ne pas déranger en jeu** (activé par défaut) : les cartes attendent la fin de la partie ;
+  - coin de l'écran (4 choix) ;
+  - durée (5, 7, 10 ou 15 s).
+- Sécurité :
+  - un clic n'ouvre qu'une page d'une liste fermée (`/jeu/<chiffres>`, `/profil/<17 chiffres>`, Téléchargements, Liste de souhaits…), vérifiée en Rust puis dans le front ;
+  - « Jouer » passe par la construction vérifiée des liens `steam://` ;
+  - les textes (pseudos, noms de jeux) sont affichés comme du texte ;
+  - la fenêtre a sa propre capacité, réduite à `core:default`.
+- En secours, si la fenêtre ne peut pas être créée, la notification de Windows s'affiche.
+- Aperçu : `?notifs=1` montre les quatre cartes (`&coin=hd` pour un coin du haut).
+
+**À vérifier dans l'exe** :
+1. Paramètres, « Envoyer une notification d'essai » : la carte s'affiche dans le coin choisi sans voler le focus.
+2. Lancer un jeu, puis faire arriver une notification : elle attend la fin de la partie.
+3. Cliquer une carte : la bonne page de ResTeaM s'ouvre.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

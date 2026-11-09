@@ -30,8 +30,10 @@ export function Layout() {
     if (!dansTauri) return;
     const pages: Record<string, string> = { bibliotheque: PATHS.bibliotheque, telechargements: PATHS.telechargements };
     let stop: (() => void) | undefined;
+    // Pages fixes (zone de notification) ou chemins vérifiés (cartes de notification).
+    const chemin = /^\/(telechargements|souhaits|bibliotheque|amis|parametres|jeu\/\d{1,10}|profil\/\d{17})$/;
     listen<string>("aller-a", (e) => {
-      const p = pages[e.payload];
+      const p = pages[e.payload] ?? (chemin.test(e.payload) ? e.payload : null);
       if (p) navigate(p);
     })
       .then((u) => (stop = u))

@@ -22,6 +22,7 @@ import { clientRequetes } from "./api/requetes";
 import { useSession } from "./app/session";
 import { installerInteractions } from "./lib/interactif";
 import { SalonBarre } from "./salon/SalonBarre";
+import { FenetreNotifs } from "./notifs/FenetreNotifs";
 
 /**
  * La même page sert aussi de barre au salon d'achat (webview « salon-barre ») :
@@ -31,8 +32,12 @@ import { SalonBarre } from "./salon/SalonBarre";
 type Interne = { __TAURI_INTERNALS__?: { metadata?: { currentWebview?: { label?: string } } } };
 const etiquette = (window as unknown as Interne).__TAURI_INTERNALS__?.metadata?.currentWebview?.label;
 const estBarreSalon = etiquette === "salon-barre" || new URLSearchParams(location.search).get("salon") === "barre";
+/** Fenêtre des notifications ResTeaM (aperçu navigateur : `?notifs=1`). */
+const estNotifs = etiquette === "notifs" || new URLSearchParams(location.search).get("notifs") === "1";
+const fenetreAnnexe = estBarreSalon || estNotifs;
 
 if (estBarreSalon) document.documentElement.classList.add("est-salon");
+else if (estNotifs) document.documentElement.classList.add("est-notifs");
 else installerInteractions();
 
 // Pas de menu « Enregistrer l'image sous… » du navigateur : ResTeaM a ses propres menus
@@ -43,12 +48,14 @@ document.addEventListener("contextmenu", (e) => {
 });
 
 // Lecture de la session et de l'état de la clé, une fois au démarrage.
-if (!estBarreSalon) void useSession.getState().initialiser();
+if (!fenetreAnnexe) void useSession.getState().initialiser();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     {estBarreSalon ? (
       <SalonBarre />
+    ) : estNotifs ? (
+      <FenetreNotifs />
     ) : (
       <QueryClientProvider client={clientRequetes}>
         <RouterProvider router={router} />

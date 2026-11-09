@@ -5,7 +5,14 @@ import { estErreurApp, type Preferences } from "../../api/types";
 import { Interrupteur } from "./ParametresSteam";
 import "./ParametresSteam.css";
 
-type Ligne = { cle: keyof Preferences; titre: string; detail: string };
+type CleInterrupteur = { [K in keyof Preferences]: Preferences[K] extends boolean ? K : never }[keyof Preferences];
+type Ligne = { cle: CleInterrupteur; titre: string; detail: string };
+const COINS: [Preferences["notifCoin"], string][] = [
+  ["bd", "Bas droite"],
+  ["hd", "Haut droite"],
+  ["bg", "Bas gauche"],
+  ["hg", "Haut gauche"],
+];
 
 const REMPLACER: Ligne[] = [
   { cle: "fermerReduit", titre: "Fermer = garder dans la zone de notification", detail: "Le × range ResTeaM près de l’horloge. « Quitter ResTeaM » dans son menu le ferme vraiment." },
@@ -28,7 +35,7 @@ export function ParametresResteam() {
   const [essai, setEssai] = useState(false);
   const d = requete.data;
 
-  const changer = async (cle: keyof Preferences, valeur: boolean) => {
+  const changer = async <K extends keyof Preferences>(cle: K, valeur: Preferences[K]) => {
     if (!d) return;
     const preferences = { ...d.preferences, [cle]: valeur };
     client.setQueryData(["preferences"], { ...d, preferences });
@@ -72,10 +79,42 @@ export function ParametresResteam() {
             ))}
           </div>
           <div className="psteam__groupe">
-            <h3>Notifications Windows</h3>
+            <h3>Notifications</h3>
             {NOTIFICATIONS.map((l) => (
               <Interrupteur key={l.cle} titre={l.titre} detail={l.detail} actif={d.preferences[l.cle]} onChange={(v) => void changer(l.cle, v)} />
             ))}
+            <Interrupteur
+              titre="Ne pas déranger en jeu"
+              detail="Pendant une partie, rien ne s’affiche : les notifications attendent la fin du jeu."
+              actif={d.preferences.notifPasEnJeu}
+              onChange={(v) => void changer("notifPasEnJeu", v)}
+            />
+            <div className="psteam__ligne psteam__ligne--haut">
+              <span className="psteam__texte">
+                <strong>Coin de l’écran</strong>
+                <span>Où les cartes apparaissent.</span>
+              </span>
+              <div className="psteam__puces" role="radiogroup" aria-label="Coin de l’écran">
+                {COINS.map(([v, libelle]) => (
+                  <button key={v} type="button" role="radio" aria-checked={d.preferences.notifCoin === v} className={`psteam__puce${d.preferences.notifCoin === v ? " is-actif" : ""}`} onClick={() => void changer("notifCoin", v)}>
+                    {libelle}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="psteam__ligne psteam__ligne--haut">
+              <span className="psteam__texte">
+                <strong>Durée d’affichage</strong>
+                <span>La carte reste tant que la souris est dessus.</span>
+              </span>
+              <div className="psteam__puces" role="radiogroup" aria-label="Durée d’affichage">
+                {[5, 7, 10, 15].map((s) => (
+                  <button key={s} type="button" role="radio" aria-checked={d.preferences.notifDuree === s} className={`psteam__puce${d.preferences.notifDuree === s ? " is-actif" : ""}`} onClick={() => void changer("notifDuree", s)}>
+                    {s} s
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="psteam__essai">
               <button
                 type="button"
@@ -87,7 +126,7 @@ export function ParametresResteam() {
               >
                 Envoyer une notification d’essai
               </button>
-              {essai && <span>Elle apparaît en bas à droite de l’écran.</span>}
+              {essai && <span>Elle apparaît dans le coin choisi, même pendant une partie.</span>}
             </div>
           </div>
         </>

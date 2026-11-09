@@ -52,6 +52,7 @@ import {
   BilanTrophees,
   EtatPartage,
   ProfilPartage,
+  NotifsAPrendre,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -136,6 +137,9 @@ export const api = {
   profilPartage: (steamId: string) => appeler<ProfilPartage | null>("profil_partage", { steamId }),
   bilanTrophees: (steamId: string | null) => appeler<Donnee<BilanTrophees>>("bilan_trophees", { steamId }),
   notificationEssai: () => appeler<void>("notification_essai"),
+  notifsPrendre: () => appeler<NotifsAPrendre>("notifs_prendre"),
+  notifsTaille: (hauteur: number) => appeler<void>("notifs_taille", { hauteur }),
+  notifsClic: (page: string | null, jouer: number | null) => appeler<void>("notifs_clic", { page, jouer }),
   parametresSteam: () => appeler<ParametresSteamEtat>("parametres_steam"),
   reglerSteam: (demande: Omit<ReglageSteam, "compte">) => appeler<FileSteam>("regler_steam", { demande }),
   annulerReglageSteam: () => appeler<FileSteam>("annuler_reglage_steam"),

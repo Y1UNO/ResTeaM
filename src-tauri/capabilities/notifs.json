@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "notifs",
+  "description": "Fenêtre des notifications ResTeaM (page locale) : écouter les nouvelles cartes. Elle ne fait rien d'autre que les commandes notifs_* (pages et liens vérifiés en Rust).",
+  "windows": [
+    "notifs"
+  ],
+  "permissions": [
+    "core:default"
+  ]
+}

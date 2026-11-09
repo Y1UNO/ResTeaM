@@ -101,6 +101,10 @@ fn relever(app: &AppHandle, jeu: Option<u32>) {
             }
         }
     }
+    // Fin de partie : les notifications retenues (« ne pas déranger en jeu ») s'affichent.
+    if terminee.is_some() && commencee.is_none() {
+        crate::notifications::liberer(app);
+    }
     if revenir {
         if let Some(f) = &fenetre {
             let _ = f.unminimize();

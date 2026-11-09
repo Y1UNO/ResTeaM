@@ -25,6 +25,12 @@ pub struct Preferences {
     pub notif_maj: bool,
     pub notif_ami: bool,
     pub notif_promo: bool,
+    /// Ne pas déranger en jeu : les notifications attendent la fin de la partie.
+    pub notif_pas_en_jeu: bool,
+    /// Coin de l'écran : `bd` (bas droite), `hd`, `bg`, `hg`.
+    pub notif_coin: String,
+    /// Durée d'affichage d'une notification, en secondes.
+    pub notif_duree: u32,
 }
 
 impl Default for Preferences {
@@ -37,6 +43,9 @@ impl Default for Preferences {
             notif_maj: true,
             notif_ami: true,
             notif_promo: true,
+            notif_pas_en_jeu: true,
+            notif_coin: "bd".into(),
+            notif_duree: 7,
         }
     }
 }
@@ -58,7 +67,12 @@ impl EtatPreferences {
         self.valeurs.lock().map(|p| p.clone()).unwrap_or_default()
     }
 
-    pub fn ecrire(&self, p: Preferences) -> Resultat<()> {
+    pub fn ecrire(&self, mut p: Preferences) -> Resultat<()> {
+        // Valeurs bornées : coin connu, durée de 3 à 30 s.
+        if !["bd", "hd", "bg", "hg"].contains(&p.notif_coin.as_str()) {
+            p.notif_coin = "bd".into();
+        }
+        p.notif_duree = p.notif_duree.clamp(3, 30);
         let json = serde_json::to_vec_pretty(&p)?;
         let temporaire = self.fichier.with_extension("json.tmp");
         fs::write(&temporaire, json)?;

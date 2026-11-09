@@ -39,26 +39,28 @@ export function TitleBar({ pleinEcran = false }: TitleBarProps) {
     <div className={`titlebar${pleinEcran ? " titlebar--plein" : ""}`}>
       <div className="titlebar__drag" data-tauri-drag-region />
       <div className="titlebar__controls">
-        <button type="button" className="titlebar__btn" aria-label="Réduire" title="Réduire" onClick={() => act("minimize")}>
-          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10">
-            <path d="M0 5.5h10" stroke="currentColor" strokeWidth="1" />
+        {/* Boutons dessinés dans la DA : traits arrondis, petit mouvement au survol. */}
+        <button type="button" className="titlebar__btn titlebar__btn--min" aria-label="Réduire" title="Réduire" onClick={() => act("minimize")}>
+          <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+            <path d="M2 6.5h8" />
+            <circle className="titlebar__point" cx="6" cy="9.4" r="0.8" fill="currentColor" stroke="none" />
           </svg>
         </button>
         <button
           type="button"
-          className="titlebar__btn"
+          className="titlebar__btn titlebar__btn--max"
           aria-label={maximized ? "Restaurer" : "Agrandir"}
           title={maximized ? "Restaurer" : "Agrandir"}
           onClick={() => act("toggleMaximize")}
         >
           {maximized ? (
-            <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1">
-              <rect x="0.5" y="2.5" width="7" height="7" rx="1" />
-              <path d="M2.5 2.5V1.5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-1" />
+            <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round">
+              <rect x="1" y="3.5" width="7.5" height="7.5" rx="2" />
+              <path className="titlebar__arriere" d="M3.5 3.5V3a2 2 0 0 1 2-2H9a2 2 0 0 1 2 2v3.5a2 2 0 0 1-2 2h-.5" />
             </svg>
           ) : (
-            <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1">
-              <rect x="0.5" y="0.5" width="9" height="9" rx="1" />
+            <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <rect className="titlebar__cadre" x="1.2" y="1.2" width="9.6" height="9.6" rx="2.4" />
             </svg>
           )}
         </button>
@@ -69,8 +71,8 @@ export function TitleBar({ pleinEcran = false }: TitleBarProps) {
           title="Fermer"
           onClick={() => act("close")}
         >
-          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1">
-            <path d="M0.5 0.5l9 9M9.5 0.5l-9 9" />
+          <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+            <path className="titlebar__croix" d="M2.5 2.5l7 7M9.5 2.5l-7 7" />
           </svg>
         </button>
       </div>

@@ -498,6 +498,18 @@ Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment 
 - **Liste de souhaits** : l'affiche du jeu survolé passe en fond, en fondu ; un panneau de détails le suit à droite (captures, tags, avis, prix, Acheter). Les pages Amis, Téléchargements et Recherche prennent toute la largeur.
 - **Rangs** : les badges flottent, un reflet les traverse, l'aura est plus visible. La rangée du profil a des badges plus grands, tous animés, qui grandissent au survol.
 
+### Lot 1 bis — Classements, téléchargements, icônes (9 novembre 2026)
+
+- **Classements** : l'affiche du n°1, très floutée et fondue sur les bords, colore le fond. « En jeu maintenant » devient vivant :
+  - badge rouge « En direct » qui pulse, nombre qui défile, reflet qui passe ;
+  - pic, moyenne et tendance depuis le relevé d'avant ;
+  - courbe lisse (`src/components/Courbe.tsx`) : tracé animé, aire en dégradé, passage de lumière, point final qui pulse, transformation douce à chaque nouveau relevé ; sans données, une ligne de balayage.
+- **Téléchargements** :
+  - « Activité en direct » : deux courbes (connexion de tout le PC, écriture disque de Steam) sur 3 minutes, avec valeur actuelle, moyenne et pic, plus quatre chiffres (Go installés, espace libre, nombre de jeux, plus gros jeu) ;
+  - **« Installer un jeu »** : on cherche un jeu non installé et on le **glisse dans la zone**. La jaquette suit la souris, la zone s'allume, puis la fenêtre d'installation s'ouvre. Un double-clic marche aussi. Le glisser se fait au pointeur, car la fenêtre Tauri réserve le glisser-déposer du navigateur aux fichiers.
+- **Icônes dans la DA** (`src/components/icons.tsx`) : bibliothèque avec un croissant, sac du magasin, barres et étoile, croissant et étoile pour les souhaits, loupe-croissant, flèche dans un engrenage, icône Communauté prête. Petits mouvements au survol. Les boutons de la fenêtre sont redessinés : la croix tourne, le cadre grandit.
+- Ta vidéo (Steam qui défile) a été lue en extrayant des images avec ffmpeg. **Pour le lot suivant** : plus de types de sections façon Steam (carrousels à flèches, « Car tu as joué à… », « Moins de 10 € », rangées par tag en bas de page).
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

@@ -4,6 +4,7 @@ import { useClassements, useEnLigne, useProduits } from "../api/requetes";
 import { estErreurApp, type Classe, type Produit, type Releve } from "../api/types";
 import { Smoke } from "../components/Smoke";
 import { Compteur, Lucioles } from "../components/Vivant";
+import { Courbe } from "../components/Courbe";
 import { entier } from "../lib/format";
 import { viaCache } from "../lib/imageLocale";
 import { degradeHero, degradeJaquette } from "../lib/images";
@@ -44,7 +45,8 @@ export function Classements() {
   const p1 = premier ? parId.get(premier.appId) : undefined;
 
   return (
-    <div className="page">
+    <div className="page classements-page">
+      {p1?.hero && <div key={p1.appId} className="classements__affiche" aria-hidden="true" style={{ backgroundImage: `url("${viaCache(p1.hero)}")` }} />}
       <Smoke variant="top" />
       <Lucioles graine={61} />
       <div className="page__content classements">
@@ -125,9 +127,9 @@ function Evolution({ x }: { x: Classe }) {
   return <span className={`classement__evo ${d > 0 ? "is-monte" : "is-descend"}`}>{d > 0 ? `▲ ${d}` : `▼ ${-d}`}</span>;
 }
 
-/** Joueurs en jeu (top 10 des plus joués) et courbe des relevés de l'app sur 24 h. */
+/** Joueurs en jeu (top 10 des plus joués) et courbe vivante des relevés de l'app sur 24 h. */
 function EnJeu({ donnees, chargement }: { donnees: { joueurs: number; releves: Releve[] } | undefined; chargement: boolean }) {
-  const barres = useMemo(() => {
+  const valeurs = useMemo(() => {
     const maintenant = Date.now() / 1000;
     const cases: (number | null)[] = Array(NB_BARRES).fill(null);
     for (const r of donnees?.releves ?? []) {
@@ -136,31 +138,45 @@ function EnJeu({ donnees, chargement }: { donnees: { joueurs: number; releves: R
     }
     return cases;
   }, [donnees]);
-  const valeurs = barres.filter((b): b is number => b != null);
-  const max = Math.max(1, ...valeurs);
-  const min = Math.min(max, ...valeurs);
-  const pic = valeurs.length ? Math.max(...valeurs) : null;
-  const derniere = barres.reduce((m, b, i) => (b != null ? i : m), -1);
+  const releves = donnees?.releves ?? [];
+  const pic = releves.length ? Math.max(...releves.map((r) => r.joueurs)) : null;
+  const moyenne = releves.length ? Math.round(releves.reduce((s, r) => s + r.joueurs, 0) / releves.length) : null;
+  const avant = releves.length >= 2 ? releves[releves.length - 2].joueurs : null;
+  const tendance = avant != null && donnees ? donnees.joueurs - avant : null;
   return (
     <section className="en-jeu" data-lueur="" aria-label="Joueurs en jeu">
       <div className="en-jeu__texte">
         <span className="en-jeu__titre">
-          <span className="en-jeu__point" />
+          <span className="en-jeu__direct">
+            <span className="en-jeu__point" />
+            En direct
+          </span>
           En jeu maintenant
         </span>
-        <span className="en-jeu__nombre">{donnees ? <Compteur valeur={donnees.joueurs} duree={1400} /> : chargement ? "…" : "—"}</span>
-        <span className="en-jeu__note">
-          {pic != null ? `Pic relevé sur 24 h : ${entier(pic)}` : "Sur les 10 jeux les plus joués de Steam"}
-        </span>
+        <span className="en-jeu__nombre">{donnees ? <Compteur valeur={donnees.joueurs} duree={1600} /> : chargement ? "…" : "—"}</span>
+        <div className="en-jeu__chiffres">
+          {pic != null && (
+            <span>
+              <strong>{entier(pic)}</strong> pic 24 h
+            </span>
+          )}
+          {moyenne != null && (
+            <span>
+              <strong>{entier(moyenne)}</strong> moyenne
+            </span>
+          )}
+          {tendance != null && tendance !== 0 && (
+            <span className={tendance > 0 ? "is-monte" : "is-descend"}>
+              <strong>
+                {tendance > 0 ? "▲" : "▼"} {entier(Math.abs(tendance))}
+              </strong>{" "}
+              depuis le relevé d’avant
+            </span>
+          )}
+        </div>
       </div>
-      <div className="en-jeu__courbe" aria-hidden="true">
-        {barres.map((b, i) => (
-          <span
-            key={i}
-            className={`en-jeu__barre${b == null ? " is-vide" : ""}${i === derniere ? " is-dernier" : ""}`}
-            style={{ height: b == null ? "6%" : `${30 + ((b - min) / Math.max(1, max - min)) * 70}%`, animationDelay: `${i * 12}ms` }}
-          />
-        ))}
+      <div className="en-jeu__courbe">
+        <Courbe valeurs={valeurs} couleur="#9fd8ff" hauteur={130} attente="La courbe se remplit à chaque relevé (toutes les 20 min)" />
       </div>
       <span className="en-jeu__legende">
         Steam ne publie pas le total : c’est la somme des joueurs en jeu sur les 10 jeux les plus joués. La courbe se remplit au fil des relevés de ResTeaM (toutes les 20 min, quand l’app est ouverte).

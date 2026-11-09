@@ -1,0 +1,75 @@
+/* Petits mouvements des icônes au survol de leur bouton (barre de gauche, menus). */
+.ico {
+  overflow: visible;
+}
+.ico * {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 0.45s var(--ease),
+    opacity 0.3s ease;
+}
+:is(button, a):hover > .ico .ico-lune,
+:is(button, a):hover .ico-biblio .ico-lune {
+  transform: rotate(-25deg) scale(1.12);
+}
+:is(button, a):hover .ico-magasin .ico-anse {
+  transform: translateY(-1.2px);
+}
+:is(button, a):hover .ico-magasin .ico-eclat,
+:is(button, a):hover .ico-classements .ico-etoile,
+:is(button, a):hover .ico-souhaits .ico-etoile {
+  animation: ico-scintille 0.9s ease-in-out infinite;
+}
+:is(button, a):hover .ico-classements .ico-barre {
+  transform-origin: bottom;
+  animation: ico-barre 0.9s ease-in-out infinite;
+}
+.ico-classements .b2 {
+  animation-delay: 0.12s !important;
+}
+.ico-classements .b3 {
+  animation-delay: 0.24s !important;
+}
+:is(button, a):hover .ico-recherche {
+  transform: rotate(-8deg);
+}
+:is(button, a):hover .ico-telecharger .ico-fleche {
+  animation: ico-descend 0.9s ease-in-out infinite;
+}
+:is(button, a):hover .ico-reglages {
+  transform: rotate(60deg);
+}
+.ico-recherche,
+.ico-reglages {
+  transition: transform 0.5s var(--ease);
+}
+@keyframes ico-scintille {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35) rotate(18deg);
+    opacity: 0.7;
+  }
+}
+@keyframes ico-barre {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.25);
+  }
+}
+@keyframes ico-descend {
+  0%,
+  100% {
+    transform: translateY(-1px);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}

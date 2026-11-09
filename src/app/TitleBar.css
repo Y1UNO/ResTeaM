@@ -63,3 +63,30 @@
 .titlebar--plein {
   left: 0;
 }
+
+/* Mouvements au survol des boutons de la fenêtre. */
+.titlebar__btn svg,
+.titlebar__btn svg * {
+  transition: transform 0.35s var(--ease), opacity 0.25s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.titlebar__point {
+  opacity: 0;
+}
+.titlebar__btn--min:hover svg path {
+  transform: translateY(1px);
+}
+.titlebar__btn--min:hover .titlebar__point {
+  opacity: 1;
+  transform: translateY(0.6px);
+}
+.titlebar__btn--max:hover .titlebar__cadre {
+  transform: scale(1.12);
+}
+.titlebar__btn--max:hover .titlebar__arriere {
+  transform: translate(0.6px, -0.6px);
+}
+.titlebar__btn--close:hover .titlebar__croix {
+  transform: rotate(90deg);
+}

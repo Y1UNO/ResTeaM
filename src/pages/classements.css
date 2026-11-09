@@ -281,3 +281,115 @@
 .classement__tout:hover {
   color: var(--text-1);
 }
+
+/* ——— Affiche du n°1 : floue, en fondu sur les bords, juste pour la couleur ——— */
+.classements-page {
+  overflow: clip;
+}
+.classements__affiche {
+  position: absolute;
+  inset: -60px -60px auto -60px;
+  height: 115vh;
+  background: center 30% / cover no-repeat;
+  filter: blur(38px) saturate(1.3);
+  opacity: 0.42;
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 55% 35%, #000 25%, transparent 75%);
+  mask-image: radial-gradient(ellipse 75% 65% at 55% 35%, #000 25%, transparent 75%);
+  pointer-events: none;
+  animation: classements-affiche 1.4s ease both;
+}
+@keyframes classements-affiche {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+/* ——— En jeu maintenant, vivant ——— */
+.en-jeu {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(159, 216, 255, 0.1), transparent 55%),
+    var(--surface-2);
+}
+.en-jeu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 40%, rgba(159, 216, 255, 0.06) 50%, transparent 60%);
+  background-size: 250% 100%;
+  animation: en-jeu-reflet 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes en-jeu-reflet {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -130% 0;
+  }
+}
+.en-jeu__titre {
+  gap: 12px;
+}
+.en-jeu__direct {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 77, 94, 0.14);
+  border: 1px solid rgba(255, 77, 94, 0.45);
+  color: #ff8a96;
+  font-size: 11px;
+}
+.en-jeu__direct .en-jeu__point {
+  background: #ff4d5e;
+  animation: en-jeu-pulse-rouge 1.6s ease-out infinite;
+}
+@keyframes en-jeu-pulse-rouge {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 94, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 9px rgba(255, 77, 94, 0);
+  }
+}
+.en-jeu__nombre {
+  background: linear-gradient(180deg, #fff 30%, #9fd8ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(159, 216, 255, 0.25));
+}
+.en-jeu__chiffres {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-3);
+  animation: rise-in 0.6s var(--ease) 0.4s both;
+}
+.en-jeu__chiffres strong {
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.en-jeu__chiffres .is-monte strong {
+  color: #3fe08a;
+}
+.en-jeu__chiffres .is-descend strong {
+  color: #f08a74;
+}
+.en-jeu__courbe {
+  flex: 1;
+  min-width: 360px;
+  animation: rise-in 0.8s var(--ease) 0.2s both;
+}
+html.defile .en-jeu::before {
+  animation-play-state: paused;
+}
+.en-jeu .en-jeu__courbe {
+  height: auto;
+  display: block;
+}

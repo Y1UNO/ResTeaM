@@ -6,6 +6,7 @@ import { useBibliotheque, useFileSteam, useImages, useJeuxInstalles, useNomJeu, 
 import type { JeuInstalle } from "../api/types";
 import { Smoke } from "../components/Smoke";
 import { Lucioles } from "../components/Vivant";
+import { CarteDebit, GlisserInstaller, InfosDisques, useHistoriqueDebits } from "./telechargements/Activite";
 import { useInstallation } from "../installation/store";
 import { date, taille } from "../lib/format";
 import { degradeJaquette, imagesDe } from "../lib/images";
@@ -26,6 +27,11 @@ export function Telechargements() {
   const stats = useStatsSysteme(true);
   const biblio = useBibliotheque();
   const tous = installes.data ?? [];
+  const historique = useHistoriqueDebits(stats.data);
+  const jeuxBiblio = useMemo(() => {
+    const installesIds = new Set(tous.map((j) => j.appId));
+    return (biblio.data?.donnees.jeux ?? []).map((j) => (installesIds.has(j.appId) ? j : { ...j, installation: null }));
+  }, [biblio.data, tous]);
   const actifs = tous.filter(enCours);
   const majs = tous.filter((j) => j.etat === "miseAJourRequise");
   const recents = [...tous].filter((j) => j.etat === "installe").sort((a, b) => b.derniereMaj - a.derniereMaj).slice(0, 8);
@@ -58,6 +64,24 @@ export function Telechargements() {
             {installes.data ? `${actifs.length} en cours · ${tous.length} jeux installés` : "Lecture du disque…"}
           </span>
         </div>
+
+        <section className="secondaire__bloc" aria-labelledby="dl-activite">
+          <h2 id="dl-activite" className="secondaire__titre">
+            Activité en direct
+          </h2>
+          <div className="dl-graphes">
+            <CarteDebit titre="Connexion" valeurs={historique.reseau} couleur="#9fd8ff" note="tout le PC" />
+            <CarteDebit titre="Écriture disque" valeurs={historique.disque} couleur="#3fe08a" note="par Steam" />
+          </div>
+          <InfosDisques jeux={tous} stats={stats.data} />
+        </section>
+
+        <section className="secondaire__bloc" aria-labelledby="dl-installer">
+          <h2 id="dl-installer" className="secondaire__titre">
+            Installer un jeu
+          </h2>
+          <GlisserInstaller jeux={jeuxBiblio} />
+        </section>
 
         {rien && (
           <div className="vide">

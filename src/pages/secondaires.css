@@ -509,3 +509,258 @@
 .ami-carte:hover .ami-carte__texte strong {
   color: #fff;
 }
+
+/* ——— Téléchargements : activité en direct ——— */
+.dl-graphes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+}
+.dl-graphe {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 20px 16px;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--teinte) 14%, transparent), transparent 60%),
+    var(--surface-2);
+  border: 1px solid var(--line-2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: rise-in 0.6s var(--ease) both;
+}
+.dl-graphe__haut {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.dl-graphe__titre {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-kicker);
+}
+.dl-graphe__valeur {
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: -1px;
+  color: var(--teinte);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--teinte) 45%, transparent);
+}
+.dl-graphe__bas {
+  display: flex;
+  gap: 18px;
+  font-size: 12.5px;
+  color: var(--text-4);
+}
+.dl-graphe__bas strong {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.dl-graphe__note {
+  margin-left: auto;
+}
+.dl-infos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+.dl-infos > div {
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  border: 1px solid var(--line-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: rise-in 0.5s var(--ease) both;
+}
+.dl-infos strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+.dl-infos span {
+  font-size: 12px;
+  color: var(--text-4);
+}
+
+/* ——— Installer un jeu : glisser dans la zone ——— */
+.dl-installer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 26vw, 460px);
+  gap: 18px;
+  align-items: stretch;
+}
+.dl-installer__gauche {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.dl-installer__recherche {
+  width: 100%;
+  max-width: 460px;
+}
+.dl-installer__jeux {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+}
+.dl-jeu {
+  flex: 0 0 116px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  animation: rise-in 0.4s var(--ease) both;
+}
+.dl-jeu__art {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(238, 242, 255, 0.06);
+  background: #18181b center / cover no-repeat;
+  transition:
+    transform var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    opacity var(--dur-fast) ease;
+}
+.dl-jeu:hover .dl-jeu__art {
+  transform: translateY(-4px) rotate(-2deg);
+  border-color: rgba(238, 242, 255, 0.4);
+}
+.dl-jeu.is-souleve .dl-jeu__art {
+  opacity: 0.3;
+  transform: scale(0.94);
+}
+.dl-jeu__nom {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dl-zone {
+  position: relative;
+  overflow: hidden;
+  min-height: 220px;
+  border-radius: var(--radius-2xl);
+  border: 2px dashed rgba(238, 242, 255, 0.18);
+  background: radial-gradient(circle at 50% 40%, rgba(63, 224, 138, 0.06), transparent 65%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-3);
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    transform 0.3s var(--ease);
+}
+.dl-zone strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--text-1);
+}
+.dl-zone > span:last-child {
+  font-size: 12.5px;
+  max-width: 280px;
+}
+.dl-zone__fleche {
+  color: #3fe08a;
+  animation: dl-fleche 1.8s ease-in-out infinite;
+}
+@keyframes dl-fleche {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+.dl-zone__anneau {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(63, 224, 138, 0.35);
+  opacity: 0;
+}
+.dl-zone.is-attente {
+  border-color: rgba(63, 224, 138, 0.5);
+}
+.dl-zone.is-attente .dl-zone__anneau {
+  animation: dl-anneau 1.4s ease-out infinite;
+}
+.dl-zone.is-dessus {
+  border-style: solid;
+  border-color: #3fe08a;
+  background-color: rgba(63, 224, 138, 0.08);
+  transform: scale(1.02);
+}
+.dl-zone.is-aspire {
+  border-color: #3fe08a;
+  animation: dl-aspire 0.5s var(--ease) both;
+}
+@keyframes dl-anneau {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes dl-aspire {
+  40% {
+    transform: scale(0.97);
+    box-shadow: inset 0 0 60px rgba(63, 224, 138, 0.35);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: inset 0 0 0 rgba(63, 224, 138, 0);
+  }
+}
+/* Jaquette qui suit la souris pendant le glisser. */
+.dl-fantome {
+  position: fixed;
+  z-index: 60;
+  width: 96px;
+  aspect-ratio: 3 / 4;
+  margin: -64px 0 0 -48px;
+  border-radius: var(--radius-md);
+  background: #18181b center / cover no-repeat;
+  border: 2px solid #3fe08a;
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.7),
+    0 0 26px rgba(63, 224, 138, 0.35);
+  transform: rotate(-6deg) scale(1.05);
+  pointer-events: none;
+}
+@media (max-width: 1100px) {
+  .dl-installer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+html.defile .dl-zone__fleche,
+html.defile .dl-zone__anneau {
+  animation-play-state: paused;
+}

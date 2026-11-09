@@ -1,0 +1,134 @@
+/* Courbe vivante (Classements, Téléchargements). */
+.courbe {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.courbe__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.courbe__grille {
+  stroke: rgba(238, 242, 255, 0.06);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.courbe__aire,
+.courbe__ligne,
+.courbe__passage {
+  transition: d 1.1s var(--ease);
+}
+.courbe__aire {
+  animation: courbe-apparait 1.2s var(--ease) both;
+}
+.courbe__ligne {
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 6px var(--courbe));
+  stroke-dasharray: 4000;
+  animation: courbe-trace 1.6s var(--ease) both;
+}
+.courbe__passage {
+  fill: none;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  mix-blend-mode: screen;
+}
+@keyframes courbe-trace {
+  from {
+    stroke-dashoffset: 4000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes courbe-apparait {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+/* Point le plus récent : il pulse comme un signal. */
+.courbe__point {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transition:
+    left 1.1s var(--ease),
+    top 1.1s var(--ease);
+}
+.courbe__point span {
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--courbe);
+  box-shadow: 0 0 12px var(--courbe);
+}
+.courbe__point span::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--courbe);
+  animation: courbe-signal 1.8s ease-out infinite;
+}
+@keyframes courbe-signal {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+/* En attente de données : ligne de base pointillée et balayage lumineux. */
+.courbe__base {
+  stroke: rgba(238, 242, 255, 0.2);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 7;
+  vector-effect: non-scaling-stroke;
+  animation: courbe-pointilles 1.2s linear infinite;
+}
+@keyframes courbe-pointilles {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+.courbe__balayage {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--courbe) 22%, transparent), transparent);
+  animation: courbe-balaye 2.8s ease-in-out infinite;
+}
+@keyframes courbe-balaye {
+  from {
+    left: -18%;
+  }
+  to {
+    left: 100%;
+  }
+}
+.courbe__attente {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  font-size: 12.5px;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+html.defile .courbe * {
+  animation-play-state: paused !important;
+}

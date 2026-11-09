@@ -3,6 +3,7 @@ import { api } from "../../api/commandes";
 import { useAmis } from "../../api/requetes";
 import type { Ami } from "../../api/types";
 import { ilYA, statut } from "../../lib/format";
+import { viaCache } from "../../lib/imageLocale";
 
 const MAX = 7;
 
@@ -65,7 +66,7 @@ function LigneAmi({ ami, ouvert }: { ami: Ami; ouvert: boolean }) {
   return (
     <div className="amis__ligne">
       <div className={`amis__avatar${enJeu || enLigne ? "" : " is-absent"}`} title={`${ami.pseudo} · ${sous}`}>
-        {ami.avatar && !ratee ? <img src={ami.avatar} alt="" onError={() => setRatee(true)} /> : null}
+        {ami.avatar && !ratee ? <img src={viaCache(ami.avatar)} alt="" onError={() => setRatee(true)} /> : null}
         <span className={`amis__point${enJeu ? " is-jeu" : enLigne ? " is-ligne" : ""}`} />
       </div>
       {ouvert && (

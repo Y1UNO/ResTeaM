@@ -341,7 +341,7 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 - **Pas fait** : « N amis possèdent ce jeu » (un appel par ami, à voir à l'étape 8) et l'état réel de la liste de souhaits (étape 7).
 - **Tests** : 34 tests Rust, dont la suppression dans une fausse bibliothèque et les garde-fous sur les noms de dossier. Vérifié dans l'aperçu : fiche, comparaison, désinstallation, magasin, installation en attente d'un jeu. **À vérifier dans l'exe** : vraie désinstallation, vraie installation pendant un jeu, masquage de la fenêtre Steam.
 
-### Étape 6 — Profil, corbeille sur l'accueil (9 novembre 2026)
+### Étape 6 — Profil, corbeille sur l'accueil (9 novembre 2026) — validée par Tom dans l'exe
 
 - **Accueil** : une corbeille à côté de « Fiche du jeu » (demande de Tom) ouvre la même confirmation de désinstallation que la fiche. Elle est grisée si une désinstallation est déjà prévue.
 - **Profil** (`src/pages/profil/`, maquette 04) :
@@ -354,6 +354,32 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
   - **badges** : niveau, nom (Années de service, Collectionneur de jeux, badges de jeux), date dans l'infobulle. L'API ne donne pas les images des badges.
 - La teinte du fond vient des couleurs de l'avatar.
 - Écart avec la maquette : « ces 2 semaines » au lieu de « ces 15 jours », parce que l'API de Steam compte sur 2 semaines.
+
+### Étape 7 — Boutique complète, images en cache, liste de souhaits, classements (9 novembre 2026)
+
+- **Images plus rapides** (demande de Tom) : protocole `img` (`http://img.localhost/<adresse>`, `src-tauri/src/images_locales.rs`).
+  - Chaque image de Steam est téléchargée une fois, rangée dans `images/` (dossier de données), puis lue sur le disque ;
+  - seuls les CDN de Steam sont autorisés, pour que le protocole ne serve pas de relais vers un autre site ;
+  - écriture atomique ; le cache est limité à 800 Mo (les plus anciennes images sont effacées au démarrage) ;
+  - côté front, `viaCache()` (`src/lib/imageLocale.ts`) dans `imagesDe`, les avatars, les captures et la boutique. Dans l'aperçu navigateur, les adresses restent directes.
+- **Boutique complète** (demande de Tom, `src/pages/magasin/`, `src-tauri/src/steam/boutique.rs`) :
+  - recherche en haut de l'écran : résultats en direct (image, tags, prix), flèches et Entrée, « Voir les N résultats » en grille ;
+  - le ruban de la vedette gagne l'onglet « À venir » ;
+  - « Ta liste de souhaits » : 4 cartes, les promos d'abord, et un lien « Tout voir » ;
+  - « Parcourir le magasin » : Meilleures ventes, Nouveautés, À venir, Offres, Gratuits et 12 genres. C'est une liste de lignes (bannière, tags, date, prix) avec un aperçu qui suit le survol (avis, tags, captures, Voir la fiche) ;
+  - Rust : fiches courtes en lot (`GetItems` : images, prix, promo, avis, tags en français, captures), cache de 3 h par jeu. Recherche (`storesearch`), rayons (recherche JSON du magasin : gratuits, tags), noms des tags (`GetTagList`, 7 jours).
+- **Liste de souhaits** (`src/pages/Souhaits.tsx`, maquette 05) :
+  - bandeau « N de tes souhaits sont en promo » ;
+  - tri Mon ordre / Promos d'abord / Prix ;
+  - lignes avec image, date, avis, tags, date d'ajout, prix et Acheter (plein si promo, popup de sécurité) ;
+  - croix au survol qui ouvre la page dans Steam (décision de l'étape 0) ;
+  - lecture par `IWishlistService/GetWishlist`.
+- **Classements** (`src/pages/Classements.tsx`, `src-tauri/src/steam/classements.rs`, maquette 06) :
+  - onglets Meilleures ventes (de la semaine, en France) et Les plus joués (pic du jour) ;
+  - le n°1 en grand avec son visuel ;
+  - les places 2 à 10 avec leur évolution (▲ ▼ = nouveau) et « Voir le top 100 » ;
+  - **« En jeu maintenant »** : Steam ne publie pas le total. C'est donc la somme des joueurs en jeu sur les 10 jeux les plus joués (`GetNumberOfCurrentPlayers`, relu toutes les 3 min). La courbe de 24 h est faite des relevés de ResTeaM (un toutes les 20 min, quand l'app est ouverte), et la page l'explique.
+- **Tests** : 40 tests Rust (dont les hôtes autorisés du cache d'images, la lecture d'un produit en promo, les relevés sur 24 h) et 11 tests réseau ignorés, lancés une fois sur le vrai Steam.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

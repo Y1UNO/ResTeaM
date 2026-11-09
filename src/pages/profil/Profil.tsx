@@ -19,6 +19,7 @@ import { degradeJaquette, imagesDe } from "../../lib/images";
 import { NOMS_RANGS, PALIERS, ROMAINS, rangDepuisMinutes } from "../../lib/rangs";
 import "../pages.css";
 import "./profil.css";
+import { viaCache } from "../../lib/imageLocale";
 
 const RANGS = [
   { romain: "0", nom: "Novice", seuil: "< 10 h" },
@@ -51,7 +52,7 @@ export function Profil() {
   const n = niveau.data?.donnees;
   const jeux = useMemo(() => (biblio.data?.donnees.jeux ?? []).filter((x) => !x.cache), [biblio.data]);
   const r = recents.data?.donnees ?? [];
-  const palette = usePalette(j?.avatar ?? null, j?.pseudo ?? "Profil");
+  const palette = usePalette(viaCache(j?.avatar) ?? null, j?.pseudo ?? "Profil");
 
   const minutesRecentes = r.reduce((s, x) => s + x.minutesDeuxSemaines, 0);
   const parRang = useMemo(() => {
@@ -85,7 +86,7 @@ export function Profil() {
       <div className="profil__contenu">
         <section className="profil__haut" aria-labelledby="profil-nom">
           <div className="profil__avatar">
-            {j?.avatar ? <img src={j.avatar} alt="" draggable={false} /> : <div className="profil__avatar-vide" />}
+            {j?.avatar ? <img src={viaCache(j.avatar)} alt="" draggable={false} /> : <div className="profil__avatar-vide" />}
             {n && <LuneNiveau niveau={n.niveau} fraction={n.xpPourSuivant + (n.xp - n.xpNiveauActuel) > 0 ? (n.xp - n.xpNiveauActuel) / (n.xp - n.xpNiveauActuel + n.xpPourSuivant) : 1} reste={n.xpPourSuivant} />}
           </div>
 
@@ -158,7 +159,7 @@ export function Profil() {
             </span>
             {dansRang.slice(0, MAX_PUCES).map((jeu) => (
               <button key={jeu.appId} type="button" className="profil-puce" onClick={() => navigate(`/jeu/${jeu.appId}`)}>
-                <span className="profil-puce__icone" style={jeu.icone ? { backgroundImage: `url("${jeu.icone}")` } : { background: degradeJaquette(jeu.nom) }} />
+                <span className="profil-puce__icone" style={jeu.icone ? { backgroundImage: `url("${viaCache(jeu.icone)}")` } : { background: degradeJaquette(jeu.nom) }} />
                 <span className="profil-puce__nom">{jeu.nom}</span>
                 <span className="profil-puce__h">{jeu.minutesTotal > 0 ? heures(jeu.minutesTotal) : "jamais lancé"}</span>
               </button>

@@ -2991,6 +2991,7 @@ name = "resteam"
 version = "0.1.0"
 dependencies = [
  "keyring",
+ "percent-encoding",
  "rand",
  "reqwest",
  "rusqlite",

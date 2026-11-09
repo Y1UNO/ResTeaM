@@ -101,6 +101,8 @@ pub struct VitrineMagasin {
     pub offres: Vec<OffreMagasin>,
     pub meilleures_ventes: Vec<OffreMagasin>,
     pub nouveautes: Vec<OffreMagasin>,
+    #[serde(default)]
+    pub a_venir: Vec<OffreMagasin>,
 }
 
 // ——— Nettoyage du HTML de Steam ———
@@ -381,6 +383,7 @@ impl ClientSteam {
             offres: offres(&corps["specials"], 12),
             meilleures_ventes: offres(&corps["top_sellers"], 12),
             nouveautes: offres(&corps["new_releases"], 12),
+            a_venir: offres(&corps["coming_soon"], 12),
         })
     }
 }

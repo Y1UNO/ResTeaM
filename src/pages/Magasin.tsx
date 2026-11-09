@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/commandes";
 import { useBibliotheque, useImages, useVitrineMagasin } from "../api/requetes";
@@ -9,11 +9,13 @@ import { degradeJaquette, imagesDe } from "../lib/images";
 import { Affiche, Lueurs } from "./accueil/Ambiance";
 import { PanneauAmis } from "./accueil/PanneauAmis";
 import { PopupAchat } from "./fiche/PopupAchat";
+import { RechercheMagasin, ResultatsRecherche, Rayons, SouhaitsApercu } from "./magasin/Boutique";
+import "./magasin/boutique.css";
 import "./pages.css";
 import "./accueil/accueil.css";
 import "./magasin.css";
 
-type Onglet = "offres" | "ventes" | "nouveautes";
+type Onglet = "offres" | "ventes" | "nouveautes" | "aVenir";
 
 const FOND_NEUTRE = "radial-gradient(ellipse at 65% 35%, rgba(70,72,84,.55), rgba(40,42,50,.2) 55%, #0E0E10 100%)";
 
@@ -43,7 +45,8 @@ export function Magasin() {
 
   const [onglet, setOnglet] = useState<Onglet>("offres");
   const liste = useMemo(() => {
-    const brute = onglet === "offres" ? v?.offres : onglet === "ventes" ? v?.meilleuresVentes : v?.nouveautes;
+    const brute =
+      onglet === "offres" ? v?.offres : onglet === "ventes" ? v?.meilleuresVentes : onglet === "aVenir" ? v?.aVenir : v?.nouveautes;
     return brute ?? [];
   }, [v, onglet]);
   const [choisi, setChoisi] = useState(0);
@@ -59,11 +62,22 @@ export function Magasin() {
     { id: "offres", libelle: "Offres" },
     { id: "ventes", libelle: "Meilleures ventes" },
     { id: "nouveautes", libelle: "Nouveautés" },
+    { id: "aVenir", libelle: "À venir" },
   ];
+  const [rechercheTout, setRechercheTout] = useState<string | null>(null);
+  const boutique = useRef<HTMLDivElement>(null);
+  const voirResultats = (terme: string) => {
+    setRechercheTout(terme);
+    window.setTimeout(() => boutique.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
 
   return (
     <div className="accueil magasin">
       {vedette && <Lueurs palette={palette} />}
+
+      <div className="magasin__recherche">
+        <RechercheMagasin onTout={voirResultats} />
+      </div>
 
       {vedette && im ? (
         <section aria-label="Jeu en vedette du magasin" className="hero">
@@ -85,9 +99,15 @@ export function Magasin() {
 
               <div className="hero__chiffres">
                 <div className="carte-verre hero__puce">
-                  <span className="hero__puce-grand">{vedette.prixFinal > 0 ? euros(vedette.prixFinal) : "Gratuit"}</span>
+                  <span className="hero__puce-grand">
+                    {vedette.prixFinal > 0 ? euros(vedette.prixFinal) : onglet === "aVenir" ? "Bientôt" : "Gratuit"}
+                  </span>
                   <span className="hero__puce-petit">
-                    {vedette.reduction > 0 ? `au lieu de ${euros(vedette.prixInitial)}` : "prix sur Steam"}
+                    {vedette.reduction > 0
+                      ? `au lieu de ${euros(vedette.prixInitial)}`
+                      : onglet === "aVenir"
+                        ? "pas encore sorti"
+                        : "prix sur Steam"}
                   </span>
                 </div>
                 {vedette.reduction > 0 && (
@@ -164,7 +184,13 @@ export function Magasin() {
       <section aria-labelledby="ruban-magasin" className="ruban">
         <div className="ruban__entete">
           <h2 id="ruban-magasin" className="ruban__titre">
-            {onglet === "offres" ? "Les offres du moment" : onglet === "ventes" ? "Les plus vendus" : "Tout juste sortis"}
+            {onglet === "offres"
+              ? "Les offres du moment"
+              : onglet === "ventes"
+                ? "Les plus vendus"
+                : onglet === "aVenir"
+                  ? "Bientôt disponibles"
+                  : "Tout juste sortis"}
             {vitrine.data?.horsLigne && <span className="placeholder-note"> · hors ligne</span>}
           </h2>
           <div className="ruban__onglets" role="tablist" aria-label="Rayons du magasin">
@@ -191,11 +217,23 @@ export function Magasin() {
               jaquette={imagesDe(o.appId, images.data).jaquette}
               possede={possedes.has(o.appId)}
               choisie={i === choisi}
+              aVenir={onglet === "aVenir"}
               onClick={() => setChoisi(i)}
             />
           ))}
         </div>
       </section>
+
+      <div ref={boutique} className="boutique">
+        {rechercheTout ? (
+          <ResultatsRecherche terme={rechercheTout} onFermer={() => setRechercheTout(null)} />
+        ) : (
+          <>
+            <SouhaitsApercu />
+            <Rayons vitrine={v} />
+          </>
+        )}
+      </div>
 
       <PanneauAmis />
 
@@ -217,9 +255,11 @@ function CarteOffre({
   jaquette,
   possede,
   choisie,
+  aVenir,
   onClick,
 }: {
   offre: OffreMagasin;
+  aVenir: boolean;
   jaquette: string | null;
   possede: boolean;
   choisie: boolean;
@@ -245,7 +285,7 @@ function CarteOffre({
       </div>
       <span className="rib__prix">
         {offre.reduction > 0 && <s>{euros(offre.prixInitial)}</s>}
-        <strong>{offre.prixFinal > 0 ? euros(offre.prixFinal) : "Gratuit"}</strong>
+        <strong>{offre.prixFinal > 0 ? euros(offre.prixFinal) : aVenir ? "Bientôt" : "Gratuit"}</strong>
       </span>
     </button>
   );

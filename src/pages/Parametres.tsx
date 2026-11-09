@@ -9,6 +9,7 @@ import { Smoke } from "../components/Smoke";
 import { useSession } from "../app/session";
 import "./pages.css";
 import "./Parametres.css";
+import { viaCache } from "../lib/imageLocale";
 
 /** Paramètres : compte Steam (déconnexion) et clé Steam Web API (remplacer, supprimer). */
 export function Parametres() {
@@ -53,7 +54,7 @@ export function Parametres() {
             Compte Steam
           </h2>
           <div className="parametres__compte">
-            <span className="parametres__avatar">{j?.avatar ? <img src={j.avatar} alt="" /> : <IconPerson size={26} />}</span>
+            <span className="parametres__avatar">{j?.avatar ? <img src={viaCache(j.avatar)} alt="" /> : <IconPerson size={26} />}</span>
             <div className="parametres__identite">
               <strong>{j?.pseudo ?? (joueur.isLoading ? "Chargement…" : "Compte Steam")}</strong>
               <span>

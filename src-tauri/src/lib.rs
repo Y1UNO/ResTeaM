@@ -1,6 +1,7 @@
 mod cache;
 mod commandes;
 mod erreur;
+mod images_locales;
 mod secrets;
 mod session;
 mod steam;
@@ -18,11 +19,26 @@ use steam::webapi::ClientSteam;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        // Images de Steam servies depuis le disque après le premier téléchargement.
+        .register_asynchronous_uri_scheme_protocol("img", |ctx, requete, repondeur| {
+            let app = ctx.app_handle().clone();
+            let chemin = requete.uri().path().to_string();
+            tauri::async_runtime::spawn(async move {
+                let Some(cache) = app.try_state::<images_locales::CacheImages>() else {
+                    repondeur.respond(tauri::http::Response::builder().status(503).body(Vec::new()).unwrap());
+                    return;
+                };
+                repondeur.respond(cache.servir(&chemin).await);
+            });
+        })
         .setup(|app| {
             let dossier = app.path().app_data_dir()?;
             fs::create_dir_all(&dossier)?;
             let cache = Cache::ouvrir(&dossier.join("cache.sqlite")).map_err(|e| e.to_string())?;
             let steam = ClientSteam::nouveau().map_err(|e| e.to_string())?;
+            let dossier_images = dossier.join("images");
+            app.manage(images_locales::CacheImages::nouveau(dossier_images.clone(), steam.http.clone()));
+            std::thread::spawn(move || images_locales::elaguer(&dossier_images));
             app.manage(EtatApp { cache, steam, annulation: Mutex::new(None), redemarrage: Default::default() });
             // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
             let handle = app.handle().clone();
@@ -36,6 +52,12 @@ pub fn run() {
             commandes::avis_jeu,
             commandes::vitrine_magasin,
             commandes::config_pc,
+            commandes::produits_magasin,
+            commandes::recherche_magasin,
+            commandes::rayon_magasin,
+            commandes::liste_souhaits,
+            commandes::classements,
+            commandes::en_ligne,
             commandes::file_steam,
             commandes::annuler_file_steam,
             commandes::connexion_steam,

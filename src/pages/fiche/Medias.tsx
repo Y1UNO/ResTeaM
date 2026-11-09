@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Media } from "../../api/types";
+import { viaCache } from "../../lib/imageLocale";
 
 const NB_MINIATURES = 5;
 
@@ -33,7 +34,7 @@ export function Medias({ medias, nom }: { medias: Media[]; nom: string }) {
   return (
     <div className="fiche-medias">
       <div key={cle} className="fiche-medias__grand">
-        {m.video ? <Video media={m} /> : <img src={m.url} alt={`${nom} : capture d’écran`} draggable={false} />}
+        {m.video ? <Video media={m} /> : <img src={viaCache(m.url)} alt={`${nom} : capture d’écran`} draggable={false} />}
         <div className="fiche-medias__legende" aria-hidden="true">
           <span>{m.video ? "Bande-annonce" : "Capture d’écran"}</span>
           <span>
@@ -51,7 +52,7 @@ export function Medias({ medias, nom }: { medias: Media[]; nom: string }) {
               aria-label={x.video ? "Bande-annonce" : `Capture ${i}`}
               aria-pressed={i === choisi}
               onClick={() => choisir(i)}
-              style={{ backgroundImage: `url("${x.miniature}")` }}
+              style={{ backgroundImage: `url("${viaCache(x.miniature)}")` }}
             >
               {x.video && (
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -101,6 +102,6 @@ function Video({ media }: { media: Media }) {
     };
   }, [media.url]);
 
-  if (echec) return <img src={media.miniature} alt="" draggable={false} />;
-  return <video ref={ref} poster={media.miniature} controls autoPlay muted playsInline preload="metadata" />;
+  if (echec) return <img src={viaCache(media.miniature)} alt="" draggable={false} />;
+  return <video ref={ref} poster={viaCache(media.miniature)} controls autoPlay muted playsInline preload="metadata" />;
 }

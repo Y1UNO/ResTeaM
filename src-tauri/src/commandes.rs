@@ -16,6 +16,8 @@ use crate::steam::bibliotheque::{self, Bibliotheque};
 use crate::steam::images::{self, ImagesJeu};
 use crate::steam::installation::{self, Disque, StatsSysteme};
 use crate::steam::liens::{self, ActionSteam};
+use crate::steam::boutique::{Produit, Souhait};
+use crate::steam::classements::{self, Classements, EnLigne, Releve};
 use crate::steam::magasin::{AvisJeu, FicheJeu, VitrineMagasin};
 use crate::steam::notes::{self, PatchNotes};
 use crate::steam::pc::{self, ConfigPc};
@@ -445,4 +447,126 @@ pub async fn config_pc() -> Resultat<ConfigPc> {
     tauri::async_runtime::spawn_blocking(pc::config_pc)
         .await
         .map_err(|e| Erreur::Interne(format!("lecture de la configuration : {e}")))
+}
+
+// ——— Boutique complète : recherche, rayons, liste de souhaits ———
+
+const TTL_PRODUIT: i64 = 3 * 60 * 60;
+const TTL_TAGS: i64 = 7 * 24 * 60 * 60;
+const TTL_RECHERCHE: i64 = 10 * 60;
+const TTL_RAYON: i64 = 30 * 60;
+const TTL_SOUHAITS: i64 = 10 * 60;
+
+/// Fiches courtes, depuis le cache (3 h) ou Steam pour celles qui manquent.
+async fn produits_caches(etat: &EtatApp, app_ids: &[u32]) -> Resultat<Vec<Produit>> {
+    let mut connus = HashMap::new();
+    let mut manquants = Vec::new();
+    for id in app_ids.iter().copied().take(100) {
+        match etat.cache.frais::<Produit>(&format!("produit:{id}"))? {
+            Some(p) => {
+                connus.insert(id, p);
+            }
+            None => manquants.push(id),
+        }
+    }
+    if !manquants.is_empty() {
+        let tags = etat.cache.avec_cache("tags-fr", TTL_TAGS, || etat.steam.noms_tags()).await?.donnees;
+        for p in etat.steam.produits(&manquants, &tags).await? {
+            etat.cache.ranger(&format!("produit:{}", p.app_id), &p, TTL_PRODUIT)?;
+            connus.insert(p.app_id, p);
+        }
+    }
+    Ok(app_ids.iter().filter_map(|id| connus.remove(id)).collect())
+}
+
+/// Fiches courtes de plusieurs jeux (images, prix, avis, tags, captures).
+#[tauri::command]
+pub async fn produits_magasin(etat: State<'_, EtatApp>, app_ids: Vec<u32>) -> Resultat<Vec<Produit>> {
+    produits_caches(&etat, &app_ids).await
+}
+
+/// Recherche de jeux par nom dans le magasin.
+#[tauri::command]
+pub async fn recherche_magasin(etat: State<'_, EtatApp>, terme: String) -> Resultat<Vec<Produit>> {
+    let terme = terme.trim().to_lowercase();
+    if terme.chars().count() < 2 || terme.chars().count() > 60 {
+        return Ok(vec![]);
+    }
+    let ids = etat
+        .cache
+        .avec_cache(&format!("recherche:{terme}"), TTL_RECHERCHE, || etat.steam.recherche_ids(&terme))
+        .await?
+        .donnees;
+    produits_caches(&etat, &ids).await
+}
+
+/// Rayon du magasin (`gratuits` ou `tag:<id>`), par meilleures ventes.
+#[tauri::command]
+pub async fn rayon_magasin(etat: State<'_, EtatApp>, rayon: String) -> Resultat<Vec<Produit>> {
+    let ids = etat
+        .cache
+        .avec_cache(&format!("rayon:{rayon}"), TTL_RAYON, || etat.steam.rayon_ids(&rayon))
+        .await?
+        .donnees;
+    produits_caches(&etat, &ids).await
+}
+
+/// Liste de souhaits du compte connecté (ordre choisi dans Steam).
+#[tauri::command]
+pub async fn liste_souhaits(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<Donnee<Vec<Souhait>>> {
+    let session = session_requise(&app)?;
+    let sid = session.steam_id;
+    etat.cache.avec_cache(&format!("souhaits:{sid}"), TTL_SOUHAITS, || etat.steam.souhaits(&sid)).await
+}
+
+// ——— Étape 7 : classements ———
+
+const TTL_CLASSEMENTS: i64 = 60 * 60;
+const TTL_EN_LIGNE: i64 = 3 * 60;
+
+/// Jeux les plus joués et meilleures ventes de la semaine (top 100 chacun).
+#[tauri::command]
+pub async fn classements(etat: State<'_, EtatApp>) -> Resultat<Donnee<Classements>> {
+    etat.cache
+        .avec_cache("classements", TTL_CLASSEMENTS, || async {
+            let (joues, ventes) = tokio::join!(etat.steam.plus_joues(), etat.steam.meilleures_ventes());
+            Ok(Classements { plus_joues: joues?, meilleures_ventes: ventes.unwrap_or_default() })
+        })
+        .await
+}
+
+/// Joueurs en jeu sur le top 10 des plus joués, avec les relevés des dernières 24 h.
+#[tauri::command]
+pub async fn en_ligne(etat: State<'_, EtatApp>) -> Resultat<Donnee<EnLigne>> {
+    etat.cache
+        .avec_cache("en-ligne", TTL_EN_LIGNE, || async {
+            let top = etat
+                .cache
+                .avec_cache("classements", TTL_CLASSEMENTS, || async {
+                    Ok(Classements { plus_joues: etat.steam.plus_joues().await?, meilleures_ventes: vec![] })
+                })
+                .await?
+                .donnees
+                .plus_joues;
+            let ids: Vec<u32> = top.iter().take(10).map(|c| c.app_id).collect();
+            let mut taches = Vec::new();
+            for id in ids {
+                let steam = etat.steam.http.clone();
+                taches.push(tauri::async_runtime::spawn(async move {
+                    ClientSteam { http: steam }.joueurs_en_jeu(id).await.unwrap_or(0)
+                }));
+            }
+            let mut joueurs = 0;
+            for t in taches {
+                joueurs += t.await.unwrap_or(0);
+            }
+            if joueurs == 0 {
+                return Err(Erreur::Reseau);
+            }
+            let anciens = etat.cache.frais::<Vec<Releve>>("releves-en-ligne")?.unwrap_or_default();
+            let releves = classements::ajouter_releve(anciens, Releve { le: crate::cache::maintenant(), joueurs });
+            etat.cache.ranger("releves-en-ligne", &releves, 2 * 24 * 3600)?;
+            Ok(EnLigne { joueurs, releves })
+        })
+        .await
 }

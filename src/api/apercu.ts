@@ -434,7 +434,8 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
           o(2379780, "Balatro", 25, 1499),
         ],
         meilleuresVentes: [o(730, "Counter-Strike 2", 0, 0), o(2868840, "Slay the Spire 2", 0, 2499)],
-        nouveautes: [o(2868840, "Slay the Spire 2", 10, 2499)],
+        nouveautes: [o(2868840, "Slay the Spire 2", 10, 2499), o(2379780, "Balatro", 0, 1499)],
+        aVenir: [o(1903340, "Clair Obscur: Expedition 33", 0, 4999)],
       });
     }
     case "config_pc":
@@ -447,6 +448,78 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         memoireGraphique: 12_820_938_752,
         espaceLibreMax: 582_099_709_952,
       };
+    case "produits_magasin":
+    case "recherche_magasin":
+    case "rayon_magasin": {
+      const catalogue: [number, string, number, number, string[]][] = [
+        [1145350, "Hades II", 2899, 20, ["Action", "Roguelike", "Indépendant"]],
+        [990080, "Hogwarts Legacy", 5999, 75, ["Monde ouvert", "RPG", "Aventure"]],
+        [1903340, "Clair Obscur: Expedition 33", 4999, 25, ["RPG", "Tour par tour"]],
+        [413150, "Stardew Valley", 1399, 0, ["Simulation", "Agriculture", "Détente"]],
+        [1091500, "Cyberpunk 2077", 5999, 65, ["RPG", "Monde ouvert", "Science-fiction"]],
+        [1245620, "ELDEN RING", 5999, 40, ["Souls-like", "RPG", "Difficile"]],
+        [367520, "Hollow Knight", 1499, 50, ["Metroidvania", "2D", "Difficile"]],
+        [2379780, "Balatro", 1499, 0, ["Roguelike", "Cartes", "Indépendant"]],
+        [730, "Counter-Strike 2", 0, 0, ["FPS", "Compétitif", "Tir"]],
+        [2868840, "Slay the Spire 2", 2499, 10, ["Roguelike", "Cartes", "Stratégie"]],
+      ];
+      const terme = String(args?.terme ?? "").toLowerCase();
+      const ids = (args?.appIds as number[] | undefined) ?? null;
+      let liste = catalogue;
+      if (commande === "recherche_magasin") liste = catalogue.filter((c) => c[1].toLowerCase().includes(terme));
+      if (commande === "rayon_magasin") liste = args?.rayon === "gratuits" ? catalogue.filter((c) => c[2] === 0) : catalogue.slice(2);
+      if (ids) liste = ids.map((id) => catalogue.find((c) => c[0] === id) ?? [id, `Jeu ${id}`, 1999, 0, ["Indépendant"]]);
+      return liste.map(([appId, nom, initial, reduction, tags]) => {
+        const final_ = Math.round((initial * (100 - reduction)) / 100);
+        const t = (c: number) => `${Math.floor(c / 100)},${String(c % 100).padStart(2, "0")} €`;
+        const hades = appId === 1145350;
+        return {
+          appId,
+          nom,
+          banniere: `${CDN_APERCU}/${appId}/header.jpg`,
+          capsule: `${CDN_APERCU}/${appId}/capsule_616x353.jpg`,
+          jaquette: `${CDN_APERCU}/${appId}/library_600x900.jpg`,
+          hero: `${CDN_APERCU}/${appId}/library_hero.jpg`,
+          prix: initial ? { final_, initial, reduction, texteFinal: t(final_), texteInitial: t(initial), finPromo: reduction ? maintenant() + 86400 * 3 : null } : null,
+          gratuit: initial === 0,
+          sortie: maintenant() - 86400 * 400,
+          sortieTexte: null,
+          aVenir: false,
+          avis: { libelle: "Très positives", pourcentage: 92, nombre: 48_210 },
+          tags,
+          captures: hades
+            ? ["ef0f63061d0a0a9a7e46f3b84f125d25330e8f19", "c88996aa0af82894a8e50ebb951a503ebce3ab24", "b88cb7b48a86f07a7288bf37141f6558279f9bfc", "c8d2b18451a2cc4d5b4fdd78ed84a5e64e051eac"].map(
+                (h) => `${SS}/ss_${h}.600x338.jpg?t=1779901265`,
+              )
+            : [`${CDN_APERCU}/${appId}/header.jpg`],
+        };
+      });
+    }
+    case "liste_souhaits":
+      return enveloppe([
+        { appId: 1245620, priorite: 1, ajouteLe: maintenant() - 86400 * 300 },
+        { appId: 367520, priorite: 2, ajouteLe: maintenant() - 86400 * 120 },
+        { appId: 413150, priorite: 3, ajouteLe: maintenant() - 86400 * 40 },
+        { appId: 1091500, priorite: 0, ajouteLe: maintenant() - 86400 * 10 },
+        { appId: 2379780, priorite: 0, ajouteLe: maintenant() - 86400 * 2 },
+      ]);
+    case "classements": {
+      const ids = [730, 578080, 570, 431960, 1145350, 1422450, 1172470, 990080, 2379780, 413150, 1091500, 1245620];
+      return enveloppe({
+        plusJoues: ids.map((appId, i) => ({ rang: i + 1, appId, rangAvant: i === 1 ? 3 : i === 2 ? 2 : i + 1, valeur: Math.round(1_300_000 / (i + 1)) })),
+        meilleuresVentes: [...ids].reverse().map((appId, i) => ({ rang: i + 1, appId, rangAvant: i + 2, valeur: 11 - i })),
+      });
+    }
+    case "en_ligne": {
+      const t = maintenant();
+      return enveloppe({
+        joueurs: 4_118_320,
+        releves: Array.from({ length: 30 }, (_, i) => ({
+          le: t - (29 - i) * 1800,
+          joueurs: Math.round(3_600_000 + 500_000 * Math.sin((i / 30) * Math.PI * 2 - 1.2) + 60_000 * Math.sin(i / 2)),
+        })),
+      });
+    }
     case "patch_notes":
       return enveloppe({
         id: "1",

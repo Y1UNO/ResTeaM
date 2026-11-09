@@ -195,3 +195,50 @@ export function useVitrineMagasin() {
 export function useConfigPc() {
   return useQuery({ queryKey: ["config-pc"], queryFn: api.configPc, staleTime: Infinity });
 }
+
+// ——— Boutique complète ———
+
+export function useProduits(appIds: number[]) {
+  const cle = appIds.join(",");
+  return useQuery({
+    queryKey: ["produits", cle],
+    queryFn: () => api.produitsMagasin(appIds),
+    enabled: appIds.length > 0,
+    staleTime: 30 * 60_000,
+    placeholderData: (avant) => avant,
+  });
+}
+
+export function useRechercheMagasin(terme: string) {
+  const t = terme.trim();
+  return useQuery({
+    queryKey: ["recherche-magasin", t.toLowerCase()],
+    queryFn: () => api.rechercheMagasin(t),
+    enabled: t.length >= 2,
+    staleTime: 10 * 60_000,
+    placeholderData: (avant) => avant,
+  });
+}
+
+export function useRayonMagasin(rayon: string | null) {
+  return useQuery({
+    queryKey: ["rayon", rayon],
+    queryFn: () => api.rayonMagasin(rayon as string),
+    enabled: rayon != null,
+    staleTime: 30 * 60_000,
+  });
+}
+
+export function useSouhaits() {
+  const { pret, steamId } = usePret();
+  return useQuery({ queryKey: ["souhaits", steamId], queryFn: api.listeSouhaits, enabled: pret, staleTime: 5 * 60_000 });
+}
+
+export function useClassements() {
+  return useQuery({ queryKey: ["classements"], queryFn: api.classements, staleTime: 30 * 60_000 });
+}
+
+/** Joueurs en jeu (top 10), relu toutes les 3 min tant que la page est ouverte. */
+export function useEnLigne() {
+  return useQuery({ queryKey: ["en-ligne"], queryFn: api.enLigne, staleTime: 60_000, refetchInterval: 3 * 60_000 });
+}

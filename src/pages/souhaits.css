@@ -1,0 +1,170 @@
+/* Liste de souhaits — valeurs de kit/design/05-liste-de-souhaits.dc.html. */
+.souhaits {
+  max-width: 1400px;
+}
+.souhaits__entete {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.souhaits__promo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: rgba(238, 242, 255, 0.06);
+  border: 1px solid var(--line-strong);
+  font-size: 15px;
+  color: var(--accent);
+  animation: rise-in 0.5s var(--ease) both;
+}
+.souhaits__promo span {
+  color: var(--text-1);
+}
+.souhaits__vide {
+  padding: 80px 0;
+  margin: 0;
+  text-align: center;
+  color: var(--text-4);
+}
+.souhaits__liste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.souhait {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 12px 18px 12px 12px;
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+  border: 1px solid var(--line-1);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 148px;
+  animation: rise-in 0.45s var(--ease) both;
+  transition:
+    border-color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+.souhait:hover {
+  border-color: rgba(238, 242, 255, 0.24);
+  transform: translateX(3px);
+}
+.souhait.is-promo {
+  border-color: rgba(238, 242, 255, 0.14);
+}
+.souhait__image {
+  position: relative;
+  flex: 0 0 220px;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #18181b;
+  cursor: pointer;
+}
+.souhait__image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease);
+}
+.souhait:hover .souhait__image img {
+  transform: scale(1.04);
+}
+.souhait__texte {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.souhait__nom {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-1);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.souhait__nom:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.souhait__meta {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.souhait__tags {
+  font-size: 12px;
+  color: var(--text-4);
+}
+.souhait__achat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.souhait__acheter {
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(238, 242, 255, 0.3);
+  background: none;
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+.souhait__acheter.is-plein {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0 22px rgba(238, 242, 255, 0.15);
+}
+.souhait__acheter:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+.souhait__acheter:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Croix de retrait : visible au survol de la ligne. */
+.souhait__retirer {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(238, 242, 255, 0.14);
+  background: none;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.souhait:hover .souhait__retirer,
+.souhait__retirer:focus-visible {
+  opacity: 1;
+}
+.souhait__retirer:hover {
+  border-color: rgba(238, 242, 255, 0.4);
+}

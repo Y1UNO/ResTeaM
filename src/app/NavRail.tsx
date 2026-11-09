@@ -13,6 +13,7 @@ import {
 import { LogoMenu } from "./LogoMenu";
 import { PATHS } from "./paths";
 import "./NavRail.css";
+import { viaCache } from "../lib/imageLocale";
 
 type RailItem = {
   label: string;
@@ -62,7 +63,7 @@ export function NavRail() {
   const navigate = useNavigate();
   const profileActive = isActive(pathname, [PATHS.profil]);
   const joueur = useJoueurMoi();
-  const avatarUrl = joueur.data?.donnees.avatar;
+  const avatarUrl = viaCache(joueur.data?.donnees.avatar);
   const personaName = joueur.data?.donnees.pseudo;
   const [avatarCasse, setAvatarCasse] = useState(false);
   useEffect(() => setAvatarCasse(false), [avatarUrl]);

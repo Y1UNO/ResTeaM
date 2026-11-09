@@ -1,4 +1,5 @@
 import type { ImagesJeu } from "../api/types";
+import { viaCache } from "./imageLocale";
 
 const CDN = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps";
 
@@ -6,10 +7,10 @@ const CDN = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps"
 export function imagesDe(appId: number, toutes?: Record<string, ImagesJeu>): ImagesJeu {
   const i = toutes?.[String(appId)];
   return {
-    jaquette: i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`,
-    jaquettePetite: i?.jaquettePetite ?? i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`,
-    hero: i?.hero ?? `${CDN}/${appId}/library_hero_2x.jpg`,
-    banniere: i?.banniere ?? `${CDN}/${appId}/header.jpg`,
+    jaquette: viaCache(i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`),
+    jaquettePetite: viaCache(i?.jaquettePetite ?? i?.jaquette ?? `${CDN}/${appId}/library_600x900.jpg`),
+    hero: viaCache(i?.hero ?? `${CDN}/${appId}/library_hero_2x.jpg`),
+    banniere: viaCache(i?.banniere ?? `${CDN}/${appId}/header.jpg`),
   };
 }
 

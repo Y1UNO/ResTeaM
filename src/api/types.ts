@@ -247,7 +247,12 @@ export type OffreMagasin = {
   image: string | null;
   finOffre: number | null;
 };
-export type VitrineMagasin = { offres: OffreMagasin[]; meilleuresVentes: OffreMagasin[]; nouveautes: OffreMagasin[] };
+export type VitrineMagasin = {
+  offres: OffreMagasin[];
+  meilleuresVentes: OffreMagasin[];
+  nouveautes: OffreMagasin[];
+  aVenir?: OffreMagasin[];
+};
 export type ConfigPc = {
   systeme: string;
   memoire: number;
@@ -257,3 +262,31 @@ export type ConfigPc = {
   memoireGraphique: number | null;
   espaceLibreMax: number;
 };
+
+// ——— Boutique complète ———
+
+export type PrixProduit = { final_: number; initial: number; reduction: number; texteFinal: string; texteInitial: string; finPromo: number | null };
+export type Produit = {
+  appId: number;
+  nom: string;
+  banniere: string | null;
+  capsule: string | null;
+  jaquette: string | null;
+  hero: string | null;
+  prix: PrixProduit | null;
+  gratuit: boolean;
+  sortie: number | null;
+  sortieTexte: string | null;
+  aVenir: boolean;
+  avis: ResumeAvis | null;
+  tags: string[];
+  captures: string[];
+};
+export type Souhait = { appId: number; priorite: number; ajouteLe: number };
+
+// ——— Étape 7 : classements ———
+
+export type Classe = { rang: number; appId: number; rangAvant: number; valeur: number };
+export type Classements = { plusJoues: Classe[]; meilleuresVentes: Classe[] };
+export type Releve = { le: number; joueurs: number };
+export type EnLigne = { joueurs: number; releves: Releve[] };

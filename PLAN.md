@@ -280,6 +280,72 @@ Noté le 9 novembre 2026, à faire plus tard. **Oui, c'est faisable gratuitement
 
 Je m'occupe du code du Worker (dans `serveur/`), du déploiement avec wrangler, de la CSP et du branchement dans ResTeaM.
 
+## 4 ter. Idées retenues par Tom (9 novembre 2026, au soir)
+
+Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare et on fait le **serveur de partage des profils** (section « Plus tard » ci-dessus). Après seulement, on attaque ces idées. Rien n'est commencé.
+
+### Refusé par Tom (ne pas reproposer)
+- **Lanceur rapide** (raccourci global) : Tom a déjà son app Kayro pour ça.
+- **Sons d'interface** : inutiles pour ce genre d'app.
+- **Mini-widget** pendant le jeu : pas besoin.
+- **Overlay dans les jeux** (injection) et **liste de souhaits modifiable** (cookies) : déconseillés, Tom est d'accord.
+
+### 1. La vraie lune de ce soir
+- Le logo et les lunes de ResTeaM suivent la phase réelle de la lune, calculée sur le PC (calcul astronomique, sans Internet). Pleine lune ce soir : logo plein.
+
+### 2. Roulette « Ce soir je joue à… »
+- Une roue lunaire qui tire un jeu de la bibliothèque, avec des filtres : jamais lancé, pas fini, moins de 2 h, coop, favoris.
+- Tom veut un **côté « gambling »** (suspense, ralentissement, révélation). Reste à trouver où la mettre : accueil, barre de gauche, ou bouton dans la Bibliothèque.
+
+### 3. Journal des sessions
+- Historique de chaque jeu lancé (début, durée), à partir du suivi `jeu.rs` qui existe déjà. Gardé dans le cache chiffré.
+- Calendrier « nuits de jeu » : une case par soir, plus lumineuse quand Tom a joué longtemps. Détail d'un soir au clic.
+
+### 4. ResTeaM Wrap (indispensable pour Tom)
+- Un récap animé façon Spotify Wrapped, du mois et de l'année, en écrans plein cadre qui défilent :
+  - jeux les plus joués, heures, soirs de jeu, plus longue session ;
+  - trophées gagnés, jeux finis à 100 %, niveaux de lune gagnés ;
+  - pile de la honte vidée, meilleur prix par heure, amis avec qui il a le plus joué ;
+  - une « personnalité de joueur » amusante.
+- Bouton de partage (image à enregistrer).
+- Il se nourrit du journal des sessions : plus on commence tôt à l'enregistrer, plus le Wrap sera riche. **Le journal (idée 3) passe donc avant.**
+
+### 5. Pile de la honte
+- Les jeux achetés mais jamais lancés, triés par note Steam, avec un compteur qui descend quand Tom en lance un. Pont avec la roulette : « tirer dans la pile de la honte ».
+
+### 6. Prix par heure
+- Ce que chaque heure de jeu a coûté (prix payé estimé à partir du prix actuel ou du prix de base de Steam, divisé par les heures). Classement des jeux les plus « rentables ». À afficher dans les stats du profil et dans le Wrap.
+
+### 7. Notes par jeu
+- Un petit bloc-notes perso sur la fiche de chaque jeu (où Tom en est, ses builds, ses codes, ses astuces), chiffré par le coffre-fort. Rien n'est envoyé nulle part.
+
+### 8. Entre amis (tout est retenu)
+- **Jeux en commun** : choisir 2 ou 3 amis et voir les jeux possédés par tous (profils publics). Idéal pour organiser une soirée.
+- **Duel de profils** : Tom et un ami côte à côte (heures, trophées, lune, rangs, jeux en commun).
+- **Défis** (« premier à finir tel jeu à 100 % ») : demande le serveur de partage.
+
+### 9. Magasin (tout est retenu)
+- **Alertes de prix sur mesure** : un seuil par jeu de la liste de souhaits (« préviens-moi sous 15 € »), avec notification Windows.
+- **Historique des prix** : relevé par ResTeaM au fil des jours, pour savoir si une promo est vraiment bonne (courbe sur la fiche du jeu).
+
+### 10. Ambiance : fond Wallpaper Engine actif
+- ResTeaM lit le fond Wallpaper Engine qui tourne sur le Bureau et le reprend dans l'accueil, en vidéo 4K quand c'est possible (comme dans la fenêtre d'un mod).
+- **Réglages** : intensité du flou et **plusieurs filtres d'ambiance** (par exemple Clair de lune, Nuit profonde, Brume, Néon, Sépia, Aurore), dans la DA, uniquement en transform et opacité pour les animations.
+
+### 11. Personnalisation du profil (fond du thème)
+- Des réglages de base pour le fond du profil : choix de l'image ou de la vidéo, flou, assombrissement, teinte, position.
+
+### 12. Coffre à styles : un ticket gratuit par jour
+- Côté « gambling » **gratuit** : **un ticket par jour**, qui ouvre un tirage animé (coffre lunaire, roue…) et fait gagner un style à collectionner.
+- On travaillera **beaucoup de styles** :
+  - contours de la photo de profil ;
+  - fonds et bannières ;
+  - effets de page (pluie, lucioles, étoiles, aurore…) ;
+  - d'autres petits éléments à imaginer (badges, cadres de la lune, couleurs d'accent, titres…).
+- Raretés (commun, rare, épique, légendaire, lunaire) et doublons. Une collection à compléter dans le pinceau magique.
+- Aucun achat, aucun argent : seulement le ticket quotidien, avec peut-être un ticket bonus pour un niveau de lune gagné ou un jeu fini à 100 %.
+- Avec le serveur de partage, les amis verront les styles gagnés, et le serveur pourra valider les tirages.
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |

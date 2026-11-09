@@ -131,6 +131,21 @@ On garde les étapes de `PROMPTS.md`, avec trois ajustements :
 | 8 | Amis (Rejoindre, Ajouter), page Téléchargements, états vides, erreurs réseau, toutes les animations de fermeture | Mode hors ligne propre |
 | 9 | Audit de sécurité | Rapport + corrections |
 
+## 4 bis. Suite du plan (demande de Tom, 9 novembre 2026)
+
+Tom a validé les étapes 1 à 8 dans l'exe. Pour que ResTeaM remplace vraiment Steam au quotidien, il a choisi : les réglages (ceux de chaque jeu et ceux de Steam), le Workshop (mods installés et vitrine), remplacer Steam, les notifications, le lancement des jeux, la manette et le plein écran.
+
+| # | Contenu | Vérification dans l'exe |
+|---|---|---|
+| 10 | **Propriétés d'un jeu** (sur la fiche) : options de lancement, mises à jour automatiques, Steam Cloud, overlay, ouvrir le dossier, DLC installés, vérifier les fichiers. Les fichiers de Steam (`localconfig.vdf`, manifeste) ne sont modifiés que Steam fermé, par la file de redémarrage | Une option de lancement est bien prise par Steam |
+| 11 | **Paramètres de Steam** dans les Paramètres de ResTeaM : limite de débit, téléchargements pendant le jeu, disques et bibliothèques, démarrage de Steam avec Windows, overlay. Lecture d'abord, écriture Steam fermé | Une limite de débit changée dans ResTeaM est appliquée par Steam |
+| 12 | **Workshop** : mods installés par jeu (`appworkshop_<id>.acf` + détails), vitrine et recherche des mods d'un jeu (`IPublishedFileService/QueryFiles`). S'abonner ouvre la page dans Steam (pas d'API sans session web) | Les mods de Tom apparaissent, la recherche marche |
+| 13 | **Remplacer Steam + lancement des jeux** : démarrage avec Windows, icône dans la zone de notification, fermer = réduire, Steam lancé et gardé caché derrière. Au lancement d'un jeu : retour « en cours… », minuteur de session, ResTeaM se réduit, puis revient à la fin | ResTeaM au démarrage de Windows, Steam jamais visible |
+| 14 | **Notifications Windows** : téléchargement terminé, mise à jour prête, un ami lance un jeu, une promo dans la liste de souhaits. Réglables dans les Paramètres | Notification reçue à la fin d'un téléchargement |
+| 15 | **Manette et plein écran** : navigation à la manette dans toute l'app (API Gamepad de WebView2), focus visible, mode plein écran « Salon » | Toute l'app se pilote à la manette |
+
+À vérifier avant d'écrire dans les fichiers de Steam : les clés exactes, en lisant d'abord les fichiers du PC de Tom, sans rien modifier.
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |

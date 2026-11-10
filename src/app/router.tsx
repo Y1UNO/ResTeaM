@@ -6,6 +6,7 @@ import { Accueil } from "../pages/Accueil";
 import { Parametres } from "../pages/Parametres";
 import { Journal } from "../pages/journal/Journal";
 import { Collection } from "../pages/collection/Collection";
+import { JeuxEnCommun } from "../pages/ensemble/JeuxEnCommun";
 import { Bibliotheque } from "../pages/Bibliotheque";
 import { Fiche } from "../pages/fiche/Fiche";
 import { Magasin } from "../pages/Magasin";
@@ -55,6 +56,7 @@ export const router = createHashRouter([
       { path: PATHS.parametres, element: <Parametres /> },
       { path: PATHS.journal, element: <Journal /> },
       { path: PATHS.collection, element: <Collection /> },
+      { path: PATHS.ensemble, element: <JeuxEnCommun /> },
       { path: "*", element: <Navigate to={PATHS.accueil} replace /> },
     ],
   },

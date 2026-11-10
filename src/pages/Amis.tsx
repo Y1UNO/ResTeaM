@@ -16,6 +16,7 @@ import "./secondaires.css";
  */
 export function Amis() {
   const amis = useAmis();
+  const navigate = useNavigate();
   const [filtre, setFiltre] = useState("");
   const d = amis.data?.donnees;
   const groupes = useMemo(() => {
@@ -55,6 +56,9 @@ export function Amis() {
               <span className="sr-only">Chercher un ami</span>
               <input value={filtre} onChange={(e) => setFiltre(e.target.value)} placeholder="Chercher un ami ou un jeu" spellCheck={false} />
             </label>
+            <button type="button" className="btn btn--secondaire btn--petit" onClick={() => navigate("/ensemble")}>
+              Jeux en commun
+            </button>
             <button type="button" className="btn btn--principal btn--petit" onClick={() => void api.steamLien({ type: "amis" })}>
               + Ajouter un ami
             </button>

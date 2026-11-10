@@ -16,6 +16,7 @@ export const PATHS = {
   parametres: "/parametres",
   journal: "/journal",
   collection: "/collection",
+  ensemble: "/ensemble",
   connexion: "/connexion",
   cleApi: "/cle-api",
 } as const;

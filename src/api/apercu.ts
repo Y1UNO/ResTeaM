@@ -806,7 +806,12 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
     case "profil_joueur": {
       const i = Number(String(args?.steamId).slice(-1));
       const noms = ["Meguru Bachira", "Tututemobile", "AtoxXy", "Furios-KL"];
-      const jeux = JEUX.map((j, k) => ({ appId: j.appId, nom: j.nom, minutesTotal: j.minutes * (k + i + 1), minutesDeuxSemaines: k < 2 ? 300 : 0, icone: "", dernierLancement: maintenant() - 86400 * k }));
+      // Chaque ami a une partie des jeux de l'aperçu (pas tous), plus des jeux que « toi » n'as pas.
+      const jeux = [
+        ...JEUX.filter((_, k) => (k * 7 + i) % 4 !== 3),
+        { appId: 1172470, nom: "Apex Legends", minutes: 900, deux: 0, favori: false },
+        { appId: 413150, nom: "Stardew Valley", minutes: 420, deux: 0, favori: false },
+      ].map((j, k) => ({ appId: j.appId, nom: j.nom, minutesTotal: j.minutes ? j.minutes * (k + i + 1) : (i + 1) * 130 * (k % 3), minutesDeuxSemaines: k < 2 ? 300 : 0, icone: "", dernierLancement: maintenant() - 86400 * k }));
       return enveloppe({
         joueur: {
           steamId: String(args?.steamId), pseudo: noms[i] ?? "Ami", avatar: "", urlProfil: "https://steamcommunity.com/id/ami/",

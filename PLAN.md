@@ -322,7 +322,7 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 - Un petit bloc-notes perso sur la fiche de chaque jeu (où Tom en est, ses builds, ses codes, ses astuces), chiffré par le coffre-fort. Rien n'est envoyé nulle part.
 
 ### 8. Entre amis (tout est retenu)
-- **Jeux en commun** : choisir 2 ou 3 amis et voir les jeux possédés par tous (profils publics). Idéal pour organiser une soirée.
+- **Jeux en commun** — fait le 10 novembre 2026, voir le journal « Étape 26 » : choisir 2 ou 3 amis et voir les jeux possédés par tous (profils publics). Idéal pour organiser une soirée.
 - **Duel de profils** : Tom et un ami côte à côte (heures, trophées, lune, rangs, jeux en commun).
 - **Défis** (« premier à finir tel jeu à 100 % ») : demande le serveur de partage.
 
@@ -1194,6 +1194,23 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Aperçu : une note déjà écrite sur Hades II.
 
 **À vérifier dans l'exe** : écrire une note sur la fiche d'un jeu, fermer ResTeaM, le rouvrir : la note doit être là.
+
+### Étape 26 — Jeux en commun (10 novembre 2026)
+
+- **Nouvelle page « Jeux en commun »** (`/ensemble`, `pages/ensemble/JeuxEnCommun.tsx`) : Tom choisit 1 à 3 amis et voit les jeux que tout le monde possède. Idéal pour organiser une soirée.
+- **Accès** : bouton « Jeux en commun » en haut de la page Amis, et sur le profil d'un ami (l'ami est déjà choisi).
+- **Les joueurs de la soirée** : « Toi » puis les amis choisis, en pastilles de verre avec l'avatar (ou l'initiale si l'image manque) et une croix pour retirer. « + Ajouter un ami » ouvre une liste avec une recherche (en jeu, puis en ligne, puis les autres). Au-delà de 3 amis, le bouton disparaît.
+  - Avant de choisir : « Avec qui, ce soir ? » et les amis connectés en raccourci.
+  - Les amis choisis sont dans l'adresse de la page (`?amis=…`, identifiants de 17 chiffres vérifiés).
+- **Chiffres** : nombre de jeux en commun, combien sont déjà installés chez Tom, et le jeu le plus joué par tout le monde.
+- **Tri** : « Joués par tous » (d'abord les jeux où celui qui a le moins joué a le plus d'heures), « Ces 2 semaines », « Nom ». Filtre « Installés chez moi ».
+- **Cartes** : jaquette (avec « Installé »), nom, une barre d'heures par joueur (Tom en bleu lunaire, les amis en argent), et « Jouer » si le jeu est installé, sinon « Voir la fiche ». Un clic sur la jaquette ouvre la fiche.
+- **« Ils l'ont tous, pas toi »** : jusqu'à 8 jeux que les amis ont tous mais pas Tom, avec leurs heures cumulées (une idée d'achat pour la soirée).
+- **Profils privés** : un ami dont la bibliothèque est privée est grisé (« bibliothèque privée ») et mis de côté dans le calcul ; c'est écrit sous le nombre de jeux.
+- **Données** : la bibliothèque de chaque ami vient de `profil_joueur` (GetOwnedGames de Steam, cache de 10 minutes), déjà utilisé par le profil d'un ami : rien de nouveau n'est envoyé, et seulement à Steam.
+- Aperçu : chaque ami simulé a une partie des jeux, plus Apex Legends et Stardew Valley que « toi » n'as pas ; Furios-KL est privé.
+
+**À vérifier dans l'exe** : depuis la page Amis, choisir 2 amis et lancer un jeu en commun.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

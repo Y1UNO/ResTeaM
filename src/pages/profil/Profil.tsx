@@ -201,6 +201,11 @@ function VueProfil({ ami }: { ami: string | null }) {
                   Jeux en commun
                 </button>
               )}
+              {ami && (
+                <button type="button" className="btn btn--secondaire btn--petit" onClick={() => navigate(`/duel/${ami}`)}>
+                  Duel
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn--secondaire btn--petit"

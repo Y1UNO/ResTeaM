@@ -133,6 +133,11 @@ export function JeuxEnCommun() {
               <strong>{p.pseudo}</strong>
               {profils[i]?.isLoading && <em>lecture…</em>}
               {prives.includes(p.steamId) && <em>bibliothèque privée</em>}
+              {choisis.length === 1 && bibliosAmis.length === 1 && (
+                <button type="button" className="ensemble__duel" title={`Duel de profils avec ${p.pseudo}`} onClick={() => navigate(`/duel/${p.steamId}`)}>
+                  Duel
+                </button>
+              )}
               <button type="button" className="ensemble__retirer" aria-label={`Retirer ${p.pseudo}`} onClick={() => choisir(choisis.filter((x) => x !== p.steamId))}>
                 <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                   <path d="M6 6l12 12M18 6L6 18" />

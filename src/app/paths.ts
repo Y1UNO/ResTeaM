@@ -17,6 +17,7 @@ export const PATHS = {
   journal: "/journal",
   collection: "/collection",
   ensemble: "/ensemble",
+  duel: "/duel/:steamId",
   connexion: "/connexion",
   cleApi: "/cle-api",
 } as const;

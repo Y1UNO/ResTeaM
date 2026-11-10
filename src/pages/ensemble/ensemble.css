@@ -508,3 +508,19 @@
 .ensemble-carte__mini .ensemble__initiale {
   font-size: 9.5px;
 }
+.ensemble__duel {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(159, 216, 255, 0.35);
+  background: transparent;
+  color: #9fd8ff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+.ensemble__duel:hover {
+  background: rgba(159, 216, 255, 0.1);
+}

@@ -323,7 +323,7 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 
 ### 8. Entre amis (tout est retenu)
 - **Jeux en commun** — fait le 10 novembre 2026, voir le journal « Étape 26 » : choisir 2 ou 3 amis et voir les jeux possédés par tous (profils publics). Idéal pour organiser une soirée.
-- **Duel de profils** : Tom et un ami côte à côte (heures, trophées, lune, rangs, jeux en commun).
+- **Duel de profils** — fait le 10 novembre 2026, voir le journal « Étape 27 » : Tom et un ami côte à côte (heures, trophées, lune, rangs, jeux en commun).
 - **Défis** (« premier à finir tel jeu à 100 % ») : demande le serveur de partage.
 
 ### 9. Magasin (tout est retenu)
@@ -1211,6 +1211,20 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Aperçu : chaque ami simulé a une partie des jeux, plus Apex Legends et Stardew Valley que « toi » n'as pas ; Furios-KL est privé.
 
 **À vérifier dans l'exe** : depuis la page Amis, choisir 2 amis et lancer un jeu en commun.
+
+### Étape 27 — Duel de profils (10 novembre 2026)
+
+- **Nouvelle page « Duel de profils »** (`/duel/<SteamID>`, `pages/ensemble/Duel.tsx`) : Tom et un ami face à face.
+- **Accès** : bouton « Duel » sur le profil d'un ami, et sur la pastille de l'ami dans « Jeux en commun » quand il est seul choisi.
+- **L'arène** : à gauche Toi, à droite l'ami (un clic ouvre son profil), chacun avec son avatar (ou son initiale) et sa **lune ResTeaM** (`LuneCeleste`, niveau calculé comme sur le profil). Au centre : « VS », le score (le gagnant s'éclaire) et « Tu mènes 6 à 4 », « Égalité » ou « Tututemobile mène… ».
+- **Dix épreuves**, en miroir : heures de jeu, jeux possédés, jeux lancés, ces 2 semaines, trophées, jeux à 100 %, niveau de lune, meilleur rang (avec son badge), niveau Steam, badges.
+  - Une barre part du centre vers chaque joueur (bleu lunaire pour Tom, argent pour l'ami) ; le gagnant de l'épreuve a un petit croissant qui luit doucement.
+  - Une donnée privée ne compte pas (« — »), et c'est écrit sous les épreuves. Égalité : personne ne marque.
+- **Vos jeux en commun** : les 8 premiers (d'abord ceux où le moins joueur des deux a le plus d'heures), avec les heures de chacun en miroir ; « Tous les jeux en commun » ouvre la page de l'étape 26.
+- **Données** : celles du profil (bibliothèque, niveau et badges, jeux récents, `bilan_trophees`), déjà en cache. Rien de nouveau n'est envoyé.
+- Tout bouge en transform et opacité (barres en `scaleX`, apparition en fondu).
+
+**À vérifier dans l'exe** : ouvrir le profil d'un ami, puis « Duel ».
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

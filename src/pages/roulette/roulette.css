@@ -35,185 +35,131 @@
   font-size: 12.5px;
 }
 
-/* ——— La roue de l'accueil (en haut à gauche) ——— */
+/* ——— La roue de l'accueil (en haut à gauche) : verre sombre, croissant mat ——— */
 .roue-accueil {
   position: absolute;
   z-index: 3;
-  top: calc(var(--titlebar-h) + 26px);
+  top: calc(var(--titlebar-h) + 22px);
   left: var(--page-left);
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 22px 10px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(159, 216, 255, 0.4);
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(159, 216, 255, 0.18), transparent 60%),
-    rgba(14, 14, 17, 0.62);
-  backdrop-filter: blur(16px);
-  box-shadow:
-    0 12px 34px rgba(0, 0, 0, 0.45),
-    0 0 34px rgba(159, 216, 255, 0.16);
+  gap: 14px;
+  padding: 0;
+  border: none;
+  background: none;
   color: var(--text-1);
   text-align: left;
   cursor: pointer;
-  animation: roue-arrivee 0.8s cubic-bezier(0.2, 0.9, 0.25, 1.2) 0.4s both;
-  transition:
-    transform 0.35s var(--ease),
-    box-shadow 0.35s ease;
+  animation: roue-arrivee 0.9s var(--ease) 0.4s both;
 }
 @keyframes roue-arrivee {
   from {
     opacity: 0;
-    transform: translateY(-14px) scale(0.92);
+    transform: translateY(-10px);
   }
-}
-.roue-accueil:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.5),
-    0 0 50px rgba(159, 216, 255, 0.35);
 }
 .roue-accueil__roue {
   position: relative;
-  width: 76px;
-  height: 76px;
   flex: 0 0 auto;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: rgba(14, 14, 17, 0.42);
+  backdrop-filter: blur(var(--blur-md));
+  border: 1px solid var(--line-2);
+  box-shadow:
+    inset 0 1px 0 rgba(238, 242, 255, 0.06),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.4s var(--ease),
+    border-color 0.3s ease;
 }
-.roue-accueil__disque {
+.roue-accueil:hover .roue-accueil__roue,
+.roue-accueil:focus-visible .roue-accueil__roue {
+  transform: scale(1.05);
+  border-color: var(--line-active);
+}
+.roue-accueil__rayons,
+.roue-accueil__croissant {
   position: absolute;
   inset: 0;
-  filter: drop-shadow(0 0 10px rgba(159, 216, 255, 0.45));
-  animation: roue-tourne 22s linear infinite;
 }
-.roue-accueil:hover .roue-accueil__disque {
-  animation-duration: 1.6s;
+/* La roue : rayons gravés qui tournent lentement, vite au survol. */
+.roue-accueil__rayons {
+  animation: roue-tourne 40s linear infinite;
+}
+.roue-accueil:hover .roue-accueil__rayons {
+  animation-duration: 3s;
 }
 @keyframes roue-tourne {
   to {
     transform: rotate(360deg);
   }
 }
-/* Lumières du bord qui s'allument en chaîne, comme sur une roue de casino. */
-.roue-accueil__lumieres {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-}
-.roue-accueil__lumieres span {
-  position: absolute;
-  left: -2px;
-  top: -2px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #eef2ff;
-  box-shadow: 0 0 6px #9fd8ff;
-  opacity: 0.35;
-  animation: roue-lumiere 1.2s ease-in-out infinite;
-}
-@keyframes roue-lumiere {
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-  12% {
-    opacity: 1;
-  }
-}
-.roue-accueil__centre {
-  position: absolute;
-  inset: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #2a2a35, #0e0e11);
-  border: 2px solid #9fd8ff;
-  box-shadow: 0 0 12px rgba(159, 216, 255, 0.6);
-}
-.roue-accueil__centre svg {
-  animation: roue-lune 4s ease-in-out infinite;
+/* Le croissant, mat, qui se balance doucement. */
+.roue-accueil__croissant {
+  filter: drop-shadow(0 0 6px rgba(238, 242, 255, 0.18));
+  animation: roue-lune 6s ease-in-out infinite;
 }
 @keyframes roue-lune {
   50% {
-    transform: rotate(-16deg) scale(1.08);
+    transform: rotate(-10deg);
   }
 }
-/* Petite flèche dorée en haut : le repère de la roue. */
-.roue-accueil__fleche {
+/* Repère : un fin trait en haut. */
+.roue-accueil__repere {
   position: absolute;
   left: 50%;
-  top: -7px;
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 12px solid #9fd8ff;
+  top: -3px;
+  width: 2px;
+  height: 9px;
+  border-radius: 2px;
+  background: rgba(238, 242, 255, 0.75);
   translate: -50% 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
-.roue-accueil:hover .roue-accueil__fleche {
-  animation: roue-fleche 0.25s ease-in-out infinite;
-}
-@keyframes roue-fleche {
-  50% {
-    transform: rotate(-14deg);
-  }
-}
+/* Texte : seulement au survol (ou au focus), sans cadre. */
 .roue-accueil__texte {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s var(--ease);
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
 }
-.roue-accueil__kicker {
+.roue-accueil:hover .roue-accueil__texte,
+.roue-accueil:focus-visible .roue-accueil__texte {
+  opacity: 1;
+  transform: none;
+}
+.roue-accueil__texte span {
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #9fd8ff;
+  color: var(--text-kicker);
 }
 .roue-accueil__texte strong {
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: 18px;
   letter-spacing: -0.3px;
 }
-.roue-accueil__texte > span:last-child {
-  font-size: 12.5px;
-  color: var(--text-3);
-}
-/* Écrans peu hauts : roue plus compacte, plus haut, pour ne pas toucher le titre. */
+/* Écrans peu hauts : roue un peu plus petite et plus haute. */
 @media (max-height: 920px) {
   .roue-accueil {
-    top: calc(var(--titlebar-h) + 6px);
-    gap: 12px;
-    padding: 8px 18px 8px 8px;
+    top: calc(var(--titlebar-h) + 8px);
   }
-  .roue-accueil__roue,
-  .roue-accueil__disque {
-    width: 58px;
-    height: 58px;
-  }
-  /* Le cercle de lumières suit la roue plus petite (58 / 76). */
-  .roue-accueil__lumieres {
-    scale: 0.76;
-  }
-  .roue-accueil__centre {
-    inset: 18px;
-  }
-  .roue-accueil__centre svg {
-    width: 16px;
-    height: 16px;
-  }
-  .roue-accueil__texte strong {
-    font-size: 16px;
+  .roue-accueil__roue {
+    width: 64px;
+    height: 64px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .roue-accueil__disque,
-  .roue-accueil__lumieres span,
-  .roue-accueil__centre svg {
+  .roue-accueil__rayons,
+  .roue-accueil__croissant {
     animation: none;
   }
 }
@@ -229,10 +175,10 @@
   border-radius: var(--radius-2xl);
   background: rgba(14, 14, 17, 0.94);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(159, 216, 255, 0.28);
+  border: 1px solid var(--line-active);
   box-shadow:
     var(--shadow-3),
-    0 0 60px rgba(159, 216, 255, 0.08);
+    0 0 40px rgba(238, 242, 255, 0.05);
   translate: -50% -50%;
   display: flex;
   flex-direction: column;
@@ -478,8 +424,6 @@
 }
 .roulette__lancer {
   min-width: 240px;
-  background: linear-gradient(135deg, #eef2ff, #9fd8ff);
-  color: #09090a;
 }
 .roulette__kicker {
   font-size: 11px;

@@ -1128,6 +1128,7 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
   - couleurs de la DA : segments argent, bleu lunaire et charbon, liseré clair de lune. La fenêtre de la roulette passe aussi au bleu lunaire ;
   - plus compacte sur les écrans peu hauts (≤ 920 px), pour ne pas toucher le titre du hero ;
   - le bouton du ruban est retiré. Celui de la Bibliothèque reste.
+  - **version premium** (retour de Tom : « trop brillant, trop clown ») : plus de pastille ni de couleurs. Il ne reste que la roue, en **verre sombre translucide** comme le reste de l'app : un cerclage gradué et des rayons fins gravés qui tournent lentement (vite au survol) derrière un **croissant de lune argenté et mat**, avec un fin repère en haut. « La roue du soir · Ce soir je joue à… » n'apparaît qu'au survol, en simple texte. La fenêtre de la roulette reprend le style sobre des autres fenêtres.
 - **Ma collection** (`/collection`, menu du logo, bouton « Pile de la honte » de la Bibliothèque), deux onglets :
   - **Pile de la honte** :
     - les jeux jamais lancés, triés par note Steam, avec la note (verte au-dessus de 80 %), le prix et « Installé » ;

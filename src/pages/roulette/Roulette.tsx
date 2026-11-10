@@ -44,57 +44,51 @@ export function BoutonRoulette({ compact = false }: { compact?: boolean }) {
   );
 }
 
-/** Segments de la roue dans la DA « clair de lune » : argent, charbon, bleu lunaire. */
-const SEGMENTS = ["#eef2ff", "#1c1f26", "#9fd8ff", "#1c1f26", "#cfd8f0", "#1c1f26", "#9fd8ff", "#1c1f26"];
-
-/** Part de camembert de la roue (SVG), de l'angle a à l'angle b (degrés). */
-function part(a: number, b: number, r: number) {
-  const p = (d: number) => [50 + r * Math.cos(((d - 90) * Math.PI) / 180), 50 + r * Math.sin(((d - 90) * Math.PI) / 180)];
-  const [x1, y1] = p(a);
-  const [x2, y2] = p(b);
-  return `M50 50 L${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
-}
+/** Rayons gravés de la roue (12), et petites graduations entre eux. */
+const RAYONS = Array.from({ length: 12 }, (_, i) => i * 30);
+const GRADUATIONS = Array.from({ length: 48 }, (_, i) => i * 7.5);
 
 /**
- * La roue de l'accueil (en haut à gauche, demande de Tom) : une petite roue de casino
- * qui tourne doucement, ses lumières qui clignotent en chaîne, une lune au centre.
- * Un clic ouvre la roulette.
+ * La roue de l'accueil (en haut à gauche, demande de Tom) : juste une roue, en verre
+ * sombre comme le reste de l'app. Des rayons fins gravés tournent lentement derrière un
+ * croissant de lune argenté, mat. Au survol, la roue accélère et « Ce soir je joue à… »
+ * apparaît à côté, en simple texte. Un clic ouvre la roulette.
  */
 export function RoueAccueil() {
   const [ouverte, setOuverte] = useState(false);
   return (
     <>
-      <button type="button" className="roue-accueil" onClick={() => setOuverte(true)} title="Tirer au sort un jeu pour ce soir">
+      <button type="button" className="roue-accueil" onClick={() => setOuverte(true)} aria-label="La roue du soir : ce soir je joue à…">
         <span className="roue-accueil__roue" aria-hidden="true">
-          <svg className="roue-accueil__disque" viewBox="0 0 100 100" width="76" height="76">
-            <defs>
-              <radialGradient id="roue-reflet" cx="40%" cy="35%" r="70%">
-                <stop offset="0" stopColor="#fff" stopOpacity="0.35" />
-                <stop offset="0.6" stopColor="#fff" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            {SEGMENTS.map((c, i) => (
-              <path key={i} d={part(i * 45, (i + 1) * 45, 44)} fill={c} fillOpacity={i % 2 ? 1 : 0.88} stroke="#0e0e11" strokeWidth="1.2" />
+          <svg className="roue-accueil__rayons" viewBox="0 0 100 100" width="100%" height="100%">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(238,242,255,.3)" strokeWidth="0.9" />
+            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(238,242,255,.14)" strokeWidth="0.6" />
+            {RAYONS.map((a) => (
+              <line key={a} x1="50" y1="12" x2="50" y2="36" stroke="rgba(238,242,255,.3)" strokeWidth="0.8" strokeLinecap="round" transform={`rotate(${a} 50 50)`} />
             ))}
-            <circle cx="50" cy="50" r="44" fill="url(#roue-reflet)" />
-            <circle cx="50" cy="50" r="46" fill="none" stroke="#eef2ff" strokeWidth="2.5" />
+            {GRADUATIONS.map((a) => (
+              <line key={a} x1="50" y1="6.5" x2="50" y2={a % 30 === 0 ? 10 : 8.2} stroke="rgba(238,242,255,.42)" strokeWidth={a % 30 === 0 ? 1 : 0.55} transform={`rotate(${a} 50 50)`} />
+            ))}
           </svg>
-          <span className="roue-accueil__lumieres">
-            {Array.from({ length: 12 }, (_, i) => (
-              <span key={i} style={{ transform: `rotate(${i * 30}deg) translateY(-40px)`, animationDelay: `${(i % 12) * 0.1}s` }} />
-            ))}
-          </span>
-          <span className="roue-accueil__centre">
-            <svg viewBox="0 0 24 24" width="22" height="22">
-              <path d="M14.5 3.2a8.6 8.6 0 1 0 6.3 12.6 7 7 0 1 1-6.3-12.6z" fill="#eef2ff" />
-            </svg>
-          </span>
-          <span className="roue-accueil__fleche" />
+          <svg className="roue-accueil__croissant" viewBox="0 0 100 100" width="100%" height="100%">
+            <defs>
+              <linearGradient id="roue-croissant" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0" stopColor="#eef2ff" stopOpacity="0.92" />
+                <stop offset="1" stopColor="#aeb9d4" stopOpacity="0.85" />
+              </linearGradient>
+              <mask id="roue-masque">
+                <rect width="100" height="100" fill="#000" />
+                <circle cx="50" cy="50" r="27" fill="#fff" />
+                <circle cx="59" cy="43" r="22" fill="#000" />
+              </mask>
+            </defs>
+            <rect width="100" height="100" fill="url(#roue-croissant)" mask="url(#roue-masque)" />
+          </svg>
+          <span className="roue-accueil__repere" />
         </span>
-        <span className="roue-accueil__texte">
-          <span className="roue-accueil__kicker">La roue du soir</span>
+        <span className="roue-accueil__texte" aria-hidden="true">
+          <span>La roue du soir</span>
           <strong>Ce soir je joue à…</strong>
-          <span>Laisse la lune choisir</span>
         </span>
       </button>
       {ouverte && <Roulette onFermer={() => setOuverte(false)} />}

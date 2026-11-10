@@ -74,6 +74,17 @@
   }
 }
 
+/* Carnet magique lunaire : la couverture s'entrouvre, l'étincelle scintille. */
+.ico-carnet .ico-couverture {
+  transform-origin: 0% 50%;
+}
+:is(button, a):hover .ico-carnet .ico-couverture {
+  transform: perspective(40px) rotateY(-16deg);
+}
+:is(button, a):hover .ico-carnet .ico-eclat {
+  animation: ico-scintille 0.9s ease-in-out infinite;
+}
+
 /* Panier communautaire (Workshop) : le panier se soulève, le croissant en sort, l'étincelle scintille. */
 .ico-workshop .ico-panier {
   transform-origin: 0% 0%;

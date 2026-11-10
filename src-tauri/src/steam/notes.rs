@@ -380,6 +380,8 @@ pub struct AnnonceJeu {
     #[serde(flatten)]
     pub notes: PatchNotes,
     pub image: Option<String>,
+    /// Toutes les images de l'annonce (Steam seulement, 16 au plus, sans doublon).
+    pub images: Vec<String>,
     /// Texte brut (500 caractères au plus) quand l'annonce n'a pas de liste de notes.
     pub extrait: Option<String>,
 }
@@ -390,25 +392,52 @@ pub fn annonce(a: &Actu) -> AnnonceJeu {
     AnnonceJeu {
         notes: PatchNotes { id: a.id.clone(), titre: a.titre.clone(), url: a.url.clone(), date: a.date, version: version(&a.titre), patch: a.patch, sections },
         image: premiere_image(&a.contenu),
+        images: images(&a.contenu),
         extrait,
     }
 }
 
-/// Première image d'une annonce (`[img]…[/img]` ou `[img src="…"]`), seulement sur les
-/// serveurs d'images de Steam (en HTTPS).
+/// Première image d'une annonce, seulement sur les serveurs d'images de Steam (HTTPS).
 pub fn premiere_image(contenu: &str) -> Option<String> {
-    let brut = if let Some(i) = contenu.find("[img]") {
-        let reste = &contenu[i + 5..];
-        reste[..reste.find("[/img]")?].trim().to_string()
-    } else {
-        let i = contenu.find("[img src=\"")?;
-        let reste = &contenu[i + 10..];
-        reste[..reste.find('"')?].trim().to_string()
-    };
-    let adresse = brut.replace("{STEAM_CLAN_IMAGE}", "https://clan.akamai.steamstatic.com/images");
+    images(contenu).into_iter().next()
+}
+
+/// Adresse d'image acceptée : HTTPS, serveurs d'images de Steam.
+fn image_valide(brut: &str) -> Option<String> {
+    let adresse = brut.trim().replace("{STEAM_CLAN_IMAGE}", "https://clan.akamai.steamstatic.com/images");
     let u = url::Url::parse(&adresse).ok()?;
     let hote = u.host_str()?;
     (u.scheme() == "https" && (hote.ends_with(".steamstatic.com") || hote.ends_with(".akamaihd.net"))).then(|| u.to_string())
+}
+
+/// Toutes les images d'une annonce (`[img]…[/img]` et `[img src="…"]`), dans l'ordre,
+/// sans doublon, 16 au plus.
+pub fn images(contenu: &str) -> Vec<String> {
+    let mut l: Vec<String> = Vec::new();
+    let mut reste = contenu;
+    while l.len() < 16 {
+        let Some(i) = reste.find("[img") else { break };
+        reste = &reste[i + 4..];
+        let brut = if let Some(r) = reste.strip_prefix(']') {
+            let Some(f) = r.find("[/img]") else { break };
+            let b = &r[..f];
+            reste = &r[f..];
+            b
+        } else if let Some(r) = reste.strip_prefix(" src=\"") {
+            let Some(f) = r.find('"') else { break };
+            let b = &r[..f];
+            reste = &r[f..];
+            b
+        } else {
+            continue;
+        };
+        if let Some(u) = image_valide(brut) {
+            if !l.contains(&u) {
+                l.push(u);
+            }
+        }
+    }
+    l
 }
 
 pub fn depuis_actus(actus: &[Actu]) -> Option<PatchNotes> {
@@ -448,6 +477,15 @@ mod tests_historique {
         assert_eq!(premiere_image("[img]javascript:alert(1)[/img]"), None);
         assert_eq!(premiere_image("[img] sans fin"), None);
         assert_eq!(premiere_image("rien"), None);
+    }
+
+    #[test]
+    fn toutes_les_images() {
+        let c = "[img]{STEAM_CLAN_IMAGE}/1/a.png[/img] texte [img src=\"https://clan.akamai.steamstatic.com/images/1/b.png\"][/img] [img]https://evil.io/x.png[/img] [img]{STEAM_CLAN_IMAGE}/1/a.png[/img] [imgur] [img]";
+        assert_eq!(images(c), vec!["https://clan.akamai.steamstatic.com/images/1/a.png", "https://clan.akamai.steamstatic.com/images/1/b.png"]);
+        assert!(images(&"[img]{STEAM_CLAN_IMAGE}/x.png[/img]".repeat(3)).len() == 1);
+        let beaucoup: String = (0..40).map(|i| format!("[img]{{STEAM_CLAN_IMAGE}}/{i}.png[/img]")).collect();
+        assert_eq!(images(&beaucoup).len(), 16);
     }
 }
 

@@ -15,6 +15,8 @@ import { FenetreDesinstallation } from "../../installation/Desinstallation";
 import { FenetreProprietes } from "../fiche/Proprietes";
 import { usePalette } from "../../lib/couleurs";
 import { RoueAccueil } from "../roulette/Roulette";
+import { HistoriqueNotes } from "../fiche/HistoriqueNotes";
+import { IconCarnet } from "../../components/icons";
 import { useChrono, useSessionJeu } from "../../app/sessionJeu";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
@@ -79,6 +81,7 @@ export function Hero({ jeu, images }: Props) {
   const jouable = inst && (inst.etat === "installe" || inst.etat === "miseAJourRequise");
   const enTelechargement = inst && (inst.etat === "telechargement" || inst.etat === "enPause");
 
+  const [historique, setHistorique] = useState(false);
   // Ce jeu tourne : le bouton affiche « En cours » et le temps de la session.
   const enCours = useSessionJeu((s) => (s.enCours?.appId === jeu.appId ? s.enCours : null));
   const chrono = useChrono(enCours?.debut);
@@ -186,6 +189,15 @@ export function Hero({ jeu, images }: Props) {
                 <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
               </svg>
             </button>
+            <button
+              type="button"
+              className="btn btn--secondaire hero__corbeille hero__carnet"
+              onClick={() => setHistorique(true)}
+              aria-label={`Notes de mise à jour de ${jeu.nom}`}
+              title="Notes de mise à jour"
+            >
+              <IconCarnet />
+            </button>
             {inst && (
               <button
                 type="button"
@@ -227,6 +239,7 @@ export function Hero({ jeu, images }: Props) {
         </button>
       </div>
 
+      {historique && <HistoriqueNotes appId={jeu.appId} nom={jeu.nom} onFermer={() => setHistorique(false)} />}
       {proprietes && <FenetreProprietes appId={jeu.appId} nom={jeu.nom} jaquette={images.jaquette} onFermer={() => setProprietes(false)} />}
       {desinstaller && inst && (
         <FenetreDesinstallation

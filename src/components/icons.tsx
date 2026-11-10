@@ -117,6 +117,25 @@ export function IconWorkshop({ size = 22 }: IconProps) {
   );
 }
 
+/**
+ * Carnet magique lunaire (notes de mise à jour) : un petit carnet à spirale, un
+ * croissant sur la couverture et une étincelle. Au survol, la couverture s'entrouvre
+ * et l'étincelle scintille.
+ */
+export function IconCarnet({ size = 20 }: IconProps) {
+  return (
+    <svg className="ico ico-carnet" aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" {...stroke}>
+      <path className="ico-page" d="M7.5 4.5h9.5a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H7.5" strokeWidth="1.2" opacity="0.55" />
+      <g className="ico-couverture">
+        <rect x="5" y="3.5" width="12" height="17" rx="2" />
+        <path d="M5 7h-1.4M5 10.5h-1.4M5 14h-1.4M5 17.5h-1.4" />
+        <path className="ico-lune" d="M11.6 8a3.2 3.2 0 1 0 2.6 5 2.6 2.6 0 1 1-2.6-5z" fill="currentColor" stroke="none" />
+      </g>
+      <path className="ico-eclat" d="M19.6 2.4l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function IconSettings({ size = 18 }: IconProps) {
   return (
     <svg className="ico ico-reglages" aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" {...stroke}>

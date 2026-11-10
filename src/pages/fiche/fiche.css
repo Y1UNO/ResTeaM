@@ -1038,3 +1038,65 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Propriétés : onglet « Notes ». */
+.prop__notes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.prop__notes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.prop__notes li button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: rgba(238, 242, 255, 0.03);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.prop__notes li button:hover {
+  background: var(--fill-hover);
+  border-color: rgba(238, 242, 255, 0.08);
+}
+.prop__notes li span {
+  flex: 0 0 auto;
+  width: 92px;
+  font-size: 12px;
+  color: var(--text-4);
+}
+.prop__notes li strong {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prop__notes li em {
+  font-style: normal;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(159, 216, 255, 0.14);
+  color: #9fd8ff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.prop__notes > .btn {
+  align-self: flex-start;
+  gap: 8px;
+}

@@ -482,6 +482,7 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
             version: patch ? `v1.${34 - n}` : null,
             patch,
             image: n % 4 === 0 ? `${CDN_APERCU}/1145350/library_hero.jpg` : null,
+            images: n % 4 === 0 ? [`${CDN_APERCU}/1145350/library_hero.jpg`, ...[1, 2, 3].map((k) => `${CDN_APERCU}/1145350/ss_${CAPTURES_FACTICES[k % CAPTURES_FACTICES.length]}.1920x1080.jpg?t=1779901265`)] : [],
             extrait: patch ? null : "Nous voulions vous montrer comment naissent les décors de l’Érèbe, des premiers croquis à la version finale.",
             sections: patch
               ? [

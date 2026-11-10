@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { HistoriqueNotes } from "./HistoriqueNotes";
+import { IconCarnet } from "../../components/icons";
 import { createPortal } from "react-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/commandes";
 import { useDlcJeu, useFileSteam, useNomJeu, useProprietesJeu } from "../../api/requetes";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +12,7 @@ import { date, taille } from "../../lib/format";
 import { viaCache } from "../../lib/imageLocale";
 import "./fiche.css";
 
-type Onglet = "general" | "maj" | "fichiers" | "dlc";
+type Onglet = "general" | "maj" | "fichiers" | "dlc" | "notes";
 
 /** Options courantes, à ajouter ou retirer d'un clic (elles dépendent du jeu). */
 const SUGGESTIONS = ["-novid", "-high", "-fullscreen", "-windowed", "-noborder", "-nojoy", "+fps_max 144", "-dx12", "-vulkan"];
@@ -53,6 +55,7 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
   const nomEnCours = useNomJeu(file?.jeuEnCours);
   const d = p.data;
   const [onglet, setOnglet] = useState<Onglet>("general");
+  const [historique, setHistorique] = useState(false);
   const [options, setOptions] = useState<string | null>(null);
   const [maj, setMaj] = useState<number | null>(null);
   const [arriere, setArriere] = useState<number | null>(null);
@@ -139,6 +142,7 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
     { id: "maj", libelle: "Mises à jour", muet: d && !d.installe },
     { id: "fichiers", libelle: "Fichiers", muet: d && !d.installe },
     { id: "dlc", libelle: `DLC${dlc.data?.length ? ` · ${dlc.data.length}` : ""}` },
+    { id: "notes", libelle: "Notes" },
   ];
 
   return createPortal(
@@ -231,6 +235,7 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
               <p className="achat__texte">Le jeu n’est pas installé sur ce PC.</p>
             ))}
 
+          {onglet === "notes" && <OngletNotes appId={appId} onOuvrir={() => setHistorique(true)} />}
           {onglet === "dlc" && (
             <div className="prop__dlc">
               {dlc.isLoading && <p className="achat__texte">Lecture des DLC du magasin…</p>}
@@ -277,8 +282,36 @@ export function FenetreProprietes({ appId, nom, jaquette, onFermer }: { appId: n
           </button>
         </div>
       </div>
+      {historique && <HistoriqueNotes appId={appId} nom={nom} onFermer={() => setHistorique(false)} />}
     </>,
     document.body,
+  );
+}
+
+/** Onglet « Notes » : les dernières annonces, et toutes les notes en plein écran. */
+function OngletNotes({ appId, onOuvrir }: { appId: number; onOuvrir: () => void }) {
+  const q = useQuery({ queryKey: ["historique-notes-court", appId], queryFn: () => api.historiqueNotes(appId, null), staleTime: 30 * 60_000 });
+  const liste = q.data?.annonces.slice(0, 5) ?? [];
+  return (
+    <div className="prop__notes">
+      {q.isLoading && <p className="prop__statut">Chargement des annonces…</p>}
+      {!q.isLoading && !liste.length && <p className="prop__statut">Pas d’annonce officielle pour ce jeu.</p>}
+      <ul>
+        {liste.map((a) => (
+          <li key={a.id}>
+            <button type="button" onClick={onOuvrir}>
+              <span>{new Date(a.date * 1000).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
+              <strong>{a.titre}</strong>
+              {a.patch && <em>Patch</em>}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="btn btn--principal btn--petit" onClick={onOuvrir}>
+        <IconCarnet size={16} />
+        Toutes les notes de mise à jour
+      </button>
+    </div>
   );
 }
 

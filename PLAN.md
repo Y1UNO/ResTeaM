@@ -1146,6 +1146,27 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - la roue en haut à gauche de l'accueil ;
 - Ma collection avec la vraie bibliothèque : nombre de jeux jamais lancés, et prix par heure d'Apex Legends (gratuit, donc compté dans les heures gratuites).
 
+### Étape 24 — Notes de mise à jour en plein écran, carnet magique (10 novembre 2026)
+
+- **Plein écran** (demande de Tom : « affichage complet, stylisé, mieux arrangé, légers effets ») :
+  - fond : le visuel du jeu, flou et assombri, qui dérive très lentement, avec une lueur lunaire ;
+  - à gauche, **la frise** de toutes les annonces : date, version, titre, point plein pour les patchs. Les plus anciennes se chargent en défilant ;
+  - à droite, **l'annonce en grand** :
+    - la bannière, qui zoome très lentement, et un clic pour l'agrandir ;
+    - les badges, la date et le titre ;
+    - les notes en **cartes par catégorie** (Nouveau, Équilibrage, Performances, Correctifs, Autre), sur deux colonnes, avec un petit croissant de couleur et le nombre de lignes ;
+    - la **galerie de toutes les images** de l'annonce, agrandies au clic ;
+    - un lien vers l'annonce dans Steam ;
+  - « ↑ Plus récente / Plus ancienne ↓ », les flèches du clavier, et Échap pour fermer (puis pour fermer une image agrandie) ;
+  - effets légers : entrée en fondu, cartes qui montent l'une après l'autre, fondu à chaque changement d'annonce.
+- **Toutes les images** (« parfois il y a des images ») : Rust extrait toutes les images de l'annonce (`[img]…[/img]` et `[img src="…"]`), dans l'ordre et sans doublon, 16 au plus, seulement sur les serveurs d'images de Steam en HTTPS. Testé : doublons, images hors de Steam, balises piégées.
+- **Accès** :
+  - sur l'accueil, un nouveau bouton à côté de l'engrenage, avec l'icône **« carnet magique lunaire »** (`IconCarnet`) : un carnet à spirale, un croissant sur la couverture et une étincelle. Au survol, la couverture s'entrouvre et l'étincelle scintille ;
+  - dans les **propriétés du jeu** (engrenage), un onglet **« Notes »** : les 5 dernières annonces, et « Toutes les notes de mise à jour » ;
+  - sur la fiche, « Toutes les notes de mise à jour » ouvre aussi le plein écran.
+
+**À vérifier dans l'exe** : ouvrir les notes d'un jeu suivi depuis l'accueil, regarder une annonce avec des images, et naviguer avec les flèches.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

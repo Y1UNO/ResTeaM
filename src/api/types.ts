@@ -259,7 +259,7 @@ export type EtatPartage = { steamId: string; profil: ProfilPartage | null } | nu
 
 // ——— Historique des notes de mise à jour ———
 
-export type AnnonceJeu = PatchNotes & { image: string | null; extrait: string | null };
+export type AnnonceJeu = PatchNotes & { image: string | null; images: string[]; extrait: string | null };
 export type PageAnnonces = { annonces: AnnonceJeu[]; suivant: number | null };
 
 // ——— Trophées du profil ———

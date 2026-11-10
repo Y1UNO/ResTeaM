@@ -1167,6 +1167,16 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 
 **À vérifier dans l'exe** : ouvrir les notes d'un jeu suivi depuis l'accueil, regarder une annonce avec des images, et naviguer avec les flèches.
 
+### Étape 24 bis — Carnet magique en grand, animé, qui s'ouvre (10 novembre 2026)
+
+- Demande de Tom : « le logo du carnet est tout petit, je veux qu'il soit animé et qu'au survol il s'ouvre avec des pages qui défilent ».
+- Nouveau composant `CarnetMagique` (`src/components/CarnetMagique.tsx`, `grimoire.css`), sur le bouton des notes de l'accueil. Le carnet est fait de vrais calques en 3D : le dos, le bloc de pages, quatre feuilles, et la couverture (face avec la lune, envers sombre) qui pivote sur la spirale.
+- **Au repos** : il flotte doucement, la lune de la couverture se balance, l'étincelle scintille, un halo lunaire respire, et toutes les 7 secondes la couverture s'entrouvre un instant.
+- **Au survol** (ou au clavier) : le carnet s'ouvre en grand, ses pages tournent l'une après l'autre sans s'arrêter, et un peu de poussière d'étoiles s'en échappe. Le bouton prend un liseré bleu lunaire (et plus le rouge de la corbeille).
+- Seulement transform et opacité ; tout s'arrête si Windows demande moins d'animations. Le petit carnet en trait (`IconCarnet`) reste dans l'onglet « Notes » des propriétés.
+
+**À vérifier dans l'exe** : passer la souris sur le carnet de l'accueil.
+
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 
 Écrit le 8 novembre 2026, à la fin de l'étape 1. **But** : se connecter avec Steam, enregistrer la clé API, afficher le vrai pseudo et le vrai avatar en bas de la barre.

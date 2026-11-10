@@ -16,7 +16,7 @@ import { FenetreProprietes } from "../fiche/Proprietes";
 import { usePalette } from "../../lib/couleurs";
 import { RoueAccueil } from "../roulette/Roulette";
 import { HistoriqueNotes } from "../fiche/HistoriqueNotes";
-import { IconCarnet } from "../../components/icons";
+import { CarnetMagique } from "../../components/CarnetMagique";
 import { useChrono, useSessionJeu } from "../../app/sessionJeu";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
@@ -196,7 +196,7 @@ export function Hero({ jeu, images }: Props) {
               aria-label={`Notes de mise à jour de ${jeu.nom}`}
               title="Notes de mise à jour"
             >
-              <IconCarnet />
+              <CarnetMagique />
             </button>
             {inst && (
               <button

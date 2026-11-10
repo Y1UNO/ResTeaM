@@ -1,16 +1,19 @@
 /*
- * Carnet magique lunaire (bouton des notes de mise à jour de l'accueil).
- * Le livre est fait de calques en 3D : le dos, le bloc de pages, quatre feuilles
- * qui tournent, et la couverture (face avec la lune, envers sombre), qui pivote
- * sur la spirale. Le repos passe par `translate` et `rotate` ; l'ouverture du
- * survol, par `transform` : les deux s'additionnent.
+ * Carnet magique lunaire (bouton des notes de mise à jour de l'accueil), dans le style
+ * des autres icônes : des traits de la couleur du texte, sans remplissage.
+ * Le livre est fait de calques en 3D : le bloc de pages, trois feuilles qui tournent,
+ * et la couverture (face avec la lune, envers), qui pivote sur la spirale.
+ * Le repos passe par `translate` et `rotate` ; l'ouverture du survol, par `transform` :
+ * les deux s'additionnent.
  */
 .grimoire {
+  --trait: 1.7px;
   position: relative;
   display: block;
-  width: 46px;
-  height: 40px;
-  perspective: 90px;
+  width: 34px;
+  height: 28px;
+  perspective: 80px;
+  color: currentColor;
   pointer-events: none;
 }
 .grimoire * {
@@ -18,21 +21,11 @@
   display: block;
 }
 
-/* Halo de lune derrière le carnet. */
-.grimoire__halo {
-  inset: -4px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(159, 216, 255, 0.28), transparent 62%);
-  opacity: 0.45;
-  animation: grimoire-halo 4.8s ease-in-out infinite;
-  transition: transform 0.6s var(--ease);
-}
-
 .grimoire__livre {
-  left: 12px;
-  top: 5px;
-  width: 22px;
-  height: 30px;
+  left: 9px;
+  top: 4px;
+  width: 16px;
+  height: 21px;
   transform-style: preserve-3d;
   animation: grimoire-flotte 4.8s ease-in-out infinite;
   transition: transform 0.65s var(--ease);
@@ -40,30 +33,25 @@
 .grimoire__livre > * {
   inset: 0;
   transform-origin: 0% 50%;
-  border-radius: 2px 4px 4px 2px;
 }
 
-/* Dos et bloc de pages (visibles quand le carnet est ouvert). */
-.grimoire__dos {
-  background: #101218;
-  border: 1px solid rgba(220, 230, 255, 0.3);
-  transform: translateZ(-1px);
-}
+/* Bloc de pages et feuilles : un contour et deux lignes d'écriture. */
 .grimoire__bloc,
-.grimoire__feuille {
-  inset: 1.5px 1px 1.5px 1px !important;
-  border-radius: 1px 3px 3px 1px !important;
-  background:
-    repeating-linear-gradient(180deg, transparent 0 4px, rgba(70, 84, 112, 0.3) 4px 4.8px) 3px 6px / calc(100% - 6px) calc(100% - 10px) no-repeat,
-    linear-gradient(90deg, #c4cee6, #e8edf9 30%, #dde4f5);
+.grimoire__feuille,
+.grimoire__envers {
+  border: var(--trait) solid currentColor;
+  border-radius: 1.5px 3px 3px 1.5px;
+  background: linear-gradient(currentColor, currentColor) 3px 6px / 7px 1.4px no-repeat,
+    linear-gradient(currentColor, currentColor) 3px 10px / 5px 1.4px no-repeat;
 }
+/* Le carnet est transparent : le bloc ne se montre qu'une fois ouvert. */
 .grimoire__bloc {
-  transform: translateZ(-0.5px);
-  box-shadow: 1px 0 0 rgba(200, 212, 238, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 .grimoire__feuille {
   opacity: 0;
-  backface-visibility: visible;
+  border-width: 1.4px;
 }
 
 /* Couverture : face (lune) et envers, qui pivotent sur la spirale. */
@@ -75,125 +63,82 @@
 .grimoire__face,
 .grimoire__envers {
   inset: 0;
-  border-radius: inherit;
   backface-visibility: hidden;
 }
 .grimoire__face {
   display: grid !important;
   place-items: center;
-  background: linear-gradient(150deg, #2c3344, #14161d 70%);
-  border: 1px solid rgba(220, 230, 255, 0.6);
-  box-shadow:
-    inset 0 0 0 1.5px #14161d,
-    inset 0 0 0 2.2px rgba(220, 230, 255, 0.16),
-    0 2px 8px rgba(0, 0, 0, 0.45);
+  border: var(--trait) solid currentColor;
+  border-radius: 1.5px 3px 3px 1.5px;
 }
 .grimoire__envers {
   transform: rotateY(180deg);
-  background: linear-gradient(210deg, #232937, #121419);
-  border: 1px solid rgba(220, 230, 255, 0.35);
 }
 .grimoire__lune {
   position: static !important;
-  color: #e4ecff;
-  filter: drop-shadow(0 0 3px rgba(159, 216, 255, 0.7));
+  width: 9px;
+  height: 9px;
   animation: grimoire-lune 6s ease-in-out infinite;
 }
 
 /* Spirale sur la tranche gauche. */
 .grimoire__spirale {
-  inset: 3px auto 3px -2.5px !important;
+  inset: 3px auto 3px -2.6px !important;
   width: 4px;
-  border-radius: 2px !important;
-  background: repeating-linear-gradient(180deg, rgba(226, 234, 255, 0.85) 0 1.6px, transparent 1.6px 4.2px);
-  transform: translateZ(1px);
+  background: repeating-linear-gradient(180deg, currentColor 0 1.6px, transparent 1.6px 4px);
+  transform: translateZ(0.5px);
 }
 
-/* Étincelle et poussière d'étoiles. */
+/* Étincelle. */
 .grimoire__eclat {
-  right: 2px;
+  right: 1px;
   top: 0;
-  color: #dcebff;
   animation: grimoire-scintille 3.8s ease-in-out infinite;
-}
-.grimoire__poussiere {
-  left: 30px;
-  top: 16px;
-  width: 2.5px;
-  height: 2.5px;
-  border-radius: 50%;
-  background: #d9ecff;
-  box-shadow: 0 0 4px rgba(159, 216, 255, 0.9);
-  opacity: 0;
 }
 
 /* ——— Au survol (ou au clavier) : le carnet s'ouvre et ses pages défilent. ——— */
 :is(button, a):is(:hover, :focus-visible) .grimoire__livre {
-  transform: translateX(11px) translateY(1px);
-}
-:is(button, a):is(:hover, :focus-visible) .grimoire__halo {
-  transform: scale(1.25);
-  animation-duration: 1.6s;
+  transform: translateX(8px);
 }
 :is(button, a):is(:hover, :focus-visible) .grimoire__couverture {
   animation: none;
   transform: rotateY(-165deg);
 }
+:is(button, a):is(:hover, :focus-visible) .grimoire__bloc {
+  opacity: 1;
+}
 :is(button, a):is(:hover, :focus-visible) .grimoire__feuille {
-  animation: grimoire-feuillette 2.4s cubic-bezier(0.45, 0.05, 0.35, 1) infinite backwards;
+  animation: grimoire-feuillette 1.8s cubic-bezier(0.45, 0.05, 0.35, 1) infinite backwards;
+}
+.grimoire__feuille:nth-of-type(2) {
+  animation-delay: 0.3s !important;
 }
 .grimoire__feuille:nth-of-type(3) {
-  animation-delay: 0.35s !important;
+  animation-delay: 0.9s !important;
 }
 .grimoire__feuille:nth-of-type(4) {
-  animation-delay: 0.95s !important;
-}
-.grimoire__feuille:nth-of-type(5) {
-  animation-delay: 1.55s !important;
-}
-.grimoire__feuille:nth-of-type(6) {
-  animation-delay: 2.15s !important;
+  animation-delay: 1.5s !important;
 }
 :is(button, a):is(:hover, :focus-visible) .grimoire__eclat {
-  animation-duration: 1s;
-}
-:is(button, a):is(:hover, :focus-visible) .grimoire__poussiere {
-  animation: grimoire-poussiere 1.8s ease-out infinite;
-}
-.grimoire__poussiere:nth-of-type(4) {
-  left: 25px;
-  animation-delay: 0.6s !important;
-}
-.grimoire__poussiere:nth-of-type(5) {
-  left: 36px;
-  animation-delay: 1.2s !important;
+  animation-duration: 0.9s;
 }
 
-/* Le bouton : un liseré bleu lunaire au survol (pas le rouge de la corbeille). */
+/* Le bouton : le même liseré que l'engrenage au survol (pas le rouge de la corbeille). */
 .hero__carnet {
   padding: 0;
 }
 .hero__corbeille.hero__carnet:not(:disabled):hover {
-  border-color: rgba(159, 216, 255, 0.45);
+  border-color: rgba(238, 242, 255, 0.4);
   color: var(--text-1);
 }
 
 @keyframes grimoire-flotte {
   0%,
   100% {
-    translate: 0 0.5px;
+    translate: 0 0.4px;
   }
   50% {
-    translate: 0 -1.2px;
-  }
-}
-@keyframes grimoire-halo {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.75;
+    translate: 0 -1px;
   }
 }
 /* De temps en temps, la couverture s'entrouvre, comme si une page voulait sortir. */
@@ -204,19 +149,19 @@
     rotate: y 0deg;
   }
   78% {
-    rotate: y -28deg;
+    rotate: y -32deg;
   }
   86% {
-    rotate: y -8deg;
+    rotate: y -10deg;
   }
 }
 @keyframes grimoire-lune {
   0%,
   100% {
-    rotate: -8deg;
+    rotate: -10deg;
   }
   50% {
-    rotate: 10deg;
+    rotate: 12deg;
   }
 }
 @keyframes grimoire-scintille {
@@ -227,7 +172,7 @@
     rotate: 0deg;
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.45;
     scale: 0.65;
     rotate: 45deg;
   }
@@ -238,29 +183,16 @@
     transform: rotateY(0deg);
     opacity: 0;
   }
-  6% {
+  8% {
     opacity: 1;
   }
-  50% {
+  55% {
     transform: rotateY(-160deg);
     opacity: 1;
   }
-  72%,
+  75%,
   100% {
     transform: rotateY(-160deg);
-    opacity: 0;
-  }
-}
-@keyframes grimoire-poussiere {
-  0% {
-    transform: translate(0, 0) scale(0.6);
-    opacity: 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(3px, -17px) scale(1.1);
     opacity: 0;
   }
 }

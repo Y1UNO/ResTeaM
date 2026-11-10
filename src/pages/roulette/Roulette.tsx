@@ -44,8 +44,8 @@ export function BoutonRoulette({ compact = false }: { compact?: boolean }) {
   );
 }
 
-/** Couleurs des 8 segments de la roue (doré, violet, bleu lunaire). */
-const SEGMENTS = ["#ffd27a", "#7b5cff", "#9fd8ff", "#ff9fc8", "#ffd27a", "#7b5cff", "#9fd8ff", "#3fe08a"];
+/** Segments de la roue dans la DA « clair de lune » : argent, charbon, bleu lunaire. */
+const SEGMENTS = ["#eef2ff", "#1c1f26", "#9fd8ff", "#1c1f26", "#cfd8f0", "#1c1f26", "#9fd8ff", "#1c1f26"];
 
 /** Part de camembert de la roue (SVG), de l'angle a à l'angle b (degrés). */
 function part(a: number, b: number, r: number) {
@@ -74,10 +74,10 @@ export function RoueAccueil() {
               </radialGradient>
             </defs>
             {SEGMENTS.map((c, i) => (
-              <path key={i} d={part(i * 45, (i + 1) * 45, 44)} fill={c} fillOpacity={i % 2 ? 0.85 : 0.95} stroke="#0e0e11" strokeWidth="1.2" />
+              <path key={i} d={part(i * 45, (i + 1) * 45, 44)} fill={c} fillOpacity={i % 2 ? 1 : 0.88} stroke="#0e0e11" strokeWidth="1.2" />
             ))}
             <circle cx="50" cy="50" r="44" fill="url(#roue-reflet)" />
-            <circle cx="50" cy="50" r="46" fill="none" stroke="#ffd27a" strokeWidth="3" />
+            <circle cx="50" cy="50" r="46" fill="none" stroke="#eef2ff" strokeWidth="2.5" />
           </svg>
           <span className="roue-accueil__lumieres">
             {Array.from({ length: 12 }, (_, i) => (
@@ -108,11 +108,11 @@ export function RoueAccueil() {
  * tiré au sort parmi ceux qui passent les filtres. Le tirage est fait avant le départ
  * (hasard du navigateur), la bande ne fait que le mettre en scène.
  */
-export function Roulette({ onFermer }: { onFermer: () => void }) {
+export function Roulette({ onFermer, filtresInitiaux = ["installes"] }: { onFermer: () => void; filtresInitiaux?: Filtre[] }) {
   const navigate = useNavigate();
   const biblio = useBibliotheque();
   const bilan = useBilanTrophees(null);
-  const [filtres, setFiltres] = useState<Set<Filtre>>(() => new Set<Filtre>(["installes"]));
+  const [filtres, setFiltres] = useState<Set<Filtre>>(() => new Set<Filtre>(filtresInitiaux));
   const [etat, setEtat] = useState<"pret" | "tourne" | "fini">("pret");
   const [bande, setBande] = useState<JeuBibliotheque[]>([]);
   const [decalage, setDecalage] = useState(0);

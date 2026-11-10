@@ -1012,3 +1012,10 @@
 .accueil .affiche__brume {
   will-change: transform, opacity;
 }
+
+/* Roulette « Ce soir je joue à… » à côté des onglets du ruban. */
+.ruban__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

@@ -7,6 +7,7 @@ import { IconLogout, IconSettings } from "../components/icons";
 import { useSession } from "./session";
 import { PATHS } from "./paths";
 import { basculerModeSalon, modeSalonActif } from "../lib/manette";
+import { usePhaseLune } from "../lib/lune";
 import "./LogoMenu.css";
 
 type MenuState = "closed" | "open" | "closing";
@@ -17,6 +18,7 @@ type MenuState = "closed" | "open" | "closing";
  * Ouverture et fermeture animées, jamais de fermeture instantanée.
  */
 export function LogoMenu() {
+  const lune = usePhaseLune();
   const [state, setState] = useState<MenuState>("closed");
   const rootRef = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -76,7 +78,7 @@ export function LogoMenu() {
         aria-label="Menu ResTeaM"
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        title="ResTeaM"
+        title={`ResTeaM · ${lune.nom} ce soir (${Math.round(lune.eclairage * 100)} %)`}
         onClick={() => (isOpen ? close() : open())}
       >
         <Logo size={42} />
@@ -84,6 +86,9 @@ export function LogoMenu() {
 
       {state !== "closed" && (
         <div role="menu" aria-label="Menu ResTeaM" className={`logo-menu__panel is-${state}`}>
+          <div className="logo-menu__lune">
+            {lune.nom} ce soir · {Math.round(lune.eclairage * 100)} % éclairée
+          </div>
           <button
             type="button"
             role="menuitem"

@@ -292,10 +292,10 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 - **Mini-widget** pendant le jeu : pas besoin.
 - **Overlay dans les jeux** (injection) et **liste de souhaits modifiable** (cookies) : déconseillés, Tom est d'accord.
 
-### 1. La vraie lune de ce soir
+### 1. La vraie lune de ce soir — fait le 10 novembre 2026, voir le journal « Étape 22 »
 - Le logo et les lunes de ResTeaM suivent la phase réelle de la lune, calculée sur le PC (calcul astronomique, sans Internet). Pleine lune ce soir : logo plein.
 
-### 2. Roulette « Ce soir je joue à… »
+### 2. Roulette « Ce soir je joue à… » — fait le 10 novembre 2026, voir le journal « Étape 22 »
 - Une roue lunaire qui tire un jeu de la bibliothèque, avec des filtres : jamais lancé, pas fini, moins de 2 h, coop, favoris.
 - Tom veut un **côté « gambling »** (suspense, ralentissement, révélation). Reste à trouver où la mettre : accueil, barre de gauche, ou bouton dans la Bibliothèque.
 
@@ -1098,6 +1098,24 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Aperçu : un journal simulé, stable d'un jour à l'autre.
 
 **À vérifier dans l'exe** : lancer un jeu quelques minutes, le fermer, puis ouvrir Journal de jeu. La nuit doit s'allumer, avec la partie dans son détail.
+
+### Étape 22 — La vraie lune et la roulette « Ce soir je joue à… » (10 novembre 2026)
+
+- **La vraie lune** (`lib/lune.ts`, `components/Logo.tsx`) :
+  - la phase est calculée sur le PC, sans Internet, avec le mois lunaire moyen (29,53 jours) depuis la nouvelle lune du 6 janvier 2000. Précision d'environ un jour : les pleines lunes du 26 octobre et du 24 novembre 2026 donnent 100 % ;
+  - la lune du logo prend la forme réelle de ce soir, vue de l'hémisphère nord : croissant éclairé à droite quand elle grandit, quartiers, gibbeuses, pleine lune, puis croissant éclairé à gauche ;
+  - la partie dans l'ombre garde un léger reflet (« lumière cendrée »), pour que la silhouette reste visible à la nouvelle lune. Les engrenages restent par-dessus ;
+  - recalculée toutes les 30 minutes. Le menu du logo affiche « Nouvelle lune ce soir · 0 % éclairée » ;
+  - le 10 novembre 2026, c'est nouvelle lune : le logo est presque éteint, et c'est voulu.
+- **Roulette « Ce soir je joue à… »** (`pages/roulette/Roulette.tsx`) :
+  - un bouton doré « Ce soir je joue à… » dans la Bibliothèque et à côté des onglets du ruban de l'accueil ;
+  - filtres : installés (par défaut), favoris, jamais lancés, pas finis à 100 % (d'après le bilan des trophées). « Jamais lancés » et « pas finis » s'excluent. Le nombre de jeux dans la roue est affiché ;
+  - côté « gambling » : le jeu est tiré au sort d'abord (hasard du système, `crypto.getRandomValues`), puis une bande de 56 jaquettes défile vite et ralentit pendant 6 secondes sous un repère lunaire doré qui pulse. L'arrêt tombe quelque part sur la jaquette, pas pile au centre, et les voisins du gagnant sont toujours d'autres jeux, pour le suspense ;
+  - à l'arrêt : la jaquette gagnante grandit avec un liseré doré et un reflet, les autres s'effacent, une gerbe d'étoiles part du centre, puis « Ce soir, ce sera… » avec le nom ;
+  - ensuite : « Jouer » (si le jeu est installé), « Voir la fiche » ou « L'installer », et « Relancer la roue » ;
+  - tout en transform et opacité.
+
+**À vérifier dans l'exe** : le logo (nouvelle lune ce soir, il grossira dans les jours qui viennent) et une partie de roulette.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

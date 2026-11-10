@@ -107,6 +107,12 @@
 .logo-menu__item.is-current {
   color: var(--text-1);
 }
+.logo-menu__lune {
+  padding: 6px 14px 8px;
+  font-size: 11.5px;
+  color: var(--text-4);
+  white-space: nowrap;
+}
 .logo-menu__separateur {
   height: 1px;
   margin: 4px 8px;

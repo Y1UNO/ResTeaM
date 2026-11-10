@@ -1,0 +1,338 @@
+/* ——— Bouton « Ce soir je joue à… » ——— */
+.btn-roulette {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 210, 122, 0.45);
+  background: linear-gradient(135deg, rgba(255, 210, 122, 0.16), rgba(201, 166, 255, 0.12));
+  color: #ffe2a6;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 0 18px rgba(255, 210, 122, 0.12);
+  transition:
+    transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) ease;
+}
+.btn-roulette:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 26px rgba(255, 210, 122, 0.3);
+}
+.btn-roulette svg {
+  transition: transform 0.8s var(--ease);
+}
+.btn-roulette:hover svg {
+  transform: rotate(200deg);
+}
+.btn-roulette.is-compact {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+/* ——— Fenêtre de la roulette ——— */
+.roulette {
+  position: fixed;
+  z-index: 41;
+  top: 50%;
+  left: 50%;
+  width: min(1000px, calc(100vw - 80px));
+  padding: 26px 28px 28px;
+  border-radius: var(--radius-2xl);
+  background: rgba(14, 14, 17, 0.94);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 210, 122, 0.28);
+  box-shadow:
+    var(--shadow-3),
+    0 0 60px rgba(255, 210, 122, 0.08);
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: achat-entre 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.roulette.is-sortie {
+  animation: achat-sort 0.32s ease both;
+}
+.roulette__entete {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.roulette__icone {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 210, 122, 0.12);
+  color: #ffd27a;
+}
+.roulette__icone svg {
+  width: 26px;
+  height: 26px;
+}
+.roulette.is-tourne .roulette__icone svg {
+  animation: roulette-tourne 0.6s linear infinite;
+}
+@keyframes roulette-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.roulette__entete h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.roulette__entete p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.roulette__fermer {
+  top: 4px;
+}
+.roulette__filtres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.roulette__filtre {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(238, 242, 255, 0.12);
+  background: rgba(238, 242, 255, 0.04);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.roulette__filtre.is-actif {
+  background: rgba(255, 210, 122, 0.16);
+  border-color: rgba(255, 210, 122, 0.55);
+  color: #ffe2a6;
+}
+.roulette__filtre:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* La fenêtre : bande de jaquettes, bords fondus, repère lunaire au centre. */
+.roulette__fenetre {
+  position: relative;
+  height: 252px;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255, 210, 122, 0.08), transparent 60%),
+    rgba(9, 9, 10, 0.7);
+  border: 1px solid rgba(238, 242, 255, 0.08);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.roulette__bande {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  display: flex;
+  gap: 16px;
+  will-change: transform;
+}
+.roulette__jeu {
+  position: relative;
+  flex: 0 0 auto;
+  width: 136px;
+  height: 204px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #18181b;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.6s cubic-bezier(0.2, 0.9, 0.25, 1.3),
+    opacity 0.5s ease,
+    box-shadow 0.5s ease;
+}
+.roulette__jeu img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.roulette__jeu span {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+.roulette__jeu img + span {
+  display: none;
+}
+.roulette.is-fini .roulette__jeu:not(.is-gagnant) {
+  opacity: 0.3;
+}
+.roulette__jeu.is-gagnant {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 2px #ffd27a,
+    0 0 40px rgba(255, 210, 122, 0.6);
+  z-index: 1;
+}
+.roulette__jeu.is-gagnant::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: roulette-reflet 1.2s ease 0.3s both;
+}
+@keyframes roulette-reflet {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+.roulette__repere {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  pointer-events: none;
+}
+.roulette__trait {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: -1px;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(255, 210, 122, 0.9), transparent);
+  opacity: 0.55;
+}
+.roulette.is-tourne .roulette__trait {
+  animation: roulette-pouls 0.35s ease-in-out infinite;
+}
+@keyframes roulette-pouls {
+  50% {
+    opacity: 1;
+  }
+}
+.roulette__lune {
+  position: absolute;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset -6px -2px 0 0 #ffd27a;
+  filter: drop-shadow(0 0 6px rgba(255, 210, 122, 0.8));
+}
+.roulette__lune.is-haut {
+  top: 2px;
+}
+.roulette__lune.is-bas {
+  bottom: 2px;
+  transform: rotate(180deg);
+}
+
+/* Gerbe d'étoiles autour du gagnant. */
+.roulette__gerbe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.roulette__gerbe span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+}
+.roulette__gerbe span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #ffe2a6;
+  box-shadow: 0 0 10px #ffd27a;
+  animation: roulette-gerbe 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) both;
+}
+@keyframes roulette-gerbe {
+  0% {
+    transform: translateX(0) scale(1.4);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Résultat. */
+.roulette__resultat {
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+.roulette__lancer {
+  min-width: 240px;
+  background: linear-gradient(135deg, #ffe2a6, #ffd27a);
+  color: #1b1405;
+}
+.roulette__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #ffd27a;
+  animation: rise-in 0.5s var(--ease) both;
+}
+.roulette__resultat strong {
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: -0.5px;
+  animation: roulette-titre 0.7s cubic-bezier(0.2, 0.9, 0.25, 1.3) 0.1s both;
+}
+@keyframes roulette-titre {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+  }
+}
+.roulette__infos {
+  font-size: 13px;
+  color: var(--text-3);
+  animation: rise-in 0.5s var(--ease) 0.25s both;
+}
+.roulette__boutons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  animation: rise-in 0.5s var(--ease) 0.35s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roulette__bande {
+    transition-duration: 0.01s !important;
+  }
+}

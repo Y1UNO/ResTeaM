@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { cheminEclaire, usePhaseLune } from "../lib/lune";
 import "./Logo.css";
 
 type LogoProps = {
@@ -7,6 +8,8 @@ type LogoProps = {
   /** Afficher la tuile charbon derrière la lune. */
   tile?: boolean;
   className?: string;
+  /** La lune suit la phase réelle de ce soir (par défaut). Sinon : le croissant de la marque. */
+  vraieLune?: boolean;
 };
 
 /**
@@ -14,11 +17,15 @@ type LogoProps = {
  * pour que les animations CSS fonctionnent : les engrenages tournent et la lune respire.
  * Les identifiants du masque et du dégradé sont uniques, pour pouvoir afficher
  * le logo plusieurs fois (barre + écran de connexion).
+ * La lune suit la vraie lune de ce soir (idée de Tom) : croissant, quartier, gibbeuse
+ * ou pleine lune. La partie dans l'ombre garde un léger reflet (« lumière cendrée »),
+ * pour que la silhouette reste visible à la nouvelle lune.
  */
-export function Logo({ size = 42, tile = true, className }: LogoProps) {
+export function Logo({ size = 42, tile = true, className, vraieLune = true }: LogoProps) {
   const uid = useId().replace(/:/g, "");
   const mask = `rt-moon-mask-${uid}`;
   const grad = `rt-moon-grad-${uid}`;
+  const lune = usePhaseLune();
 
   return (
     <svg
@@ -32,8 +39,18 @@ export function Logo({ size = 42, tile = true, className }: LogoProps) {
       <defs>
         <mask id={mask}>
           <rect width="200" height="200" fill="#000" />
-          <circle cx="100" cy="100" r="80" fill="#fff" />
-          <circle cx="118" cy="84" r="64" fill="#000" />
+          {vraieLune ? (
+            <>
+              {/* Lumière cendrée : la lune entière, à peine visible. */}
+              <circle cx="100" cy="100" r="80" fill="#fff" fillOpacity="0.14" />
+              <path d={cheminEclaire(lune.phase, 100, 100, 80)} fill="#fff" />
+            </>
+          ) : (
+            <>
+              <circle cx="100" cy="100" r="80" fill="#fff" />
+              <circle cx="118" cy="84" r="64" fill="#000" />
+            </>
+          )}
         </mask>
         <linearGradient id={grad} x1="0" y1="1" x2="1" y2="0">
           <stop offset="0" stopColor="#1E9E58" />

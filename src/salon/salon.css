@@ -177,12 +177,14 @@ html.est-salon #root {
   height: 18px;
 }
 
-/* Boutons de fenêtre : toute la hauteur de la barre. */
+/* Boutons de fenêtre : la capsule de verre, centrée dans la barre. */
 .salon-barre .titlebar__controls {
-  align-self: stretch;
+  align-self: center;
+  height: 34px;
+  margin: 0;
 }
 .salon-barre .titlebar__btn {
-  height: 100%;
+  height: 28px;
 }
 
 /* Rappel sur la page de connexion de Steam : « Se souvenir de moi » garde la connexion. */

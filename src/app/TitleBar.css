@@ -20,17 +20,34 @@
   pointer-events: auto;
 }
 
+/*
+ * Les trois boutons dans une capsule de verre sombre (demande de Tom : « on ne les voit
+ * quasiment pas ») : ils restent lisibles sur n'importe quel fond, clair ou sombre.
+ */
 .titlebar__controls {
   display: flex;
+  align-items: center;
+  gap: 2px;
+  height: calc(var(--titlebar-h) - 4px);
+  margin: 3px 6px 0 0;
+  padding: 0 3px;
+  border-radius: 11px;
+  background: rgba(10, 10, 13, 0.62);
+  border: 1px solid rgba(238, 242, 255, 0.12);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(238, 242, 255, 0.06);
   pointer-events: auto;
 }
 
 .titlebar__btn {
-  width: 46px;
-  height: var(--titlebar-h);
+  width: 38px;
+  height: calc(var(--titlebar-h) - 10px);
   border: none;
+  border-radius: 8px;
   background: transparent;
-  color: var(--text-3);
+  color: var(--text-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,22 +55,28 @@
   cursor: default;
   transition:
     background-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    transform 0.15s var(--ease);
+}
+/* Une ombre fine autour du trait : visible même sur une image très claire. */
+.titlebar__btn svg {
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.7));
 }
 .titlebar__btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-1);
+  background: rgba(238, 242, 255, 0.12);
+  color: #ffffff;
 }
 .titlebar__btn:active {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(238, 242, 255, 0.08);
+  transform: scale(0.9);
 }
 /* Fermer : un rouge doux dans la DA au lieu du rouge vif de Windows. */
 .titlebar__btn--close:hover {
-  background: rgba(230, 72, 72, 0.22);
-  color: #ffd6d6;
+  background: rgba(230, 72, 72, 0.3);
+  color: #ffe1e1;
 }
 .titlebar__btn--close:active {
-  background: rgba(230, 72, 72, 0.32);
+  background: rgba(230, 72, 72, 0.4);
 }
 .titlebar__btn:focus-visible {
   outline-offset: -2px;
@@ -73,8 +96,18 @@
   transform-box: fill-box;
   transform-origin: center;
 }
+/* Au repos, de petits mouvements : le croissant se balance, l'étoile scintille. */
+.titlebar__soleil {
+  animation: titlebar-balance 5s ease-in-out infinite;
+}
+@keyframes titlebar-balance {
+  50% {
+    transform: translateY(0.6px) rotate(-8deg);
+  }
+}
 /* Réduire : le croissant se couche. */
 .titlebar__btn--min:hover .titlebar__soleil {
+  animation: none;
   transform: translateY(5px) rotate(-20deg);
   opacity: 0.6;
 }
@@ -102,9 +135,15 @@
   transform: translate(calc(var(--x) * -0.8), calc(var(--y) * -0.8));
 }
 .titlebar__etoile {
-  opacity: 0.55;
+  animation: titlebar-scintille 3.6s ease-in-out infinite;
+}
+@keyframes titlebar-scintille {
+  50% {
+    opacity: 0.45;
+  }
 }
 .titlebar__btn--max:hover .titlebar__etoile {
+  animation: none;
   opacity: 1;
   transform: rotate(90deg) scale(1.3);
 }
@@ -130,5 +169,25 @@
 @keyframes titlebar-orbite {
   to {
     transform: rotate(360deg);
+  }
+}
+/* La croix respire très doucement au repos. */
+.titlebar__croix {
+  animation: titlebar-respire 4.4s ease-in-out infinite;
+}
+@keyframes titlebar-respire {
+  50% {
+    transform: scale(0.88);
+  }
+}
+.titlebar__btn--close:hover .titlebar__croix {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .titlebar__soleil,
+  .titlebar__etoile,
+  .titlebar__croix {
+    animation: none;
   }
 }

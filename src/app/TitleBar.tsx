@@ -51,7 +51,7 @@ export function BoutonsFenetre({ act }: { act: (fn: ActionFenetre) => void }) {
         {/* Boutons dessinés dans la DA « clair de lune » (demande de Tom). */}
         {/* Réduire : un croissant qui se couche derrière l'horizon. */}
         <button type="button" className="titlebar__btn titlebar__btn--min" aria-label="Réduire" title="Réduire" onClick={() => act("minimize")}>
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <defs>
               <clipPath id="tb-horizon">
                 <rect x="0" y="0" width="16" height="11" />
@@ -71,7 +71,7 @@ export function BoutonsFenetre({ act }: { act: (fn: ActionFenetre) => void }) {
           title={maximized ? "Restaurer" : "Agrandir"}
           onClick={() => act("toggleMaximize")}
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {maximized ? (
               <g className="titlebar__coins is-dedans">
                 <path d="M6 2.5v2.2a1.3 1.3 0 0 1-1.3 1.3H2.5" />
@@ -87,16 +87,16 @@ export function BoutonsFenetre({ act }: { act: (fn: ActionFenetre) => void }) {
                 <path d="M13.5 10v2a1.5 1.5 0 0 1-1.5 1.5h-2" />
               </g>
             )}
-            <path className="titlebar__etoile" d="M8 6.6l.45 1 1 .4-1 .45L8 9.4l-.45-.95-1-.45 1-.4z" fill="currentColor" stroke="none" />
+            <path className="titlebar__etoile" d="M8 6.2l.6 1.2 1.2.6-1.2.6L8 9.8l-.6-1.2-1.2-.6 1.2-.6z" fill="currentColor" stroke="none" />
           </svg>
         </button>
         {/* Fermer : une croix dans une orbite, qu'une petite lune parcourt au survol. */}
         <button type="button" className="titlebar__btn titlebar__btn--close" aria-label="Fermer" title="Fermer" onClick={() => act("close")}>
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
-            <circle className="titlebar__orbite" cx="8" cy="8" r="6.2" strokeWidth="1" strokeDasharray="2.2 2.4" />
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round">
+            <circle className="titlebar__orbite" cx="8" cy="8" r="6.2" strokeWidth="1.3" strokeDasharray="2.2 2.4" />
             <path className="titlebar__croix" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" />
             <g className="titlebar__satellite">
-              <circle cx="8" cy="1.8" r="1.1" fill="currentColor" stroke="none" />
+              <circle cx="8" cy="1.8" r="1.4" fill="currentColor" stroke="none" />
             </g>
           </svg>
         </button>

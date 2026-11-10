@@ -418,6 +418,11 @@ Structure proposée, qui garde toutes les idées de Tom :
   - **Recommandation de Claude** : commencer sans tickets payants (tirage gratuit, bundles, soutien), puis voir.
 - Tout passe par le serveur de partage : solde des tickets, collection, échanges, achats confirmés par le prestataire. L'app ne fait que lire ces données, ce qui empêche la triche.
 
+### 14. Motion design pro (demande de Tom, 10 novembre 2026 au soir) — à attaquer le 11 novembre
+- Tom veut du **vrai motion design professionnel** dans tout le visuel de l'app, **beaucoup plus animé**, dans le genre de Spotify.
+- Idées à lui proposer : entrées orchestrées des pages, transitions entre les pages, éléments partagés qui glissent d'une page à l'autre (jaquette → fiche), listes qui arrivent en cascade, réactions au survol plus riches, chiffres qui défilent, fonds qui respirent avec la couleur de l'affiche.
+- Toujours dans la DA Nocturne · Clair de lune (pas de couleurs vives), en transform et opacité, et tout s'arrête si Windows demande moins d'animations.
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |
@@ -1225,6 +1230,15 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Tout bouge en transform et opacité (barres en `scaleX`, apparition en fondu).
 
 **À vérifier dans l'exe** : ouvrir le profil d'un ami, puis « Duel ».
+
+### Étape 28 — Boutons de la fenêtre bien visibles (10 novembre 2026)
+
+- Retour de Tom : « on ne voit quasiment pas les icônes pour quitter l'app ». Réduire, Agrandir et Fermer (en haut à droite) sont maintenant dans une **capsule de verre sombre** (flou, liseré clair, ombre), lisible sur n'importe quel fond, même une image très claire.
+- **Traits plus épais** (2 au lieu de 1,3), en blanc, avec une ombre fine autour du trait. L'étoile d'Agrandir et la petite lune de Fermer sont plus grandes.
+- **Petites animations au repos** : le croissant de Réduire se balance, l'étoile d'Agrandir scintille, la croix de Fermer respire. Au survol, les mouvements d'avant restent (le croissant se couche, les coins s'écartent, la croix tourne et une lune fait le tour de l'orbite) ; Fermer prend un rouge doux plus visible. Un clic enfonce légèrement le bouton.
+- Tout en transform et opacité, et tout s'arrête si Windows demande moins d'animations. Le salon d'achat reprend la même capsule.
+
+**À vérifier dans l'exe** : les trois boutons en haut à droite, sur l'accueil et sur une fiche avec une image claire.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

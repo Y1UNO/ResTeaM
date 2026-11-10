@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { BoutonRoulette } from "../roulette/Roulette";
 import { useMoletteHorizontale } from "../../lib/molette";
 import { MenuJeu } from "../bibliotheque/MenuJeu";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +40,6 @@ export function Ruban({ jeux, images, choisi, onChoisir, total, onglet, onOnglet
           {onglet === "favoris" ? "Tes favoris" : "Reprendre là où tu t’es arrêté"}
         </h2>
         <div className="ruban__actions">
-        <BoutonRoulette compact />
         <div className="ruban__onglets" role="tablist" aria-label="Jeux du ruban">
           {onglets.map((o) => (
             <button

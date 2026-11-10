@@ -44,6 +44,64 @@ export function BoutonRoulette({ compact = false }: { compact?: boolean }) {
   );
 }
 
+/** Couleurs des 8 segments de la roue (doré, violet, bleu lunaire). */
+const SEGMENTS = ["#ffd27a", "#7b5cff", "#9fd8ff", "#ff9fc8", "#ffd27a", "#7b5cff", "#9fd8ff", "#3fe08a"];
+
+/** Part de camembert de la roue (SVG), de l'angle a à l'angle b (degrés). */
+function part(a: number, b: number, r: number) {
+  const p = (d: number) => [50 + r * Math.cos(((d - 90) * Math.PI) / 180), 50 + r * Math.sin(((d - 90) * Math.PI) / 180)];
+  const [x1, y1] = p(a);
+  const [x2, y2] = p(b);
+  return `M50 50 L${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+}
+
+/**
+ * La roue de l'accueil (en haut à gauche, demande de Tom) : une petite roue de casino
+ * qui tourne doucement, ses lumières qui clignotent en chaîne, une lune au centre.
+ * Un clic ouvre la roulette.
+ */
+export function RoueAccueil() {
+  const [ouverte, setOuverte] = useState(false);
+  return (
+    <>
+      <button type="button" className="roue-accueil" onClick={() => setOuverte(true)} title="Tirer au sort un jeu pour ce soir">
+        <span className="roue-accueil__roue" aria-hidden="true">
+          <svg className="roue-accueil__disque" viewBox="0 0 100 100" width="76" height="76">
+            <defs>
+              <radialGradient id="roue-reflet" cx="40%" cy="35%" r="70%">
+                <stop offset="0" stopColor="#fff" stopOpacity="0.35" />
+                <stop offset="0.6" stopColor="#fff" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            {SEGMENTS.map((c, i) => (
+              <path key={i} d={part(i * 45, (i + 1) * 45, 44)} fill={c} fillOpacity={i % 2 ? 0.85 : 0.95} stroke="#0e0e11" strokeWidth="1.2" />
+            ))}
+            <circle cx="50" cy="50" r="44" fill="url(#roue-reflet)" />
+            <circle cx="50" cy="50" r="46" fill="none" stroke="#ffd27a" strokeWidth="3" />
+          </svg>
+          <span className="roue-accueil__lumieres">
+            {Array.from({ length: 12 }, (_, i) => (
+              <span key={i} style={{ transform: `rotate(${i * 30}deg) translateY(-40px)`, animationDelay: `${(i % 12) * 0.1}s` }} />
+            ))}
+          </span>
+          <span className="roue-accueil__centre">
+            <svg viewBox="0 0 24 24" width="22" height="22">
+              <path d="M14.5 3.2a8.6 8.6 0 1 0 6.3 12.6 7 7 0 1 1-6.3-12.6z" fill="#eef2ff" />
+            </svg>
+          </span>
+          <span className="roue-accueil__fleche" />
+        </span>
+        <span className="roue-accueil__texte">
+          <span className="roue-accueil__kicker">La roue du soir</span>
+          <strong>Ce soir je joue à…</strong>
+          <span>Laisse la lune choisir</span>
+        </span>
+      </button>
+      {ouverte && <Roulette onFermer={() => setOuverte(false)} />}
+    </>
+  );
+}
+
 /**
  * Roulette « Ce soir je joue à… » (idée de Tom, avec un côté « gambling ») : une bande
  * de jaquettes défile vite puis ralentit sous le repère lunaire, et s'arrête sur le jeu

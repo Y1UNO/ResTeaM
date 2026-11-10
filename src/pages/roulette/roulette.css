@@ -35,6 +35,189 @@
   font-size: 12.5px;
 }
 
+/* ——— La roue de l'accueil (en haut à gauche) ——— */
+.roue-accueil {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--titlebar-h) + 26px);
+  left: var(--page-left);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 22px 10px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 210, 122, 0.4);
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 210, 122, 0.18), transparent 60%),
+    rgba(14, 14, 17, 0.62);
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.45),
+    0 0 34px rgba(255, 210, 122, 0.16);
+  color: var(--text-1);
+  text-align: left;
+  cursor: pointer;
+  animation: roue-arrivee 0.8s cubic-bezier(0.2, 0.9, 0.25, 1.2) 0.4s both;
+  transition:
+    transform 0.35s var(--ease),
+    box-shadow 0.35s ease;
+}
+@keyframes roue-arrivee {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.92);
+  }
+}
+.roue-accueil:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    0 0 50px rgba(255, 210, 122, 0.35);
+}
+.roue-accueil__roue {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex: 0 0 auto;
+}
+.roue-accueil__disque {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 0 10px rgba(255, 210, 122, 0.45));
+  animation: roue-tourne 22s linear infinite;
+}
+.roue-accueil:hover .roue-accueil__disque {
+  animation-duration: 1.6s;
+}
+@keyframes roue-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Lumières du bord qui s'allument en chaîne, comme sur une roue de casino. */
+.roue-accueil__lumieres {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+.roue-accueil__lumieres span {
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff6dc;
+  box-shadow: 0 0 6px #ffd27a;
+  opacity: 0.35;
+  animation: roue-lumiere 1.2s ease-in-out infinite;
+}
+@keyframes roue-lumiere {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  12% {
+    opacity: 1;
+  }
+}
+.roue-accueil__centre {
+  position: absolute;
+  inset: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #2a2a35, #0e0e11);
+  border: 2px solid #ffd27a;
+  box-shadow: 0 0 12px rgba(255, 210, 122, 0.6);
+}
+.roue-accueil__centre svg {
+  animation: roue-lune 4s ease-in-out infinite;
+}
+@keyframes roue-lune {
+  50% {
+    transform: rotate(-16deg) scale(1.08);
+  }
+}
+/* Petite flèche dorée en haut : le repère de la roue. */
+.roue-accueil__fleche {
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 12px solid #ffd27a;
+  translate: -50% 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+.roue-accueil:hover .roue-accueil__fleche {
+  animation: roue-fleche 0.25s ease-in-out infinite;
+}
+@keyframes roue-fleche {
+  50% {
+    transform: rotate(-14deg);
+  }
+}
+.roue-accueil__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.roue-accueil__kicker {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #ffd27a;
+}
+.roue-accueil__texte strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: -0.3px;
+}
+.roue-accueil__texte > span:last-child {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+/* Écrans peu hauts : roue plus compacte, plus haut, pour ne pas toucher le titre. */
+@media (max-height: 920px) {
+  .roue-accueil {
+    top: calc(var(--titlebar-h) + 6px);
+    gap: 12px;
+    padding: 8px 18px 8px 8px;
+  }
+  .roue-accueil__roue,
+  .roue-accueil__disque {
+    width: 58px;
+    height: 58px;
+  }
+  /* Le cercle de lumières suit la roue plus petite (58 / 76). */
+  .roue-accueil__lumieres {
+    scale: 0.76;
+  }
+  .roue-accueil__centre {
+    inset: 18px;
+  }
+  .roue-accueil__centre svg {
+    width: 16px;
+    height: 16px;
+  }
+  .roue-accueil__texte strong {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .roue-accueil__disque,
+  .roue-accueil__lumieres span,
+  .roue-accueil__centre svg {
+    animation: none;
+  }
+}
+
 /* ——— Fenêtre de la roulette ——— */
 .roulette {
   position: fixed;

@@ -14,6 +14,7 @@ import { useInstallation } from "../../installation/store";
 import { FenetreDesinstallation } from "../../installation/Desinstallation";
 import { FenetreProprietes } from "../fiche/Proprietes";
 import { usePalette } from "../../lib/couleurs";
+import { RoueAccueil } from "../roulette/Roulette";
 import { useChrono, useSessionJeu } from "../../app/sessionJeu";
 
 type EtatJaquette = "repos" | "ouvert" | "fermeture" | "revenu";
@@ -108,6 +109,7 @@ export function Hero({ jeu, images }: Props) {
     <section aria-label={kicker(jeu)} className="hero">
       <Affiche url={images.hero} appId={jeu.appId} />
       <div className="hero__voile" aria-hidden="true" />
+      <RoueAccueil />
 
       <div className="hero__content">
         <div key={`t-${jeu.appId}`} className="hero__text">

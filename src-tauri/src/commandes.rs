@@ -895,6 +895,13 @@ pub fn notifs_clic(app: AppHandle, page: Option<String>, jouer: Option<u32>) -> 
     Ok(())
 }
 
+/// Journal : sessions commencées entre `depuis` et `jusqu` (millisecondes, 5 ans au plus).
+#[tauri::command]
+pub fn journal_sessions(etat: State<'_, EtatApp>, depuis: i64, jusqu: i64) -> Resultat<Vec<crate::jeu::SessionJeu>> {
+    let depuis = depuis.max(jusqu - 5 * 366 * 86_400_000);
+    crate::journal::lire(&etat.cache, depuis, jusqu)
+}
+
 /// Jeu en cours et dernière session terminée.
 #[tauri::command]
 pub fn jeu_session() -> crate::jeu::EtatJeu {

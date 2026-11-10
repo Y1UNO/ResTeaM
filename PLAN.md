@@ -299,7 +299,7 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 - Une roue lunaire qui tire un jeu de la bibliothèque, avec des filtres : jamais lancé, pas fini, moins de 2 h, coop, favoris.
 - Tom veut un **côté « gambling »** (suspense, ralentissement, révélation). Reste à trouver où la mettre : accueil, barre de gauche, ou bouton dans la Bibliothèque.
 
-### 3. Journal des sessions
+### 3. Journal des sessions — fait le 10 novembre 2026, voir le journal « Étape 21 »
 - Historique de chaque jeu lancé (début, durée), à partir du suivi `jeu.rs` qui existe déjà. Gardé dans le cache chiffré.
 - Calendrier « nuits de jeu » : une case par soir, plus lumineuse quand Tom a joué longtemps. Détail d'un soir au clic.
 
@@ -1076,6 +1076,28 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 1. Paramètres, « Envoyer une notification d'essai » : la carte s'affiche dans le coin choisi sans voler le focus.
 2. Lancer un jeu, puis faire arriver une notification : elle attend la fin de la partie.
 3. Cliquer une carte : la bonne page de ResTeaM s'ouvre.
+
+### Étape 21 — Journal des sessions (10 novembre 2026)
+
+- **Enregistrement** (`journal.rs`) : chaque partie suivie par `jeu.rs` (jeu, début, fin) est gardée dans le cache **chiffré par le coffre-fort**, rangée par mois (`journal:2026-11`), sans date de péremption.
+  - Les parties de moins d'une minute sont ignorées, ainsi que les doublons.
+  - Garde-fou : 5 000 parties par mois au plus.
+- **Robustesse** : pendant une partie, la session en cours est notée toutes les minutes. Si ResTeaM se ferme ou redémarre au milieu :
+  - le jeu tourne encore au relancement : la partie continue avec son vrai début ;
+  - le jeu est fermé : elle est enregistrée jusqu'à la dernière minute vue.
+- **Page « Journal de jeu »** (`/journal`, dans le menu du logo et depuis le profil) :
+  - périodes : 12 semaines, 6 mois, cette année, tout (2 ans) ;
+  - chiffres : temps de jeu, nuits de jeu, plus longue partie (et son jeu), plus longue série de nuits d'affilée, série en cours ;
+  - **calendrier des nuits de jeu** : une case par nuit, du lundi au dimanche, plus lumineuse quand Tom a joué longtemps (5 niveaux, jusqu'à la lune blanche qui brille au-delà de 4 h). La taille des cases s'adapte à la période, et aujourd'hui est entouré de vert ;
+  - une partie commencée avant 6 h du matin compte pour la nuit d'avant ;
+  - **détail d'une nuit** au clic : chaque partie avec sa jaquette, ses heures et sa durée ; un clic ouvre la fiche du jeu ;
+  - **les plus joués** de la période, avec des jauges.
+  - La partie en cours est ajoutée au calendrier en direct.
+- **Profil** : section « Tes nuits de jeu » (12 semaines en petit, total, temps de cette nuit, bouton « Ouvrir le journal »).
+- Le journal ne commence qu'aujourd'hui : Steam ne donne pas l'historique des parties, seulement les totaux. Il nourrira le ResTeaM Wrap.
+- Aperçu : un journal simulé, stable d'un jour à l'autre.
+
+**À vérifier dans l'exe** : lancer un jeu quelques minutes, le fermer, puis ouvrir Journal de jeu. La nuit doit s'allumer, avec la partie dans son détail.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

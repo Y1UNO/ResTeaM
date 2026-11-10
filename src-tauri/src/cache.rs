@@ -131,6 +131,12 @@ impl Cache {
         self.ecrire(cle, &serde_json::to_string(valeur)?, ttl_secondes)
     }
 
+    /// Retire une seule valeur.
+    pub fn retirer(&self, cle: &str) -> Resultat<()> {
+        self.verrou()?.execute("DELETE FROM cache WHERE cle = ?1", params![cle])?;
+        Ok(())
+    }
+
     pub fn vider(&self) -> Resultat<()> {
         self.verrou()?.execute("DELETE FROM cache", [])?;
         Ok(())

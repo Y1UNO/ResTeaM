@@ -19,6 +19,7 @@ import { estErreurApp, type Badge, type BilanTrophees, type JeuPossede } from ".
 import { Croissant } from "../../components/Croissant";
 import { LuneProfil } from "./LuneProfil";
 import { persoDepuisPartage } from "./PartageProfil";
+import { NuitsDeJeu } from "../journal/Journal";
 import { calculerPoints, niveauDepuisPoints } from "../../lib/niveauResteam";
 import { Smoke } from "../../components/Smoke";
 import { Compteur, Lucioles } from "../../components/Vivant";
@@ -281,6 +282,18 @@ function VueProfil({ ami }: { ami: string | null }) {
             ))}
           </div>
         </section>
+
+        {!ami && (
+          <section className="profil__section" aria-labelledby="profil-nuits">
+            <div className="profil__entete">
+              <h2 id="profil-nuits" className="profil__titre">
+                Tes nuits de jeu
+              </h2>
+              <span className="profil__indice">Chaque partie notée par ResTeaM</span>
+            </div>
+            <NuitsDeJeu />
+          </section>
+        )}
 
         <section className="profil__section" aria-labelledby="profil-badges">
           <h2 id="profil-badges" className="profil__titre">

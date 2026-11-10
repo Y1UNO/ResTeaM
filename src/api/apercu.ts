@@ -465,6 +465,37 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         : null;
     case "notification_essai":
       return undefined;
+    case "journal_sessions": {
+      // Journal simulé : soirées de jeu tirées de façon stable (même jour → mêmes parties).
+      const jeux = [1145350, 1903340, 1172470, 413150, 2868840, 730];
+      const depuis = Number(args?.depuis);
+      const jusqu = Math.min(Number(args?.jusqu), Date.now());
+      const l: { appId: number; debut: number; fin: number | null }[] = [];
+      const jour = new Date(depuis);
+      jour.setHours(0, 0, 0, 0);
+      while (jour.getTime() <= jusqu) {
+        const graine = Math.floor(jour.getTime() / 86_400_000);
+        const hasard = (n: number) => {
+          const x = Math.sin(graine * 12.9898 + n * 78.233) * 43758.5453;
+          return x - Math.floor(x);
+        };
+        if (hasard(1) < 0.58) {
+          let h = 18 + Math.floor(hasard(2) * 4);
+          const parties = 1 + Math.floor(hasard(3) * 3);
+          for (let i = 0; i < parties; i++) {
+            const debut = new Date(jour);
+            debut.setHours(h, Math.floor(hasard(4 + i) * 50), 0, 0);
+            const minutes = 15 + Math.floor(hasard(7 + i) * (i === 0 ? 220 : 90));
+            if (debut.getTime() >= depuis && debut.getTime() + minutes * 60_000 <= jusqu) {
+              l.push({ appId: jeux[Math.floor(hasard(10 + i) * jeux.length)], debut: debut.getTime(), fin: debut.getTime() + minutes * 60_000 });
+            }
+            h += 1 + Math.floor(minutes / 60);
+          }
+        }
+        jour.setDate(jour.getDate() + 1);
+      }
+      return l;
+    }
     case "notifs_prendre": {
       const notifs = NOTIFS_DEMO_DONNEES ? [] : NOTIFS_DEMO;
       NOTIFS_DEMO_DONNEES = true;

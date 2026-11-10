@@ -4,6 +4,7 @@ mod commandes;
 mod erreur;
 mod images_locales;
 mod jeu;
+mod journal;
 mod notifications;
 mod partage;
 mod preferences;
@@ -164,6 +165,7 @@ pub fn run() {
             commandes::resteam_au_demarrage,
             commandes::jeu_session,
             commandes::bilan_trophees,
+            commandes::journal_sessions,
             commandes::partage_etat,
             commandes::partage_connecter,
             commandes::partage_publier,

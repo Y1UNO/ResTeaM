@@ -3,18 +3,20 @@
 //! - un jeu démarre : ResTeaM se réduit (si la préférence le demande) et le front
 //!   affiche « En cours » avec un minuteur ;
 //! - le jeu se ferme : ResTeaM revient (seulement s'il s'était réduit lui-même) et
-//!   le front affiche la durée de la session.
+//!   le front affiche la durée de la session ;
+//! - chaque session terminée part dans le journal (`journal.rs`).
 
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::preferences;
+use crate::commandes::EtatApp;
 use crate::steam::installation;
+use crate::{journal, preferences};
 
-#[derive(Debug, Clone, Copy, Serialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionJeu {
     pub app_id: u32,
@@ -64,9 +66,31 @@ pub fn transition(avant: Option<SessionJeu>, jeu: Option<u32>, maintenant: i64) 
 /// Lance la surveillance (une seule fois, au démarrage de ResTeaM).
 pub fn surveiller(app: AppHandle) {
     tauri::async_runtime::spawn(async move {
+        // Session interrompue par une fermeture de ResTeaM : reprise, ou enregistrée.
+        let premier = tokio::task::spawn_blocking(installation::jeu_en_cours).await.ok().flatten();
+        if let Some(etat) = app.try_state::<EtatApp>() {
+            if let Some(gardee) = journal::lire_en_cours(&etat.cache) {
+                if Some(gardee.app_id) == premier {
+                    if let Ok(mut s) = SUIVI.lock() {
+                        s.etat.en_cours = Some(SessionJeu { fin: None, ..gardee });
+                    }
+                } else {
+                    let _ = journal::enregistrer(&etat.cache, gardee);
+                    let _ = journal::oublier_en_cours(&etat.cache);
+                }
+            }
+        }
+        let mut tours: u32 = 0;
         loop {
             let jeu = tokio::task::spawn_blocking(installation::jeu_en_cours).await.ok().flatten();
             relever(&app, jeu);
+            // Toutes les minutes, la session en cours est notée (au cas où ResTeaM se ferme).
+            tours = tours.wrapping_add(1);
+            if tours % 30 == 0 {
+                if let (Some(s), Some(etat)) = (self::etat().en_cours, app.try_state::<EtatApp>()) {
+                    let _ = journal::garder_en_cours(&etat.cache, s, maintenant_ms());
+                }
+            }
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
     });
@@ -89,6 +113,21 @@ fn relever(app: &AppHandle, jeu: Option<u32>) {
         }
         (terminee, commencee, revenir)
     };
+    // Journal : la session terminée est gardée, la nouvelle est notée.
+    if let Some(etat_app) = app.try_state::<EtatApp>() {
+        let cache = &etat_app.cache;
+        if let Some(t) = terminee {
+            let _ = journal::enregistrer(cache, t);
+        }
+        match commencee {
+            Some(c) => {
+                let _ = journal::garder_en_cours(cache, c, maintenant_ms());
+            }
+            None => {
+                let _ = journal::oublier_en_cours(cache);
+            }
+        }
+    }
     let _ = app.emit("jeu-session", etat());
     let fenetre = app.get_webview_window("main");
     if commencee.is_some() && terminee.is_none() && preferences::lire(app).reduire_en_jeu {

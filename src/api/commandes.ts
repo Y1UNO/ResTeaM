@@ -53,6 +53,7 @@ import {
   EtatPartage,
   ProfilPartage,
   NotifsAPrendre,
+  SessionJeu,
 } from "./types";
 
 /** Vrai dans l'exe (WebView de Tauri), faux dans un simple navigateur. */
@@ -128,6 +129,7 @@ export const api = {
   preferencesEcrire: (preferences: Preferences) => appeler<void>("preferences_ecrire", { preferences }),
   resteamAuDemarrage: (actif: boolean) => appeler<boolean>("resteam_au_demarrage", { actif }),
   jeuSession: () => appeler<EtatJeu>("jeu_session"),
+  journalSessions: (depuis: number, jusqu: number) => appeler<SessionJeu[]>("journal_sessions", { depuis, jusqu }),
   partageEtat: () => appeler<EtatPartage>("partage_etat"),
   partageConnecter: () => appeler<EtatPartage>("partage_connecter"),
   partagePublier: (style: object) => appeler<unknown>("partage_publier", { style }),

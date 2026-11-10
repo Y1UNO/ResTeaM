@@ -1,0 +1,415 @@
+/* ——— Journal de jeu ——— */
+.journal {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.journal .journal__entete {
+  flex-direction: row;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.journal__sous-titre {
+  margin: 6px 0 0;
+  color: var(--text-3);
+  font-size: 14px;
+}
+.journal__periodes {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: rgba(238, 242, 255, 0.05);
+  border: 1px solid rgba(238, 242, 255, 0.1);
+}
+.journal__periode {
+  height: 32px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.journal__periode:hover {
+  color: var(--text-1);
+}
+.journal__periode.is-actif {
+  background: rgba(238, 242, 255, 0.14);
+  color: var(--text-1);
+}
+
+/* Chiffres de la période. */
+.journal__chiffres {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.journal__chiffre {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(var(--blur-md));
+  animation: rise-in 0.5s var(--ease) both;
+}
+.journal__chiffre:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.journal__chiffre:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.journal__chiffre:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.journal__chiffre strong {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.journal__chiffre span {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.journal__chiffre em {
+  font-style: normal;
+  font-size: 12px;
+  color: #9fd8ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journal__calendrier {
+  overflow-x: auto;
+}
+.journal__charge {
+  height: 150px;
+  border-radius: var(--radius-md);
+  background: rgba(238, 242, 255, 0.04);
+}
+.journal__vide {
+  margin: 10px 0 0;
+  color: var(--text-3);
+  font-size: 13.5px;
+}
+
+/* ——— Calendrier des nuits de jeu ——— */
+.calendrier {
+  --case: 15px;
+  --ecart: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: max-content;
+}
+.calendrier.is-moyen {
+  --case: 19px;
+  --ecart: 5px;
+}
+.calendrier.is-grand {
+  --case: 26px;
+  --ecart: 6px;
+}
+.calendrier.is-petit {
+  --case: 10px;
+  --ecart: 3px;
+}
+.journal__calendrier {
+  display: flex;
+  justify-content: center;
+}
+.calendrier__mois {
+  display: grid;
+  grid-template-columns: repeat(var(--semaines), var(--case));
+  column-gap: var(--ecart);
+  margin-left: 38px;
+  font-size: 11px;
+  color: var(--text-4);
+}
+.calendrier.is-petit .calendrier__mois {
+  margin-left: 0;
+  font-size: 9.5px;
+}
+.calendrier__mois span {
+  white-space: nowrap;
+  overflow: visible;
+}
+.calendrier__corps {
+  display: flex;
+  gap: 8px;
+}
+.calendrier__jours {
+  display: grid;
+  grid-template-rows: repeat(7, var(--case));
+  row-gap: var(--ecart);
+  width: 30px;
+  font-size: 10.5px;
+  line-height: var(--case);
+  color: var(--text-4);
+}
+.calendrier__grille {
+  display: grid;
+  grid-template-columns: repeat(var(--semaines), var(--case));
+  column-gap: var(--ecart);
+}
+.calendrier__semaine {
+  display: grid;
+  grid-template-rows: repeat(7, var(--case));
+  row-gap: var(--ecart);
+}
+.calendrier__case {
+  display: block;
+  width: var(--case);
+  height: var(--case);
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: rgba(238, 242, 255, 0.06);
+  cursor: pointer;
+  animation: calendrier-case 0.5s var(--ease) both;
+  transition: transform 0.2s var(--ease);
+}
+.calendrier.is-petit .calendrier__case {
+  border-radius: 3px;
+  cursor: default;
+}
+@keyframes calendrier-case {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+.calendrier__case:not(:disabled):hover {
+  transform: scale(1.35);
+}
+.calendrier__case.n1 {
+  background: rgba(159, 216, 255, 0.22);
+}
+.calendrier__case.n2 {
+  background: rgba(159, 216, 255, 0.42);
+}
+.calendrier__case.n3 {
+  background: rgba(159, 216, 255, 0.66);
+}
+.calendrier__case.n4 {
+  background: #a9dcff;
+  box-shadow: 0 0 8px rgba(159, 216, 255, 0.55);
+}
+.calendrier__case.n5 {
+  background: #eef2ff;
+  box-shadow: 0 0 12px rgba(238, 242, 255, 0.8);
+}
+.calendrier__case.is-hors {
+  opacity: 0.15;
+  cursor: default;
+}
+.calendrier__case.is-aujourdhui {
+  outline: 1px solid rgba(126, 226, 168, 0.8);
+  outline-offset: 1px;
+}
+.calendrier__case.is-choisie {
+  outline: 2px solid #eef2ff;
+  outline-offset: 2px;
+  transform: scale(1.2);
+}
+.calendrier__legende {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 0 0 38px;
+  font-size: 11px;
+  color: var(--text-4);
+}
+.calendrier__legende .calendrier__case {
+  width: 11px;
+  height: 11px;
+  animation: none;
+  cursor: default;
+}
+.calendrier__legende span:first-child {
+  margin-right: 4px;
+}
+.calendrier__legende span:last-child {
+  margin-left: 4px;
+}
+
+/* Détail d'une nuit et jeux les plus joués. */
+.journal__bas {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+.journal__nuit .carte__titre::first-letter {
+  text-transform: uppercase;
+}
+.journal__total {
+  margin: 4px 0 12px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: #9fd8ff;
+}
+.journal__sessions,
+.journal__classement {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.journal__session {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: rgba(238, 242, 255, 0.03);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: rise-in 0.4s var(--ease) both;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.journal__session:hover {
+  background: var(--fill-hover);
+  border-color: rgba(238, 242, 255, 0.1);
+}
+.journal__session img {
+  width: 34px;
+  height: 51px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #18181b;
+}
+.journal__session > span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.journal__session strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journal__session > span > span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.journal__session em,
+.journal__classement em {
+  font-style: normal;
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.journal__classement li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: rise-in 0.4s var(--ease) both;
+}
+.journal__rang {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(238, 242, 255, 0.08);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.journal__classement li:first-child .journal__rang {
+  background: #eef2ff;
+  color: #09090a;
+  box-shadow: 0 0 10px rgba(238, 242, 255, 0.5);
+}
+.journal__barre {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.journal__barre strong {
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journal__jauge {
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(238, 242, 255, 0.07);
+  overflow: hidden;
+}
+.journal__jauge span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9fd8ff, #eef2ff);
+  transform-origin: left;
+  animation: journal-jauge 0.9s var(--ease) both;
+}
+@keyframes journal-jauge {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ——— Nuits de jeu dans le profil ——— */
+.nuits-profil {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.nuits-profil__texte {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.nuits-profil__texte strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+.nuits-profil__texte span {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1400px) {
+  .journal__bas {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .calendrier__case,
+  .journal__jauge span {
+    animation: none;
+  }
+}

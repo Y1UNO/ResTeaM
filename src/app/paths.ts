@@ -14,6 +14,7 @@ export const PATHS = {
   profilAmi: "/profil/:steamId",
   jeu: "/jeu/:appId",
   parametres: "/parametres",
+  journal: "/journal",
   connexion: "/connexion",
   cleApi: "/cle-api",
 } as const;

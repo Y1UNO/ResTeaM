@@ -250,18 +250,27 @@ impl ClientSteam {
 
     /// `ISteamNews/GetNewsForApp` (sans clé) : dernières actus et patch notes d'un jeu.
     pub async fn actus(&self, app_id: u32) -> Resultat<Vec<Actu>> {
+        self.actus_page(app_id, 15, None).await
+    }
+
+    /// Annonces officielles d'un jeu, des plus récentes aux plus anciennes : `nombre`
+    /// annonces publiées **avant** `avant` (secondes), pour remonter tout l'historique.
+    pub async fn actus_page(&self, app_id: u32, nombre: u32, avant: Option<i64>) -> Resultat<Vec<Actu>> {
         let app = app_id.to_string();
-        let url = Self::url(
-            "ISteamNews/GetNewsForApp/v2/",
-            &[
-                ("appid", &app),
-                ("count", "15"),
-                ("maxlength", "0"),
-                ("format", "json"),
-                // Annonces officielles du jeu seulement (pas les sites de presse).
-                ("feeds", "steam_community_announcements"),
-            ],
-        )?;
+        let compte = nombre.clamp(1, 50).to_string();
+        let fin = avant.map(|a| (a - 1).max(0).to_string());
+        let mut params: Vec<(&str, &str)> = vec![
+            ("appid", &app),
+            ("count", &compte),
+            ("maxlength", "0"),
+            ("format", "json"),
+            // Annonces officielles du jeu seulement (pas les sites de presse).
+            ("feeds", "steam_community_announcements"),
+        ];
+        if let Some(f) = &fin {
+            params.push(("enddate", f));
+        }
+        let url = Self::url("ISteamNews/GetNewsForApp/v2/", &params)?;
         let corps: ActusBrutes = match self.obtenir_ou_absent(url).await? {
             Reponse::Ok(c) => c,
             Reponse::Absent => return Ok(vec![]),

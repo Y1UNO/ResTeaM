@@ -222,6 +222,7 @@ pub fn run() {
             commandes::images_jeux,
             commandes::steam_lien,
             commandes::patch_notes,
+            commandes::historique_notes,
             commandes::options_installation,
             commandes::installer_jeu,
             commandes::stats_systeme,

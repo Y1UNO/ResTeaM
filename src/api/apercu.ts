@@ -465,6 +465,36 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         : null;
     case "notification_essai":
       return undefined;
+    case "historique_notes": {
+      // Historique simulé : 34 annonces, une tous les 12 jours, par pages de 10.
+      const avant = (args?.avant as number | null) ?? Math.floor(Date.now() / 1000);
+      const toutes = Array.from({ length: 34 }, (_, i) => Math.floor(Date.now() / 1000) - 86_400 * (3 + i * 12));
+      const page = toutes.filter((d) => d < avant).slice(0, 10);
+      return {
+        annonces: page.map((date, i) => {
+          const n = toutes.indexOf(date);
+          const patch = n % 3 !== 2;
+          return {
+            id: `a${n}`,
+            titre: patch ? `Mise à jour 1.${34 - n} : corrections et équilibrage` : "Les coulisses du développement",
+            url: "https://store.steampowered.com/news/app/1145350",
+            date,
+            version: patch ? `v1.${34 - n}` : null,
+            patch,
+            image: n % 4 === 0 ? `${CDN_APERCU}/1145350/library_hero.jpg` : null,
+            extrait: patch ? null : "Nous voulions vous montrer comment naissent les décors de l’Érèbe, des premiers croquis à la version finale.",
+            sections: patch
+              ? [
+                  { categorie: "nouveau", elements: [{ texte: "Nouvelle arme : la Lame d’Hécate", sous: [] }, { texte: "Deux nouvelles rencontres dans l’Érèbe", sous: [] }] },
+                  { categorie: "equilibrage", elements: Array.from({ length: 4 + (i % 3) }, (_, k) => ({ texte: `Dégâts de l’aspect ${k + 1} ajustés de ${5 + k} %`, sous: k === 0 ? ["Seulement en mode Héros"] : [] })) },
+                  { categorie: "correctifs", elements: [{ texte: "Correction d’un plantage au chargement d’une sauvegarde", sous: [] }] },
+                ]
+              : [],
+          };
+        }),
+        suivant: page.length === 10 ? page[page.length - 1] : null,
+      };
+    }
     case "journal_sessions": {
       // Journal simulé : soirées de jeu tirées de façon stable (même jour → mêmes parties).
       const jeux = [1145350, 1903340, 1172470, 413150, 2868840, 730];

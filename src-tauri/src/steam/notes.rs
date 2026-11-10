@@ -372,6 +372,45 @@ pub fn version(titre: &str) -> Option<String> {
 
 /// Choisit l'annonce à afficher (la plus récente étiquetée « patchnotes », sinon
 /// la plus récente) et la transforme en patch notes triées.
+/// Une annonce de l'historique (fiche d'un jeu) : notes triées, sinon un extrait du texte,
+/// et la première image de l'annonce.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AnnonceJeu {
+    #[serde(flatten)]
+    pub notes: PatchNotes,
+    pub image: Option<String>,
+    /// Texte brut (500 caractères au plus) quand l'annonce n'a pas de liste de notes.
+    pub extrait: Option<String>,
+}
+
+pub fn annonce(a: &Actu) -> AnnonceJeu {
+    let sections = trier(&a.contenu);
+    let extrait = sections.is_empty().then(|| super::workshop::texte_simple(&a.contenu, 500)).filter(|t| !t.is_empty());
+    AnnonceJeu {
+        notes: PatchNotes { id: a.id.clone(), titre: a.titre.clone(), url: a.url.clone(), date: a.date, version: version(&a.titre), patch: a.patch, sections },
+        image: premiere_image(&a.contenu),
+        extrait,
+    }
+}
+
+/// Première image d'une annonce (`[img]…[/img]` ou `[img src="…"]`), seulement sur les
+/// serveurs d'images de Steam (en HTTPS).
+pub fn premiere_image(contenu: &str) -> Option<String> {
+    let brut = if let Some(i) = contenu.find("[img]") {
+        let reste = &contenu[i + 5..];
+        reste[..reste.find("[/img]")?].trim().to_string()
+    } else {
+        let i = contenu.find("[img src=\"")?;
+        let reste = &contenu[i + 10..];
+        reste[..reste.find('"')?].trim().to_string()
+    };
+    let adresse = brut.replace("{STEAM_CLAN_IMAGE}", "https://clan.akamai.steamstatic.com/images");
+    let u = url::Url::parse(&adresse).ok()?;
+    let hote = u.host_str()?;
+    (u.scheme() == "https" && (hote.ends_with(".steamstatic.com") || hote.ends_with(".akamaihd.net"))).then(|| u.to_string())
+}
+
 pub fn depuis_actus(actus: &[Actu]) -> Option<PatchNotes> {
     let a = actus
         .iter()
@@ -387,6 +426,29 @@ pub fn depuis_actus(actus: &[Actu]) -> Option<PatchNotes> {
         patch: a.patch,
         sections: trier(&a.contenu),
     })
+}
+
+#[cfg(test)]
+mod tests_historique {
+    use super::*;
+
+    #[test]
+    fn images_des_annonces() {
+        assert_eq!(
+            premiere_image("x [img]{STEAM_CLAN_IMAGE}/449/ab.gif[/img] y").as_deref(),
+            Some("https://clan.akamai.steamstatic.com/images/449/ab.gif")
+        );
+        assert_eq!(
+            premiere_image("[img src=\"https://clan.akamai.steamstatic.com/images/1/a.png\"][/img]").as_deref(),
+            Some("https://clan.akamai.steamstatic.com/images/1/a.png")
+        );
+        // Ailleurs que chez Steam, ou sans HTTPS : refusé.
+        assert_eq!(premiere_image("[img]https://evil.io/a.png[/img]"), None);
+        assert_eq!(premiere_image("[img]http://clan.akamai.steamstatic.com/a.png[/img]"), None);
+        assert_eq!(premiere_image("[img]javascript:alert(1)[/img]"), None);
+        assert_eq!(premiere_image("[img] sans fin"), None);
+        assert_eq!(premiere_image("rien"), None);
+    }
 }
 
 #[cfg(test)]

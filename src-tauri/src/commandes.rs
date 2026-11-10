@@ -307,6 +307,26 @@ pub async fn patch_notes(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Donn
     })
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PageAnnonces {
+    pub annonces: Vec<notes::AnnonceJeu>,
+    /// Date (secondes) à passer pour la page suivante, ou `None` à la fin de l'historique.
+    pub suivant: Option<i64>,
+}
+
+const TTL_HISTORIQUE: i64 = 60 * 60;
+const PAR_PAGE: u32 = 10;
+
+/// Historique des annonces officielles d'un jeu, page par page (fiche : « toutes les notes »).
+#[tauri::command]
+pub async fn historique_notes(etat: State<'_, EtatApp>, app_id: u32, avant: Option<i64>) -> Resultat<PageAnnonces> {
+    let cle = format!("historique:{app_id}:{}", avant.unwrap_or(0));
+    let actus = etat.cache.avec_cache(&cle, TTL_HISTORIQUE, || etat.steam.actus_page(app_id, PAR_PAGE, avant)).await?.donnees;
+    let suivant = (actus.len() as u32 >= PAR_PAGE).then(|| actus.iter().map(|a| a.date).min()).flatten();
+    Ok(PageAnnonces { annonces: actus.iter().map(notes::annonce).collect(), suivant })
+}
+
 // ——— Installation sans la fenêtre de Steam ———
 
 const TTL_CONFIG: i64 = 7 * 24 * 60 * 60;

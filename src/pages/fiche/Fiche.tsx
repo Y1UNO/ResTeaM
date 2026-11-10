@@ -28,6 +28,7 @@ import { Medias } from "./Medias";
 import { BadgeRang } from "../../components/BadgeRang";
 import { IconWorkshop } from "../../components/icons";
 import { IconePanier, MontantDefilant, PrixPromo, Reduction } from "../../components/Prix";
+import { HistoriqueNotes } from "./HistoriqueNotes";
 import { PopupAchat } from "./PopupAchat";
 import { FenetreProprietes } from "./Proprietes";
 import "../pages.css";
@@ -160,7 +161,7 @@ export function Fiche() {
             >
               <Avis appId={appId} />
             </Section>
-            <SectionActus appId={appId} ouverte={section} onBasculer={setSection} />
+            <SectionActus appId={appId} nom={nom} ouverte={section} onBasculer={setSection} />
           </div>
 
           <aside className="fiche__encart">
@@ -537,9 +538,10 @@ const LIBELLES: Record<string, string> = {
   autre: "Autre",
 };
 
-function SectionActus({ appId, ouverte, onBasculer }: { appId: number; ouverte: IdSection | null; onBasculer: (id: IdSection | null) => void }) {
+function SectionActus({ appId, nom, ouverte, onBasculer }: { appId: number; nom: string; ouverte: IdSection | null; onBasculer: (id: IdSection | null) => void }) {
   const notes = usePatchNotes(appId);
   const n = notes.data?.donnees;
+  const [historique, setHistorique] = useState(false);
   return (
     <Section id="actus" titre="Actus et patch notes" indice={n ? `${n.titre} · ${date(n.date)}` : "triés automatiquement"} ouverte={ouverte} onBasculer={onBasculer}>
       {notes.isLoading ? (
@@ -559,6 +561,10 @@ function SectionActus({ appId, ouverte, onBasculer }: { appId: number; ouverte: 
               </ul>
             </div>
           ))}
+          <button type="button" className="btn btn--secondaire btn--petit fiche__historique" onClick={() => setHistorique(true)}>
+            Toutes les notes de mise à jour
+          </button>
+          {historique && <HistoriqueNotes appId={appId} nom={nom} onFermer={() => setHistorique(false)} />}
           <button type="button" className="fiche__lien" onClick={() => void api.steamLien({ type: "page", url: n.url })}>
             Lire l’annonce complète
             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

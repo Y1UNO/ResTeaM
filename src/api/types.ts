@@ -257,6 +257,11 @@ export type ProfilPartage = {
 /** Réponse de `/moi` : mon SteamID et mon profil partagé (nul avant le premier envoi). */
 export type EtatPartage = { steamId: string; profil: ProfilPartage | null } | null;
 
+// ——— Historique des notes de mise à jour ———
+
+export type AnnonceJeu = PatchNotes & { image: string | null; extrait: string | null };
+export type PageAnnonces = { annonces: AnnonceJeu[]; suivant: number | null };
+
 // ——— Trophées du profil ———
 
 export type TropheeRare = { appId: number; nom: string; icone: string; pourcentage: number };

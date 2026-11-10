@@ -312,10 +312,10 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 - Bouton de partage (image à enregistrer).
 - Il se nourrit du journal des sessions : plus on commence tôt à l'enregistrer, plus le Wrap sera riche. **Le journal (idée 3) passe donc avant.**
 
-### 5. Pile de la honte
+### 5. Pile de la honte — fait le 10 novembre 2026, voir le journal « Étape 23 »
 - Les jeux achetés mais jamais lancés, triés par note Steam, avec un compteur qui descend quand Tom en lance un. Pont avec la roulette : « tirer dans la pile de la honte ».
 
-### 6. Prix par heure
+### 6. Prix par heure — fait le 10 novembre 2026, voir le journal « Étape 23 »
 - Ce que chaque heure de jeu a coûté (prix payé estimé à partir du prix actuel ou du prix de base de Steam, divisé par les heures). Classement des jeux les plus « rentables ». À afficher dans les stats du profil et dans le Wrap.
 
 ### 7. Notes par jeu
@@ -1116,6 +1116,34 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
   - tout en transform et opacité.
 
 **À vérifier dans l'exe** : le logo (nouvelle lune ce soir, il grossira dans les jours qui viennent) et une partie de roulette.
+
+### Étape 23 — Historique des patch notes, roue du soir, pile de la honte, prix par heure (10 novembre 2026)
+
+- **Toutes les notes de mise à jour** (demande de Tom, « comme sur Steam ») : dans la section « Actus et patch notes » de la fiche, le bouton « Toutes les notes de mise à jour » ouvre une frise chronologique.
+  - Toutes les annonces officielles du jeu, des plus récentes aux plus anciennes : date, titre, version, badge « Patch », première image de l'annonce, notes triées par catégorie (« Tout afficher » au-delà de 6 lignes), sinon un extrait du texte, et un lien vers l'annonce dans Steam.
+  - Les plus anciennes se chargent en défilant, 10 à la fois : `ISteamNews/GetNewsForApp` avec `enddate`, vérifié sur Hades II (deux pages qui se suivent sans chevauchement). Cache d'une heure par page.
+  - L'image n'est gardée que si elle est sur les serveurs d'images de Steam, en HTTPS.
+- **La roue du soir** (demandes de Tom : plus visible, en haut à gauche, puis « trop de couleurs, dans la DA ») :
+  - elle est en haut à gauche de l'accueil : une petite roue de casino qui tourne doucement (vite au survol), des lumières qui s'allument en chaîne, une flèche et une lune au centre, avec « La roue du soir · Ce soir je joue à… · Laisse la lune choisir » ;
+  - couleurs de la DA : segments argent, bleu lunaire et charbon, liseré clair de lune. La fenêtre de la roulette passe aussi au bleu lunaire ;
+  - plus compacte sur les écrans peu hauts (≤ 920 px), pour ne pas toucher le titre du hero ;
+  - le bouton du ruban est retiré. Celui de la Bibliothèque reste.
+- **Ma collection** (`/collection`, menu du logo, bouton « Pile de la honte » de la Bibliothèque), deux onglets :
+  - **Pile de la honte** :
+    - les jeux jamais lancés, triés par note Steam, avec la note (verte au-dessus de 80 %), le prix et « Installé » ;
+    - en tête : le nombre de jeux, leur valeur qui dort (prix de base du magasin), leur part de la bibliothèque, et « X sortis de la pile depuis le … » (point de départ gardé sur le PC) ;
+    - « Tirer dans la pile » ouvre la roulette sur les jeux jamais lancés ;
+  - **Prix par heure** :
+    - prix de base du magasin divisé par les heures de jeu (jeux joués au moins 1 h) ;
+    - en tête : coût moyen par heure, valeur de la bibliothèque, heures sur des jeux gratuits ;
+    - classements des 10 plus rentables et des 10 moins rentables, avec une pastille vert / bleu / argent / rouge doux selon le prix par heure ;
+    - avertissement : ce que Tom a vraiment payé (promo, lot, cadeau) peut être plus bas.
+  - Prix et notes viennent du magasin, par paquets de 100 jeux, avec le cache existant.
+
+**À vérifier dans l'exe** :
+- l'historique des notes d'un jeu suivi (défiler jusqu'aux plus anciennes) ;
+- la roue en haut à gauche de l'accueil ;
+- Ma collection avec la vraie bibliothèque : nombre de jeux jamais lancés, et prix par heure d'Apex Legends (gratuit, donc compté dans les heures gratuites).
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

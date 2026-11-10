@@ -115,6 +115,18 @@ export function LogoMenu() {
           <button
             type="button"
             role="menuitem"
+            className={`logo-menu__item${pathname === PATHS.collection ? " is-current" : ""}`}
+            onClick={() => go(PATHS.collection)}
+          >
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 20h16M6 20V9l3-2 3 2v11M12 20V5l3-2 3 2v15" />
+              <path d="M8.2 12.5h1.6M14.2 9.5h1.6" />
+            </svg>
+            Ma collection
+          </button>
+          <button
+            type="button"
+            role="menuitem"
             className="logo-menu__item"
             onClick={() => {
               close();

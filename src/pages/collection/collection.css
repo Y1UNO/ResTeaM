@@ -1,0 +1,220 @@
+/* ——— Ma collection : pile de la honte et prix par heure ——— */
+.collection {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.collection .collection__entete {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.collection__sous-titre {
+  margin: 6px 0 0;
+  color: var(--text-3);
+  font-size: 14px;
+}
+.collection__chiffres {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: stretch;
+}
+.collection__gros strong {
+  font-size: 34px;
+}
+.collection__tirer {
+  align-self: center;
+  height: 48px;
+  padding: 0 22px;
+  font-size: 14.5px;
+}
+.collection__tirer:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.collection__note {
+  margin: -6px 0 0;
+  font-size: 12.5px;
+  color: var(--text-4);
+}
+
+/* Pile : grille de jaquettes avec la note Steam. */
+.pile {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px 14px;
+}
+.pile li {
+  animation: rise-in 0.45s var(--ease) both;
+}
+.pile__jeu {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pile__jaquette {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #18181b;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.3s var(--ease),
+    box-shadow 0.3s ease;
+}
+.pile__jeu:hover .pile__jaquette {
+  transform: translateY(-4px);
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.55),
+    0 0 0 2px rgba(238, 242, 255, 0.35);
+}
+.pile__jaquette img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pile__note,
+.pile__installe {
+  position: absolute;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(9, 9, 10, 0.8);
+  backdrop-filter: blur(6px);
+}
+.pile__note {
+  top: 8px;
+  left: 8px;
+  color: var(--text-2);
+}
+.pile__note.is-haute {
+  color: #7ee2a8;
+}
+.pile__installe {
+  bottom: 8px;
+  left: 8px;
+  color: #9fd8ff;
+}
+.pile__jeu strong {
+  margin-top: 4px;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pile__jeu > span:last-child {
+  font-size: 11.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Prix par heure : deux classements. */
+.collection__colonnes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.collection__classement ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.collection__classement li {
+  animation: rise-in 0.4s var(--ease) both;
+}
+.collection__classement button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.collection__classement button:hover {
+  background: var(--fill-hover);
+  border-color: rgba(238, 242, 255, 0.08);
+}
+.collection__classement img {
+  width: 30px;
+  height: 45px;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #18181b;
+}
+.collection__jeu {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.collection__jeu strong {
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collection__jeu span {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.collection__parheure {
+  font-style: normal;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.collection__parheure.is-top {
+  background: rgba(126, 226, 168, 0.16);
+  color: #7ee2a8;
+}
+.collection__parheure.is-bon {
+  background: rgba(159, 216, 255, 0.14);
+  color: #9fd8ff;
+}
+.collection__parheure.is-moyen {
+  background: rgba(238, 242, 255, 0.1);
+  color: #cfd8f0;
+}
+.collection__parheure.is-cher {
+  background: rgba(255, 122, 107, 0.16);
+  color: #ff9a8e;
+}
+
+@media (max-width: 1400px) {
+  .collection__chiffres {
+    grid-template-columns: 1fr 1fr;
+  }
+  .collection__colonnes {
+    grid-template-columns: 1fr;
+  }
+}

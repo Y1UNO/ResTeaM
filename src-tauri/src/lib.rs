@@ -5,6 +5,7 @@ mod erreur;
 mod images_locales;
 mod jeu;
 mod journal;
+mod notes_jeu;
 mod notifications;
 mod partage;
 mod preferences;
@@ -166,6 +167,8 @@ pub fn run() {
             commandes::jeu_session,
             commandes::bilan_trophees,
             commandes::journal_sessions,
+            commandes::note_jeu,
+            commandes::note_jeu_ecrire,
             commandes::partage_etat,
             commandes::partage_connecter,
             commandes::partage_publier,

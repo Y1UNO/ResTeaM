@@ -922,6 +922,18 @@ pub fn journal_sessions(etat: State<'_, EtatApp>, depuis: i64, jusqu: i64) -> Re
     crate::journal::lire(&etat.cache, depuis, jusqu)
 }
 
+/// Notes personnelles d'un jeu (chiffrées dans le cache, jamais envoyées).
+#[tauri::command]
+pub fn note_jeu(etat: State<'_, EtatApp>, app_id: u32) -> Resultat<Option<crate::notes_jeu::NoteJeu>> {
+    crate::notes_jeu::lire(&etat.cache, app_id)
+}
+
+/// Enregistre les notes d'un jeu (20 000 caractères au plus ; vides → effacées).
+#[tauri::command]
+pub fn note_jeu_ecrire(etat: State<'_, EtatApp>, app_id: u32, texte: String) -> Resultat<Option<crate::notes_jeu::NoteJeu>> {
+    crate::notes_jeu::ecrire(&etat.cache, app_id, &texte, crate::cache::maintenant() * 1000)
+}
+
 /// Jeu en cours et dernière session terminée.
 #[tauri::command]
 pub fn jeu_session() -> crate::jeu::EtatJeu {

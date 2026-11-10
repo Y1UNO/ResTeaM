@@ -1,0 +1,117 @@
+/* Carnet d'un jeu : notes personnelles, verre sombre et croissant discret. */
+.carnet-jeu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.carnet-jeu__modeles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.carnet-jeu__modele {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-2);
+  background: var(--fill-hover);
+  color: var(--text-3);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease;
+}
+.carnet-jeu__modele span {
+  color: #9fd8ff;
+  opacity: 0.8;
+}
+.carnet-jeu__modele:hover {
+  color: var(--text-1);
+  border-color: var(--line-active);
+  background: var(--fill-active);
+}
+.carnet-jeu__page {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.carnet-jeu__zone {
+  display: block;
+  width: 100%;
+  min-height: 240px;
+  max-height: 560px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-2);
+  background:
+    linear-gradient(180deg, rgba(159, 216, 255, 0.035), transparent 40%),
+    rgba(8, 9, 12, 0.55);
+  color: var(--text-1);
+  font-family: var(--font-text);
+  font-size: 14px;
+  line-height: 1.75;
+  resize: vertical;
+  outline: none;
+  caret-color: #9fd8ff;
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+.carnet-jeu__zone::placeholder {
+  color: var(--text-4);
+}
+.carnet-jeu__zone:focus {
+  border-color: var(--line-active);
+  box-shadow: 0 0 0 4px var(--halo-1);
+}
+.carnet-jeu__zone::selection {
+  background: rgba(159, 216, 255, 0.25);
+}
+/* Croissant gravé dans le coin, très discret. */
+.carnet-jeu__lune {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  box-shadow: inset 7px -3px 0 0 rgba(238, 242, 255, 0.07);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.carnet-jeu__zone:focus + .carnet-jeu__lune {
+  opacity: 0.4;
+}
+.carnet-jeu__pied {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12.5px;
+  color: var(--text-4);
+}
+.carnet-jeu__prive {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.carnet-jeu__etat {
+  margin-left: auto;
+  transition: opacity var(--dur-fast) ease;
+}
+.carnet-jeu__etat.is-attente {
+  opacity: 0.7;
+}
+.carnet-jeu__etat.is-ecrit {
+  color: var(--text-3);
+}
+.carnet-jeu__etat.is-erreur {
+  color: #f2b8b5;
+}
+.carnet-jeu__compte {
+  font-variant-numeric: tabular-nums;
+}
+.carnet-jeu__compte.is-plein {
+  color: #f2d39b;
+}

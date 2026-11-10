@@ -279,6 +279,17 @@ export function useAmisPossedant(appId: number | null) {
 }
 
 /** Profil d'un ami (null : pas de requête). */
+/** Notes personnelles d'un jeu (chiffrées sur le PC). */
+export function useNoteJeu(appId: number | null) {
+  const { pret } = usePret();
+  return useQuery({
+    queryKey: ["note-jeu", appId],
+    queryFn: () => api.noteJeu(appId as number),
+    enabled: pret && appId != null,
+    staleTime: Infinity,
+  });
+}
+
 export function useProfilJoueur(steamId: string | null) {
   const { pret } = usePret();
   return useQuery({

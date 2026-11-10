@@ -54,6 +54,7 @@ import {
   ProfilPartage,
   NotifsAPrendre,
   SessionJeu,
+  NoteJeu,
   PageAnnonces,
 } from "./types";
 
@@ -132,6 +133,8 @@ export const api = {
   jeuSession: () => appeler<EtatJeu>("jeu_session"),
   historiqueNotes: (appId: number, avant: number | null) => appeler<PageAnnonces>("historique_notes", { appId, avant }),
   journalSessions: (depuis: number, jusqu: number) => appeler<SessionJeu[]>("journal_sessions", { depuis, jusqu }),
+  noteJeu: (appId: number) => appeler<NoteJeu | null>("note_jeu", { appId }),
+  noteJeuEcrire: (appId: number, texte: string) => appeler<NoteJeu | null>("note_jeu_ecrire", { appId, texte }),
   partageEtat: () => appeler<EtatPartage>("partage_etat"),
   partageConnecter: () => appeler<EtatPartage>("partage_connecter"),
   partagePublier: (style: object) => appeler<unknown>("partage_publier", { style }),

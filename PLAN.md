@@ -318,7 +318,7 @@ Ordre prévu : Tom joue et teste l'exe. Ensuite, il crée le compte Cloudflare e
 ### 6. Prix par heure — fait le 10 novembre 2026, voir le journal « Étape 23 »
 - Ce que chaque heure de jeu a coûté (prix payé estimé à partir du prix actuel ou du prix de base de Steam, divisé par les heures). Classement des jeux les plus « rentables ». À afficher dans les stats du profil et dans le Wrap.
 
-### 7. Notes par jeu
+### 7. Notes par jeu — fait le 10 novembre 2026, voir le journal « Étape 25 »
 - Un petit bloc-notes perso sur la fiche de chaque jeu (où Tom en est, ses builds, ses codes, ses astuces), chiffré par le coffre-fort. Rien n'est envoyé nulle part.
 
 ### 8. Entre amis (tout est retenu)
@@ -1176,6 +1176,23 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Seulement transform et opacité ; tout s'arrête si Windows demande moins d'animations. Le petit carnet en trait (`IconCarnet`) reste dans l'onglet « Notes » des propriétés.
 
 **À vérifier dans l'exe** : passer la souris sur le carnet de l'accueil.
+
+### Étape 25 — Notes par jeu : « Mon carnet » (10 novembre 2026)
+
+- **Sur la fiche de chaque jeu**, une nouvelle section dépliable **« Mon carnet »**, juste sous « À propos du jeu » : un bloc-notes perso pour noter où Tom en est, ses builds, ses codes, ses astuces.
+  - L'en-tête de la section montre la première vraie ligne de la note et quand elle a été modifiée (« vide · chiffré sur ce PC » s'il n'y a rien).
+  - Boutons « + Où j'en suis », « + Build », « + Codes », « + Astuces » : ils ajoutent l'intertitre à la fin et placent le curseur dessous.
+  - **Sauvegarde automatique** 0,6 seconde après la dernière frappe, en quittant la zone, en repliant la section ou en changeant de page. Ctrl+S enregistre tout de suite.
+  - En bas : « Chiffré sur ce PC · rien n'est envoyé », l'état (« Enregistrement… », « Enregistré à l'instant », « Pas enregistré, réessaie ») et le compteur « 174 / 20 000 ».
+  - Style : verre sombre, curseur bleu lunaire, petit croissant gravé dans le coin.
+- **Côté Rust** (`notes_jeu.rs`) : une note par jeu dans le cache (`notes:<appId>`), **chiffrée par le coffre-fort**, sans date de péremption (20 ans).
+  - 20 000 caractères au plus (refusé au-delà, et le champ ne laisse pas taper plus).
+  - Les caractères de contrôle sont retirés (sauf retour à la ligne et tabulation). Une note vide est effacée.
+  - Commandes `note_jeu` et `note_jeu_ecrire`. Rien ne sort du PC.
+- Attention : comme le journal des sessions, les notes sont dans le cache, qui est vidé à la déconnexion et quand la clé API change.
+- Aperçu : une note déjà écrite sur Hades II.
+
+**À vérifier dans l'exe** : écrire une note sur la fiche d'un jeu, fermer ResTeaM, le rouvrir : la note doit être là.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

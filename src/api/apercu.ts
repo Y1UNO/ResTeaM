@@ -202,6 +202,25 @@ function installationsSimulees() {
 
 /** Abonnements simulés dans l'aperçu (identifiant → début). */
 const ABONNEMENTS_APERCU = new Map<string, number>();
+/** Notes par jeu simulées (une note déjà écrite sur Hades II). */
+const NOTES_APERCU = new Map<number, { texte: string; modifieLe: number }>([
+  [
+    1145350,
+    {
+      texte: [
+        "Où j’en suis",
+        "Érèbe terminé, bloquée à Tartare (gardien 2).",
+        "",
+        "Build",
+        "Bâton de Descura + appel de Séléné : sorts lunaires à fond.",
+        "",
+        "Astuces",
+        "Garder 2 cendres pour la Lame d’Hécate.",
+      ].join("\n"),
+      modifieLe: Date.now() - 86_400_000 * 2,
+    },
+  ],
+]);
 const CAPTURES_FACTICES = [
   "ef0f63061d0a0a9a7e46f3b84f125d25330e8f19",
   "c88996aa0af82894a8e50ebb951a503ebce3ab24",
@@ -495,6 +514,20 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
         }),
         suivant: page.length === 10 ? page[page.length - 1] : null,
       };
+    }
+    case "note_jeu":
+      return NOTES_APERCU.get(Number(args?.appId)) ?? null;
+    case "note_jeu_ecrire": {
+      const texte = String(args?.texte ?? "");
+      if (texte.length > 20_000) throw erreur("interne", "Erreur interne : la note dépasse 20000 caractères");
+      const id = Number(args?.appId);
+      if (!texte.trim()) {
+        NOTES_APERCU.delete(id);
+        return null;
+      }
+      const note = { texte, modifieLe: Date.now() };
+      NOTES_APERCU.set(id, note);
+      return note;
     }
     case "journal_sessions": {
       // Journal simulé : soirées de jeu tirées de façon stable (même jour → mêmes parties).

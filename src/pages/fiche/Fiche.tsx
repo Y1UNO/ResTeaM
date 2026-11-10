@@ -12,6 +12,7 @@ import {
   useImages,
   useJeuxInstalles,
   useNomJeu,
+  useNoteJeu,
   usePatchNotes,
 } from "../../api/requetes";
 import { estErreurApp, type ConfigPc, type FicheJeu, type JeuBibliotheque, type LigneConfig } from "../../api/types";
@@ -28,13 +29,14 @@ import { Medias } from "./Medias";
 import { BadgeRang } from "../../components/BadgeRang";
 import { IconWorkshop } from "../../components/icons";
 import { IconePanier, MontantDefilant, PrixPromo, Reduction } from "../../components/Prix";
+import { Carnet, resumeNote } from "./Carnet";
 import { HistoriqueNotes } from "./HistoriqueNotes";
 import { PopupAchat } from "./PopupAchat";
 import { FenetreProprietes } from "./Proprietes";
 import "../pages.css";
 import "./fiche.css";
 
-type IdSection = "apropos" | "config" | "avis" | "actus";
+type IdSection = "apropos" | "carnet" | "config" | "avis" | "actus";
 
 /**
  * Fiche d'un jeu (maquette 02) : tags, titre géant, évaluations, un seul bloc
@@ -49,6 +51,7 @@ export function Fiche() {
 
   const fiche = useFicheJeu(valide ? appId : null);
   const avis = useAvisJeu(valide ? appId : null);
+  const note = useNoteJeu(valide ? appId : null);
   const biblio = useBibliotheque();
   const installes = useJeuxInstalles();
   const images = useImages(valide ? [appId] : []);
@@ -147,6 +150,15 @@ export function Fiche() {
                   ))}
                   {f.genres.length > 0 && <Rangee cle="Genres" valeur={f.genres.join(", ")} />}
                 </>
+              ) : (
+                <p className="fiche__paragraphe">Chargement…</p>
+              )}
+            </Section>
+            <Section id="carnet" titre="Mon carnet" indice={note.isSuccess ? resumeNote(note.data) : "notes perso"} ouverte={section} onBasculer={setSection}>
+              {note.isSuccess ? (
+                <Carnet key={appId} appId={appId} nom={nom} note={note.data} />
+              ) : note.isError ? (
+                <p className="fiche__paragraphe">Le carnet n’a pas pu être ouvert.</p>
               ) : (
                 <p className="fiche__paragraphe">Chargement…</p>
               )}

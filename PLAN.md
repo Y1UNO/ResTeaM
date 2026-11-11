@@ -8,8 +8,8 @@
 1. ResTeaM est une app Windows qui sert de **vitrine** à Steam : elle s'appuie sur le compte et le client Steam, sans les remplacer.
 2. On y retrouve l'usage quotidien : bibliothèque, Jouer / Installer, magasin, fiche d'un jeu, liste de souhaits, classements, profil, amis en ligne et patch notes.
 3. Tout passe par Steam : connexion OpenID (sans mot de passe), Web API avec la clé de l'utilisateur, endpoints publics du magasin, lecture des fichiers locaux de Steam et liens `steam://`.
-4. Aucun paiement dans l'app : **Acheter** affiche un popup de sécurité, puis ouvre `steam://store/<id>`.
-5. Volontairement absents : chat, partie communauté, paiement, téléchargement sans Steam.
+4. Aucun paiement dans l'app : **Acheter** affiche un popup de sécurité, puis ouvre `steam://store/<id>`. *(Périmètre de départ. Depuis l'étape 12, l'achat se fait dans le salon d'achat : les vraies pages de Steam dans une fenêtre ResTeaM, Steam gère tout le paiement.)*
+5. Volontairement absents : chat, partie communauté, paiement, téléchargement sans Steam. *(Périmètre de départ. La Communauté et le Workshop existent depuis l'étape 11.)*
 6. Direction artistique « Nocturne · Clair de lune » :
    - fond `#09090A` ;
    - une seule couleur d'accent, `#EEF2FF`, réservée aux interactions ;
@@ -37,6 +37,8 @@ Le WebView n'appelle **jamais** Steam directement. Trois raisons :
 Le React appelle des commandes Tauri typées. Rust fait les requêtes (`reqwest`), gère le cache et renvoie du JSON propre.
 
 ### Dossiers
+
+> Arborescence prévue le 8 novembre 2026, **gardée pour mémoire**. Les vrais fichiers ont changé de nom depuis (`commandes.rs`, `steam/magasin.rs`, `steam/notes.rs`, `steam/liens.rs`…) : l'arborescence à jour est dans `AGENTS.md`, section 4.
 
 ```
 Vitrine Steam/
@@ -418,7 +420,8 @@ Structure proposée, qui garde toutes les idées de Tom :
   - **Recommandation de Claude** : commencer sans tickets payants (tirage gratuit, bundles, soutien), puis voir.
 - Tout passe par le serveur de partage : solde des tickets, collection, échanges, achats confirmés par le prestataire. L'app ne fait que lire ces données, ce qui empêche la triche.
 
-### 14. Motion design pro (demande de Tom, 10 novembre 2026 au soir) — à attaquer le 11 novembre
+### 14. Motion design pro (demande de Tom, 10 novembre 2026 au soir)
+- **Précision de Tom (11 novembre 2026)** : le motion design pro, c'est **surtout pour le ResTeaM Wrap** (idée 4). C'est là qu'il doit être le plus poussé. Le reste de l'app est approuvé tel quel.
 - Tom veut du **vrai motion design professionnel** dans tout le visuel de l'app, **beaucoup plus animé**, dans le genre de Spotify.
 - Idées à lui proposer : entrées orchestrées des pages, transitions entre les pages, éléments partagés qui glissent d'une page à l'autre (jaquette → fiche), listes qui arrivent en cascade, réactions au survol plus riches, chiffres qui défilent, fonds qui respirent avec la couleur de l'affiche.
 - Toujours dans la DA Nocturne · Clair de lune (pas de couleurs vives), en transform et opacité, et tout s'arrête si Windows demande moins d'animations.
@@ -430,6 +433,10 @@ Structure proposée, qui garde toutes les idées de Tom :
 ### 16. Activer une clé de jeu (demande de Tom, 11 novembre 2026) — pas commencé
 - Coller une clé Steam (achetée sur Instant Gaming par exemple) et l'activer depuis ResTeaM, par la page officielle de Steam dans le salon d'achat.
 - Détails et points d'attention : `AGENTS.md`, section 6, point A2.
+
+### 17. Déplacer un jeu d'un disque à un autre (demande de Tom, 11 novembre 2026) — pas commencé
+- « Transvaser » un jeu installé vers une autre bibliothèque Steam (un autre disque), sans le retélécharger.
+- Détails et points d'attention (copier, vérifier, puis seulement supprimer) : `AGENTS.md`, section 6, point A3.
 
 ### Passation à Codex (11 novembre 2026)
 - Tom continue le projet avec Codex. La note de passation est `AGENTS.md`, à la racine : règles de travail, DA, architecture, ce qui est fait, ce qui reste, points fragiles repérés.
@@ -455,10 +462,13 @@ Structure proposée, qui garde toutes les idées de Tom :
 
 ### Encore ouvert
 
-- **Clé Steam Web API** : à avoir pour l'étape 2a (steamcommunity.com/dev/apikey).
-- **GitHub** : pousser le dépôt sous YIUNO ou rester en local ?
+Plus rien (mis à jour le 11 novembre 2026) :
+- **Clé Steam Web API** : Tom la saisit dans l'app depuis l'étape 2a.
+- **GitHub** : le dépôt est public, `https://github.com/Y1UNO/ResTeaM`, poussé après chaque étape.
 
 ## 6. Journal des étapes
+
+> **11 novembre 2026 — Tom a tout validé.** Tout ce qui est dans l'app (étapes 1 à 28) est fait, testé et approuvé par Tom. Les lignes « À vérifier dans l'exe » des étapes ci-dessous sont donc réglées ; s'il reste un détail, Tom le dira.
 
 ### Étape 1 — Socle et DA (8 novembre 2026)
 
@@ -1250,6 +1260,24 @@ Nouvel onglet **Communauté** dans la barre de gauche (entre Classements et List
 - Tout en transform et opacité, et tout s'arrête si Windows demande moins d'animations. Le salon d'achat reprend la même capsule.
 
 **À vérifier dans l'exe** : les trois boutons en haut à droite, sur l'accueil et sur une fiche avec une image claire.
+
+### Étape 29 — Notes et journal à l'abri, cache élagué, sauvegarde (11 novembre 2026)
+
+Corrections des points fragiles repérés pendant le tour du projet (passation à Codex).
+
+- **Les notes et le journal ne sont plus effacés.** Avant, se connecter, se déconnecter ou changer la clé API vidait tout le cache, donc aussi le carnet de notes par jeu et le journal des sessions. Maintenant `Cache::vider()` garde les clés `notes:` et `journal:` (le reste, qui vient de Steam, est toujours vidé et se recharge).
+- **Le cache ne grossit plus sans fin.** Au démarrage, ce qui est périmé depuis plus de 30 jours est retiré (`Cache::elaguer`). Les valeurs périmées plus récentes restent, pour le mode hors ligne. Les notes et le journal ne sont jamais touchés.
+- **Sauvegarde des notes et du journal** (`sauvegarde.rs`) : dans Paramètres → « ResTeaM au quotidien » → « Mes notes et mon journal » :
+  - **Enregistrer une sauvegarde** écrit `Documents\ResTeaM\sauvegarde-resteam.json` et montre le fichier. C'est un fichier **lisible** (pas chiffré), pour qu'il survive à une réinstallation de Windows : à garder en lieu sûr.
+  - **Reprendre la sauvegarde** relit ce fichier et **fusionne** : rien n'est effacé, la note la plus récente gagne, les parties déjà connues sont ignorées.
+  - Le chemin est fixe, le front ne le choisit pas. À la reprise : taille du fichier limitée, notes trop longues et parties impossibles (sans fin, de plus de 7 jours, dates négatives) ignorées.
+  - Commandes `sauvegarde_exporter` et `sauvegarde_importer`.
+- **Tests** : 116 tests Rust (5 nouveaux : le cache garde les données personnelles, élagage, aller-retour et fusion d'une sauvegarde, sauvegarde piégée, fichier sur le disque).
+- **Non corrigé, mineur** : si ResTeaM est fermé pendant qu'un jeu se termine puis que le même jeu est relancé avant de rouvrir ResTeaM, les deux parties sont comptées comme une seule. Le corriger demande de retrouver l'heure de lancement du processus du jeu.
+- **Limite connue** : les notes et le journal sont gardés quel que soit le compte Steam connecté (un seul utilisateur sur le PC).
+- Documentation : sections 1, 2 et 5 de ce plan annotées (périmètre de départ, arborescence à jour dans `AGENTS.md`, plus rien d'ouvert).
+
+**À vérifier dans l'exe** : écrire une note sur un jeu, se déconnecter puis se reconnecter : la note est toujours là. Puis Paramètres → « Enregistrer une sauvegarde » : le dossier Documents\ResTeaM s'ouvre sur le fichier.
 
 ## 7. Plan détaillé — étape 2a (fait, voir le journal)
 

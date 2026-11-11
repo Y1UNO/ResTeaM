@@ -934,6 +934,26 @@ pub fn note_jeu_ecrire(etat: State<'_, EtatApp>, app_id: u32, texte: String) -> 
     crate::notes_jeu::ecrire(&etat.cache, app_id, &texte, crate::cache::maintenant() * 1000)
 }
 
+fn dossier_sauvegarde(app: &AppHandle) -> Resultat<std::path::PathBuf> {
+    let documents = app.path().document_dir().map_err(|e| Erreur::Interne(format!("dossier Documents introuvable : {e}")))?;
+    Ok(documents.join(crate::sauvegarde::DOSSIER))
+}
+
+/// Écrit les notes et le journal dans `Documents\ResTeaM` (fichier lisible, à
+/// garder en lieu sûr), puis montre le fichier. Le chemin est fixe.
+#[tauri::command]
+pub fn sauvegarde_exporter(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<crate::sauvegarde::BilanSauvegarde> {
+    let bilan = crate::sauvegarde::exporter(&etat.cache, &dossier_sauvegarde(&app)?, crate::cache::maintenant() * 1000)?;
+    let _ = app.opener().reveal_item_in_dir(&bilan.chemin);
+    Ok(bilan)
+}
+
+/// Reprend la sauvegarde de `Documents\ResTeaM` : fusion, rien n'est effacé.
+#[tauri::command]
+pub fn sauvegarde_importer(app: AppHandle, etat: State<'_, EtatApp>) -> Resultat<crate::sauvegarde::BilanSauvegarde> {
+    crate::sauvegarde::importer(&etat.cache, &dossier_sauvegarde(&app)?)
+}
+
 /// Jeu en cours et dernière session terminée.
 #[tauri::command]
 pub fn jeu_session() -> crate::jeu::EtatJeu {

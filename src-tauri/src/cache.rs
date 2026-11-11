@@ -33,6 +33,9 @@ pub struct Donnee<T> {
     pub recupere_le: i64,
 }
 
+/// Filtre SQL : tout sauf les données personnelles (notes par jeu, journal des sessions).
+const PAS_PERSO: &str = "cle NOT LIKE 'notes:%' AND cle NOT LIKE 'journal:%'";
+
 pub fn maintenant() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -137,9 +140,29 @@ impl Cache {
         Ok(())
     }
 
+    /// Vide le cache (connexion, déconnexion, changement de clé API). **Les données
+    /// personnelles sont gardées** : les notes par jeu (`notes:`) et le journal des
+    /// sessions (`journal:`) ne viennent pas de Steam et ne peuvent pas être rechargés.
     pub fn vider(&self) -> Resultat<()> {
-        self.verrou()?.execute("DELETE FROM cache", [])?;
+        self.verrou()?.execute(&format!("DELETE FROM cache WHERE {PAS_PERSO}"), [])?;
         Ok(())
+    }
+
+    /// Élague les valeurs périmées depuis plus de `anciennete_secondes` (les valeurs
+    /// périmées plus récentes servent encore au mode hors ligne). Les données
+    /// personnelles ne sont jamais touchées. Renvoie le nombre de lignes retirées.
+    pub fn elaguer(&self, anciennete_secondes: i64) -> Resultat<usize> {
+        let limite = maintenant() - anciennete_secondes.max(0);
+        let n = self.verrou()?.execute(&format!("DELETE FROM cache WHERE expire_le < ?1 AND {PAS_PERSO}"), params![limite])?;
+        Ok(n)
+    }
+
+    /// Clés qui commencent par `prefixe` (sauvegarde des notes et du journal).
+    pub fn cles(&self, prefixe: &str) -> Resultat<Vec<String>> {
+        let conn = self.verrou()?;
+        let mut req = conn.prepare("SELECT cle FROM cache WHERE substr(cle, 1, ?2) = ?1 ORDER BY cle")?;
+        let lignes = req.query_map(params![prefixe, prefixe.chars().count() as i64], |r| r.get(0))?;
+        Ok(lignes.filter_map(|l| l.ok()).collect())
     }
 
     /// Renvoie la valeur en cache si elle est fraîche, sinon la recharge.
@@ -199,6 +222,38 @@ mod tests {
         assert!(brut.starts_with("rstm1:"));
         assert_eq!(c.frais::<Vec<u8>>("a").unwrap(), Some(vec![1, 2]));
         assert_eq!(c.frais::<i32>("b").unwrap(), Some(3));
+    }
+
+    #[test]
+    fn vider_garde_les_donnees_personnelles() {
+        let c = Cache::en_memoire().unwrap();
+        c.ranger("notes:730", &"ma note", 60).unwrap();
+        c.ranger("journal:2026-11", &vec![1, 2], 60).unwrap();
+        c.ranger("fiche3:730", &1, 60).unwrap();
+        c.ranger("notesXfaux", &1, 60).unwrap();
+        c.vider().unwrap();
+        assert_eq!(c.frais::<String>("notes:730").unwrap().as_deref(), Some("ma note"));
+        assert_eq!(c.frais::<Vec<i32>>("journal:2026-11").unwrap(), Some(vec![1, 2]));
+        assert_eq!(c.frais::<i32>("fiche3:730").unwrap(), None);
+        assert_eq!(c.frais::<i32>("notesXfaux").unwrap(), None);
+        assert_eq!(c.cles("notes:").unwrap(), vec!["notes:730".to_string()]);
+    }
+
+    #[test]
+    fn elagage_des_vieilles_valeurs() {
+        let c = Cache::en_memoire().unwrap();
+        let t = maintenant();
+        let poser = |cle: &str, expire: i64| {
+            c.verrou().unwrap().execute("INSERT INTO cache (cle, json, recupere_le, expire_le) VALUES (?1, '1', 0, ?2)", params![cle, expire]).unwrap();
+        };
+        poser("vieux", t - 40 * 86_400);
+        poser("perime-recent", t - 86_400);
+        poser("frais", t + 60);
+        poser("notes:1", t - 400 * 86_400);
+        poser("journal:2020-01", t - 400 * 86_400);
+        assert_eq!(c.elaguer(30 * 86_400).unwrap(), 1);
+        let reste: Vec<String> = c.cles("").unwrap();
+        assert_eq!(reste, vec!["frais", "journal:2020-01", "notes:1", "perime-recent"]);
     }
 
     #[test]

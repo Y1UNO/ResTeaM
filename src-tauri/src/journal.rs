@@ -38,22 +38,24 @@ fn cle(annee: i64, mois: u32) -> String {
 }
 
 /// Garde une session terminée (doublons et sessions trop courtes ignorés).
-pub fn enregistrer(cache: &Cache, s: SessionJeu) -> Resultat<()> {
-    let Some(fin) = s.fin else { return Ok(()) };
-    if fin - s.debut < DUREE_MIN_MS {
-        return Ok(());
+/// Renvoie `true` si elle a été ajoutée.
+pub fn enregistrer(cache: &Cache, s: SessionJeu) -> Resultat<bool> {
+    let Some(fin) = s.fin else { return Ok(false) };
+    if fin.saturating_sub(s.debut) < DUREE_MIN_MS {
+        return Ok(false);
     }
     let (a, m) = annee_mois(s.debut);
     let k = cle(a, m);
     let mut liste: Vec<SessionJeu> = cache.frais(&k)?.unwrap_or_default();
     if liste.iter().any(|x| x.app_id == s.app_id && x.debut == s.debut) {
-        return Ok(());
+        return Ok(false);
     }
     liste.push(s);
     if liste.len() > MAX_PAR_MOIS {
         liste.remove(0);
     }
-    cache.ranger(&k, &liste, TTL_JOURNAL)
+    cache.ranger(&k, &liste, TTL_JOURNAL)?;
+    Ok(true)
 }
 
 /// Sessions commencées entre `depuis` et `jusqu` (millisecondes), dans l'ordre.

@@ -529,6 +529,10 @@ function donneesApercu(commande: string, args?: Record<string, unknown>): unknow
       NOTES_APERCU.set(id, note);
       return note;
     }
+    case "sauvegarde_exporter":
+      return { notes: NOTES_APERCU.size, sessions: 128, chemin: "C:\\Users\\Toi\\Documents\\ResTeaM\\sauvegarde-resteam.json" };
+    case "sauvegarde_importer":
+      return { notes: 0, sessions: 3, chemin: "C:\\Users\\Toi\\Documents\\ResTeaM\\sauvegarde-resteam.json" };
     case "journal_sessions": {
       // Journal simulé : soirées de jeu tirées de façon stable (même jour → mêmes parties).
       const jeux = [1145350, 1903340, 1172470, 413150, 2868840, 730];

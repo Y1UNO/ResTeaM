@@ -33,6 +33,8 @@ export function ParametresResteam() {
   const requete = useQuery({ queryKey: ["preferences"], queryFn: api.preferencesLire, staleTime: 0 });
   const [message, setMessage] = useState<string | null>(null);
   const [essai, setEssai] = useState(false);
+  /** Résultat de la dernière sauvegarde ou reprise (« encours » pendant l'opération). */
+  const [sauvegarde, setSauvegarde] = useState<string | null>(null);
   const d = requete.data;
 
   const changer = async <K extends keyof Preferences>(cle: K, valeur: Preferences[K]) => {
@@ -44,6 +46,25 @@ export function ParametresResteam() {
     } catch (e) {
       setMessage(estErreurApp(e) ? e.message : String(e));
       void client.invalidateQueries({ queryKey: ["preferences"] });
+    }
+  };
+
+  /** Sauvegarde (ou reprise) des notes et du journal, dans Documents\ResTeaM. */
+  const sauvegarder = async (sens: "exporter" | "importer") => {
+    setSauvegarde("encours");
+    const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+    try {
+      if (sens === "exporter") {
+        const b = await api.sauvegardeExporter();
+        setSauvegarde(`Sauvegarde enregistrée : ${pluriel(b.notes, "note")} et ${pluriel(b.sessions, "partie")}.`);
+      } else {
+        const b = await api.sauvegardeImporter();
+        setSauvegarde(b.notes + b.sessions === 0 ? "Tout y était déjà : rien à reprendre." : `Repris : ${pluriel(b.notes, "note")} et ${pluriel(b.sessions, "partie")}.`);
+        // Les pages déjà ouvertes (carnet, journal) relisent leurs données.
+        void client.invalidateQueries();
+      }
+    } catch (e) {
+      setSauvegarde(estErreurApp(e) ? e.message : String(e));
     }
   };
 
@@ -127,6 +148,27 @@ export function ParametresResteam() {
                 Envoyer une notification d’essai
               </button>
               {essai && <span>Elle apparaît dans le coin choisi, même pendant une partie.</span>}
+            </div>
+          </div>
+          <div className="psteam__groupe">
+            <h3>Mes notes et mon journal</h3>
+            <div className="psteam__ligne psteam__ligne--haut">
+              <span className="psteam__texte">
+                <strong>Sauvegarde</strong>
+                <span>
+                  Tes notes par jeu et ton journal de jeu sont chiffrés sur ce PC : une réinstallation de Windows les rendrait illisibles. La sauvegarde est un
+                  fichier lisible, rangé dans Documents\ResTeaM. Garde-le en lieu sûr.
+                </span>
+              </span>
+            </div>
+            <div className="psteam__essai">
+              <button type="button" className="btn btn--secondaire btn--petit" disabled={sauvegarde === "encours"} onClick={() => void sauvegarder("exporter")}>
+                Enregistrer une sauvegarde
+              </button>
+              <button type="button" className="btn btn--secondaire btn--petit" disabled={sauvegarde === "encours"} onClick={() => void sauvegarder("importer")}>
+                Reprendre la sauvegarde
+              </button>
+              {sauvegarde !== "encours" && sauvegarde && <span>{sauvegarde}</span>}
             </div>
           </div>
         </>

@@ -10,6 +10,7 @@ mod notifications;
 mod partage;
 mod preferences;
 mod salon;
+mod sauvegarde;
 #[cfg(test)]
 mod robustesse;
 mod secrets;
@@ -137,6 +138,11 @@ pub fn run() {
                 if let Err(e) = h.state::<EtatApp>().cache.chiffrer_anciennes() {
                     eprintln!("coffre-fort (cache) : {e}");
                 }
+                // Le cache ne grossit pas sans fin : ce qui est périmé depuis plus de
+                // 30 jours part (jamais les notes ni le journal).
+                if let Err(e) = h.state::<EtatApp>().cache.elaguer(30 * 86_400) {
+                    eprintln!("élagage du cache : {e}");
+                }
             });
             notifications::installer(app.handle(), &dossier);
             // Une installation ou désinstallation en attente (ResTeaM fermé pendant un jeu) reprend.
@@ -169,6 +175,8 @@ pub fn run() {
             commandes::journal_sessions,
             commandes::note_jeu,
             commandes::note_jeu_ecrire,
+            commandes::sauvegarde_exporter,
+            commandes::sauvegarde_importer,
             commandes::partage_etat,
             commandes::partage_connecter,
             commandes::partage_publier,

@@ -238,6 +238,8 @@ export type SessionJeu = { appId: number; debut: number; fin: number | null };
 /** Notes personnelles d'un jeu (chiffrées sur le PC). `modifieLe` en millisecondes. */
 export type NoteJeu = { texte: string; modifieLe: number };
 export type EtatJeu = { enCours: SessionJeu | null; derniere: SessionJeu | null };
+/** Sauvegarde des notes et du journal dans Documents\ResTeaM (ou reprise de ce fichier). */
+export type BilanSauvegarde = { notes: number; sessions: number; chemin: string };
 
 // ——— Partage du profil (serveur ResTeaM) ———
 

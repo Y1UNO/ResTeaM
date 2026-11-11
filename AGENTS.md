@@ -15,7 +15,13 @@ Tout le projet est dans ce dossier. Rien d'utile n'est ailleurs sur le PC.
 - Il **teste uniquement dans l'exe de production**, depuis le raccourci `ResTeaM` du Bureau. Jamais en mode développement.
 - Il surveille sa consommation : pas de gros chantier inutile, une étape à la fois.
 - Il aime qu'on lui dise précisément ce qu'il doit fournir ou faire lui-même.
-- Il veut une app **très animée, motion design pro façon Spotify** (voir section 6).
+- Il écrit vite, en messages courts et familiers, souvent plusieurs idées d'un coup. À toi de les trier, de les reformuler en points clairs et de les noter dans `PLAN.md`. Si un point est vraiment ambigu, pose **une** question courte ; sinon avance.
+- Il fait confiance : il dit souvent « fais tout, je testerai ensuite ». Il attend donc que tu vérifies toi-même (tests, aperçu) avant de lui rendre la main, et que tu dises franchement ce qui n'a pas été fait ou pas vérifié.
+- Ses retours arrivent par lots après un test dans l'exe, souvent sur le visuel (« on ne voit pas assez ceci », « plus animé »). Le rendu et les animations comptent autant que la fonction.
+- Il tranche vite et clairement. Une idée refusée ne se repropose pas (section 6, D). Quand tu as un avis (sécurité, juridique, technique), donne une recommandation nette : il la suit volontiers.
+- Il tient à la sécurité et aux données privées : c'est lui qui a demandé le coffre-fort et les audits.
+- Il joue souvent pendant que tu travailles : ne jamais prendre la main sur son écran.
+- Il veut du **motion design pro façon Spotify, surtout pour le ResTeaM Wrap** (voir section 6).
 
 ### Règles à suivre à chaque tâche
 
@@ -92,7 +98,7 @@ Règles de sécurité, déjà auditées deux fois (`AUDIT-SECURITE.md`, `AUDIT-S
 
 ## 5. Ce qui est fait
 
-Tout est dans le journal de `PLAN.md`, étapes 1 à 28. En résumé :
+Tout est dans le journal de `PLAN.md`, étapes 1 à 29. En résumé :
 
 - Connexion Steam (OpenID), clé API, cache hors ligne chiffré.
 - Accueil (jeu en vedette, patch notes triées, ruban des favoris, amis), Bibliothèque, Magasin et boutique, fiche d'un jeu, Classements, Liste de souhaits, Téléchargements, Amis, Recherche globale.
@@ -103,14 +109,15 @@ Tout est dans le journal de `PLAN.md`, étapes 1 à 28. En résumé :
 - Notifications maison, manette et mode Salon, coffre-fort, deux audits de sécurité.
 - Serveur de partage des profils (Cloudflare, déployé).
 - Journal des sessions et calendrier, vraie phase de la lune, roulette « Ce soir je joue à… », pile de la honte, prix par heure, historique des patch notes, carnet de notes par jeu, jeux en commun, duel de profils.
+- Sauvegarde et reprise des notes et du journal (Paramètres), cache élagué au démarrage.
 
-État le 11 novembre 2026 : dépôt propre, `npx tsc --noEmit` sans erreur, `cargo test` vert (111 réussis, 17 ignorés), tests du serveur verts (5 sur 5). L'exe du Bureau date du dernier commit de code (10 novembre, 02 h 36).
+État le 11 novembre 2026 : dépôt propre, `npx tsc --noEmit` sans erreur, `cargo test` vert (116 réussis, 17 ignorés), tests du serveur verts (5 sur 5). L'exe du Bureau est celui de l'étape 29.
 
-**Beaucoup d'étapes n'ont pas encore été validées par Tom dans l'exe** (il prévoyait « un gros test »). Sont validées : 2a, 2b, 4 bis, 5, 6, 7, 8, 8 bis, 10 et 20. Pour les autres, chercher « À vérifier dans l'exe » dans `PLAN.md` : c'est la liste de contrôle. S'attendre à des retours de Tom sur ces étapes.
+**Tom a tout validé le 11 novembre 2026** : tout ce qui est dans l'app (étapes 1 à 28) est fait, testé et approuvé. Ne pas rouvrir ces étapes de ta propre initiative. S'il reste un détail, Tom te le dira lui-même. Seule l'étape 29 (corrections du 11 novembre) reste à vérifier dans l'exe.
 
 ## 6. Ce qui reste à faire, dans l'ordre
 
-### A. Les deux nouvelles demandes de Tom (11 novembre 2026)
+### A. Les trois nouvelles demandes de Tom (11 novembre 2026)
 
 **A1. Jeux non Steam** (« comme sur Steam, pouvoir ajouter des jeux non Steam »)
 
@@ -144,15 +151,36 @@ Tout est dans le journal de `PLAN.md`, étapes 1 à 28. En résumé :
   - après l'activation : vider le cache de la bibliothèque (clé du cache dans `commandes::bibliotheque`) et proposer « Installer » ;
   - demander à Tom où placer l'entrée « Activer une clé » (Magasin, Bibliothèque, menu du logo).
 
-### B. Motion design pro (priorité de Tom, PLAN.md section 4 ter, point 14)
+**A3. Déplacer un jeu d'un disque à un autre** (« pouvoir transvaser des jeux d'un disque à un autre », demandé le 11 novembre 2026)
 
-Tom veut une app beaucoup plus animée, dans le genre de Spotify. Lui **proposer** avant de coder : entrées de page orchestrées, transitions entre les pages, éléments partagés qui glissent d'une page à l'autre (jaquette → fiche), listes en cascade, survols plus riches, chiffres qui défilent, fonds qui respirent avec la couleur de l'affiche. Toujours dans la DA, en `transform` et `opacity`.
+- But : choisir un jeu installé et l'envoyer dans une autre bibliothèque Steam (un autre disque), sans le retélécharger, comme « Déplacer le dossier d'installation » dans Steam.
+- Steam n'a pas de lien `steam://` pour ça (**à vérifier**). Le chemin qui colle à ce qui existe déjà : le faire nous-mêmes, **Steam fermé**, par la file `steam/redemarrage.rs` (comme l'installation et la désinstallation, qui attendent la fin du jeu en cours).
+- Ce qu'il faut déplacer, de `<bibliothèque A>\steamapps` vers `<bibliothèque B>\steamapps` (**à vérifier d'abord sur le PC de Tom, en lecture seule**) :
+  - le dossier du jeu `common\<installdir>` et son manifeste `appmanifest_<id>.acf` ;
+  - le Workshop du jeu s'il y en a (`workshop\content\<id>` et `workshop\appworkshop_<id>.acf`) ;
+  - le cache de shaders (`shadercache\<id>`) peut être laissé : Steam le refait.
+  - La désinstallation (`steam/installation.rs`) sait déjà quels dossiers appartiennent à un jeu : repartir de là.
+- Points d'attention (c'est l'opération la plus risquée pour les données de Tom) :
+  - la destination doit être une vraie bibliothèque Steam (`libraryfolders.vdf`), jamais un chemin libre venu du front ; réutiliser le choix du disque de l'installation, avec l'espace libre réel ;
+  - refuser si le jeu tourne, s'il se met à jour ou se télécharge (`StateFlags` différent de 4), si la place manque (taille du jeu plus une marge), ou si la destination contient déjà ce jeu ;
+  - **copier, vérifier, puis seulement supprimer la source** (nombre de fichiers et taille totale au minimum). Entre deux disques, un simple renommage échoue : c'est une vraie copie. Sur le même disque, un renommage suffit ;
+  - ne pas suivre les liens symboliques ni les jonctions ; garder les mêmes garde-fous de chemin que la désinstallation ;
+  - une coupure au milieu (PC éteint, ResTeaM fermé) ne doit rien casser : noter l'opération en cours, et à la reprise soit la finir, soit nettoyer la copie partielle. La source reste intacte tant que la copie n'est pas vérifiée ;
+  - montrer la progression (octets copiés, débit, temps restant) et permettre d'annuler ; ça peut durer longtemps pour un gros jeu ;
+  - tests avec de faux dossiers de bibliothèque, comme ceux de la désinstallation.
+- Interface : reprendre le design de l'installation (`src/installation/`), et demander à Tom où placer l'action (propriétés du jeu, clic droit de la Bibliothèque, page Téléchargements à côté des disques).
+
+### B. ResTeaM Wrap, avec le motion design pro (PLAN.md section 4 ter, points 4 et 14)
+
+- Le **ResTeaM Wrap** est « indispensable » pour Tom : un récap du mois et de l'année façon Spotify Wrapped, en écrans plein cadre qui défilent, avec une image à partager. Le contenu prévu est dans `PLAN.md`, section 4 ter, point 4. Il se nourrit du journal des sessions (`journal.rs`).
+- **C'est surtout là que Tom veut le motion design pro** (précision du 11 novembre 2026) : enchaînements orchestrés, chiffres qui défilent, jaquettes qui glissent, fonds qui respirent avec la couleur des affiches, révélations avec du suspense. C'est l'écran le plus animé de l'app.
+- Toujours dans la DA (la couleur vient des jeux, jamais de l'interface), en `transform` et `opacity`. **Proposer** le déroulé des écrans à Tom avant de coder.
+- Le reste de l'app est approuvé tel quel : ne pas refaire les animations des pages existantes sans que Tom le demande.
 
 ### C. Idées retenues, pas encore faites (PLAN.md section 4 ter)
 
 | # | Idée | Remarque |
 |---|---|---|
-| 4 | **ResTeaM Wrap** (récap du mois et de l'année façon Spotify Wrapped, image à partager) | « Indispensable » pour Tom. Se nourrit du journal des sessions |
 | 8 | **Défis entre amis** (« premier à finir tel jeu à 100 % ») | Demande le serveur de partage |
 | 9 | **Alertes de prix** par jeu de la liste de souhaits, **historique des prix** relevé au fil des jours | |
 | 10 | **Fond Wallpaper Engine actif** repris sur l'accueil, avec flou et filtres d'ambiance | |
@@ -163,20 +191,22 @@ Tom veut une app beaucoup plus animée, dans le genre de Spotify. Lui **proposer
 
 Lanceur rapide global, sons d'interface, mini-widget pendant le jeu, overlay injecté dans les jeux, liste de souhaits modifiable par cookies.
 
-## 7. Points fragiles repérés pendant le tour du 11 novembre 2026
+## 7. Points fragiles : ce qui a été corrigé, ce qui reste
 
-Par ordre d'importance. Rien n'a été modifié dans le code : à traiter avec Tom.
+Corrigé le 11 novembre 2026 (étape 29 du journal) :
 
-1. **Les notes et le journal peuvent être perdus.** `Cache::vider()` (`src-tauri/src/cache.rs`) efface **toute** la table. Il est appelé à la connexion, à la déconnexion, et quand la clé API est enregistrée ou supprimée (`commandes.rs`). Or le carnet de notes par jeu (`notes:<appid>`) et le journal des sessions (`journal:<année-mois>`) sont rangés dans cette même table. Changer sa clé API efface donc les notes de Tom et tout ce qui nourrira le Wrap. Correction conseillée : sortir ces données du cache (table ou fichier à part), ou au minimum ne pas effacer les clés `notes:` et `journal:`, puis ajouter un test. À faire **avant** le Wrap.
-2. **Aucune sauvegarde de ces données.** Elles sont chiffrées par DPAPI, donc liées à la session Windows de Tom : une réinstallation de Windows les rend illisibles. Prévoir un export (au moins des notes).
-3. **Le cache ne se purge jamais.** Les lignes périmées restent (c'est voulu pour le mode hors ligne), mais rien ne les élague : `cache.sqlite` grossit sans fin (une ligne par page d'historique de patch notes, par fiche, par profil d'ami…). Prévoir un élagage au démarrage des lignes périmées depuis longtemps, sans toucher aux notes et au journal.
-4. **Suivi du jeu lancé** (`jeu.rs`) : il repose sur `RunningAppID` du registre. Si ResTeaM est fermé pendant qu'un jeu se termine puis que le même jeu est relancé avant de rouvrir ResTeaM, les deux parties sont comptées comme une seule. Mineur.
-5. **Documentation en retard** :
-   - `PLAN.md` section 2 décrit l'arborescence prévue au départ (`commands.rs`, `store.rs`…), pas les vrais fichiers. L'arborescence de la section 4 de cette note est la bonne ;
-   - `PLAN.md` section 1 dit « aucun paiement, pas de communauté » : c'était le périmètre de départ, dépassé depuis (salon d'achat, Communauté) ;
-   - `PLAN.md` section 5, « Encore ouvert » : les deux points sont réglés (clé saisie, dépôt public).
-6. **Serveur de partage** : le déploiement (`npx wrangler deploy` dans `serveur/`) demande le compte Cloudflare de Tom (`npx wrangler login`, à faire par lui). L'adresse du serveur est écrite en dur dans `partage.rs`, `images_locales.rs` et la CSP : les trois doivent changer ensemble.
-7. **Aide Workshop** : `resteam-workshop.exe` et `steam_api64.dll` doivent rester à côté de `ResTeaM.exe`. `npm run build:exe` s'en charge ; `tauri build` seul (installeur) ne les embarque pas.
+- **Les notes et le journal ne sont plus effacés** par une connexion, une déconnexion ou un changement de clé API : `Cache::vider()` garde les clés `notes:` et `journal:`. Toute nouvelle donnée personnelle rangée dans le cache doit être ajoutée au filtre `PAS_PERSO` de `cache.rs`, avec un test.
+- **Sauvegarde** : Paramètres → « Mes notes et mon journal » écrit et relit `Documents\ResTeaM\sauvegarde-resteam.json` (`sauvegarde.rs`, fichier lisible, fusion à la reprise).
+- **Le cache est élagué au démarrage** : ce qui est périmé depuis plus de 30 jours part (`Cache::elaguer`).
+- **Documentation** : les sections 1, 2 et 5 de `PLAN.md` sont annotées.
+
+Ce qui reste :
+
+1. **Suivi du jeu lancé** (`jeu.rs`) : il repose sur `RunningAppID` du registre. Si ResTeaM est fermé pendant qu'un jeu se termine puis que le même jeu est relancé avant de rouvrir ResTeaM, les deux parties sont comptées comme une seule. Mineur. Le corriger demande l'heure de lancement du processus du jeu.
+2. **Notes et journal communs à tous les comptes** : ils sont gardés quel que soit le compte Steam connecté. Sans importance tant que Tom est seul sur le PC ; à ranger par SteamID si ça change.
+3. **La sauvegarde est manuelle.** Si le Wrap devient important pour Tom, lui proposer une sauvegarde automatique (elle écrirait un fichier lisible sans qu'il le demande : c'est à lui de décider).
+4. **Serveur de partage** : le déploiement (`npx wrangler deploy` dans `serveur/`) demande le compte Cloudflare de Tom (`npx wrangler login`, à faire par lui). L'adresse du serveur est écrite en dur dans `partage.rs`, `images_locales.rs` et la CSP : les trois doivent changer ensemble.
+5. **Aide Workshop** : `resteam-workshop.exe` et `steam_api64.dll` doivent rester à côté de `ResTeaM.exe`. `npm run build:exe` s'en charge ; `tauri build` seul (installeur) ne les embarque pas.
 
 ## 8. Commandes utiles
 

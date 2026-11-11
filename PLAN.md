@@ -423,6 +423,17 @@ Structure proposée, qui garde toutes les idées de Tom :
 - Idées à lui proposer : entrées orchestrées des pages, transitions entre les pages, éléments partagés qui glissent d'une page à l'autre (jaquette → fiche), listes qui arrivent en cascade, réactions au survol plus riches, chiffres qui défilent, fonds qui respirent avec la couleur de l'affiche.
 - Toujours dans la DA Nocturne · Clair de lune (pas de couleurs vives), en transform et opacité, et tout s'arrête si Windows demande moins d'animations.
 
+### 15. Jeux non Steam (demande de Tom, 11 novembre 2026) — pas commencé
+- Ajouter un jeu ou une app qui ne vient pas de Steam, comme dans Steam, le voir dans la Bibliothèque et le lancer depuis ResTeaM.
+- Détails, chemin conseillé et points d'attention : `AGENTS.md`, section 6, point A1.
+
+### 16. Activer une clé de jeu (demande de Tom, 11 novembre 2026) — pas commencé
+- Coller une clé Steam (achetée sur Instant Gaming par exemple) et l'activer depuis ResTeaM, par la page officielle de Steam dans le salon d'achat.
+- Détails et points d'attention : `AGENTS.md`, section 6, point A2.
+
+### Passation à Codex (11 novembre 2026)
+- Tom continue le projet avec Codex. La note de passation est `AGENTS.md`, à la racine : règles de travail, DA, architecture, ce qui est fait, ce qui reste, points fragiles repérés.
+
 ## 5. Décisions (8 novembre 2026)
 
 | Sujet | Décision |

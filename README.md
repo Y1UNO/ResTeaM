@@ -60,15 +60,16 @@ AUDIT-SECURITE.md  audit de sécurité
 
 ## État et suite
 
-Fait : accueil, bibliothèque, magasin, fiche et propriétés des jeux, classements, liste de souhaits, téléchargements, amis, profil personnalisable, recherche globale, mode hors ligne, audit de sécurité, Communauté (Workshop, captures, créations, fil des amis).
+Fait : accueil, bibliothèque, magasin, fiche et propriétés des jeux, classements, liste de souhaits, téléchargements, amis, profil personnalisable (trophées, lune à 30 niveaux), recherche globale, mode hors ligne, Communauté (Workshop, captures, créations, fil des amis), salon d'achat, paramètres de Steam, démarrage avec Windows et zone de notification, notifications maison, manette et mode Salon, coffre-fort et audits de sécurité, serveur de partage des profils, journal des sessions, roulette, pile de la honte, prix par heure, carnet de notes par jeu, jeux en commun, duel de profils.
 
-À venir (détails dans [PLAN.md](PLAN.md)) :
-- total des trophées et lune du profil à 30 niveaux ;
-- paramètres de Steam ;
-- remplacer Steam au quotidien (démarrage avec Windows, zone de notification) ;
-- notifications Windows ;
-- manette et plein écran ;
-- serveur gratuit pour partager son profil ResTeaM avec ses amis.
+À venir (détails dans [AGENTS.md](AGENTS.md) et [PLAN.md](PLAN.md)) :
+- jeux non Steam dans la bibliothèque ;
+- activer une clé de jeu depuis ResTeaM ;
+- motion design plus riche dans toute l'app ;
+- ResTeaM Wrap (récap du mois et de l'année) ;
+- alertes et historique des prix, défis entre amis ;
+- fond Wallpaper Engine sur l'accueil, fond du profil réglable ;
+- coffre à styles (un ticket gratuit par jour), tout à la fin.
 
 ## Lancer le projet
 
